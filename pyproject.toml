@@ -23,8 +23,7 @@ license = {text = "MIT"}
 
 [project.optional-dependencies]
 dev = [
-    "black>=23.0",
-    "isort>=5.0",
+    "ruff>=0.12.0",
     "pytest>=7.0",
     "pytest-cov>=4.0",
 ]

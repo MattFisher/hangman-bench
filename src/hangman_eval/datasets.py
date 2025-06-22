@@ -56,7 +56,6 @@ ENGLISH_WORDS = [
     WordEntry("puzzle", 1),
     WordEntry("bubble", 1),
     WordEntry("butterfly", 1),
-
     # Difficulty 2 (Easy)
     WordEntry("garden", 2),
     WordEntry("market", 2),
@@ -75,7 +74,6 @@ ENGLISH_WORDS = [
     WordEntry("winter", 2),
     WordEntry("yellow", 2),
     WordEntry("zebra", 2),
-
     # Difficulty 3 (Medium)
     WordEntry("bicycle", 3),
     WordEntry("camera", 3),
@@ -92,7 +90,6 @@ ENGLISH_WORDS = [
     WordEntry("octopus", 3),
     WordEntry("penguin", 3),
     WordEntry("question", 3),
-
     # Difficulty 4 (Hard)
     WordEntry("awkward", 4),
     WordEntry("bagpipes", 4),
@@ -107,7 +104,6 @@ ENGLISH_WORDS = [
     WordEntry("kayak", 4),
     WordEntry("lymph", 4),
     WordEntry("matrix", 4),
-
     # Difficulty 5 (Very Hard)
     WordEntry("buzzard", 5),
     WordEntry("crypt", 5),
@@ -156,7 +152,7 @@ def get_words_by_language(language: Language) -> List[WordEntry]:
     """
     if language not in LANGUAGE_WORDS:
         raise ValueError(
-            f"Unsupported language: {language}. Supported languages: {', '.join([l.value for l in LANGUAGE_WORDS.keys()])}"
+            f"Unsupported language: {language}. Supported languages: {', '.join([lang.value for lang in LANGUAGE_WORDS.keys()])}"
         )
     return LANGUAGE_WORDS[language].copy()
 
