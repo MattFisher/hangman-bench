@@ -17,8 +17,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "inspect-ai>=0.3.0",
+    "inspect_ai@git+https://github.com/UKGovernmentBEIS/inspect_ai",
 ]
+license = {text = "MIT"}
 
 [project.optional-dependencies]
 dev = [
@@ -29,5 +30,5 @@ dev = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/yourusername/hangman-eval"
-"Bug Tracker" = "https://github.com/yourusername/hangman-eval/issues"
+"Homepage" = "https://github.com/MattFisher/hangman-eval"
+"Bug Tracker" = "https://github.com/MattFisher/hangman-eval/issues"

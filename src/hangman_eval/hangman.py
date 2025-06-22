@@ -24,13 +24,13 @@ from inspect_ai.solver import (
 from inspect_ai.tool import Tool, tool
 from inspect_ai.util import store
 
-from .datasets import (
+from hangman_eval.datasets import (
     Language,
     get_words_by_difficulty,
     get_words_by_language,
 )
 
-DEFAULT_MAX_GUESSES = 6
+DEFAULT_MAX_GUESSES = 10
 DEFAULT_LANGUAGE = Language.ENGLISH
 
 
