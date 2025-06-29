@@ -12,6 +12,7 @@ from inspect_ai.scorer import (
     accuracy,
     scorer,
     stderr,
+    grouped,
 )
 from inspect_ai.solver import (
     Generate,
@@ -294,7 +295,12 @@ def game_initialiser() -> Solver:
     return solve
 
 
-@scorer(metrics=[accuracy(), stderr()])
+@scorer(
+    metrics=[
+        grouped(accuracy(), group_key="difficulty"),
+        stderr(),
+    ]
+)
 def game_scorer() -> Scorer:
     """Score the hangman game based on whether the player won or not"""
 
