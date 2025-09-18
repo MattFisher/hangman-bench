@@ -21,7 +21,7 @@ classifiers = [
     "Typing :: Typed",
     "Operating System :: OS Independent",
 ]
-dependencies = ["inspect_ai@git+https://github.com/UKGovernmentBEIS/inspect_ai"]
+dependencies = ["inspect-ai>=0.3.132"]
 license = { text = "MIT" }
 
 [project.entry-points.inspect_ai]
