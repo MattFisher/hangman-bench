@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
 
 from inspect_ai import Task, task
 from inspect_ai.dataset import MemoryDataset, Sample
@@ -163,24 +163,22 @@ class GameState:
         return self
 
 
-@tool(parallel=False)
+@tool
 def hangman_guess() -> Tool:
     """Tool for guessing letters in the hangman game"""
 
-    async def execute(letter: str) -> dict[str, Union[bool, int, str, List[str]]]:
+    async def execute(letter: str) -> str:
         """Submit a letter guess for the current hangman game.
 
         Args:
             letter (str): A single letter to guess
 
         Returns:
-            A dictionary containing:
-            - current_state: The word with guessed letters revealed and unguessed letters as '_'
-            - remaining_guesses: Number of guesses remaining
-            - incorrect_guesses: List of incorrect letters guessed
-            - game_over: Whether the game has ended
-            - won: Whether the player won (only valid if game_over is True)
-            - language: The language of the current word
+            A formatted string containing the game state with:
+            - Current word progress
+            - Remaining guesses
+            - Incorrect guesses made so far
+            - Game status (ongoing, won, or lost)
         """
         game_state = store().get("hangman:game_state", None)
         metadata: dict[str, Any] = store().get("hangman:metadata", {})
@@ -193,14 +191,26 @@ def hangman_guess() -> Tool:
         if not game_state.game_over:
             game_state.guess(letter)  # Updates the game state
 
-        return {
-            "current_state": game_state.current_state,
-            "remaining_guesses": game_state.remaining_guesses,
-            "incorrect_guesses": game_state.incorrect_guesses,
-            "game_over": game_state.game_over,
-            "won": game_state.won,
-            "language": metadata.get("language", DEFAULT_LANGUAGE.value),
-        }
+        # Format the result as a readable string
+        result_lines = [
+            f"Word: {game_state.current_state}",
+            f"Remaining guesses: {game_state.remaining_guesses}",
+            f"Incorrect guesses: {', '.join(game_state.incorrect_guesses) if game_state.incorrect_guesses else 'none'}",
+        ]
+
+        if game_state.game_over:
+            if game_state.won:
+                result_lines.append("Status: WON! You guessed the word!")
+            else:
+                result_lines.append(f"Status: LOST! The word was '{game_state.word}'")
+        else:
+            result_lines.append("Status: Game continues")
+
+        result_lines.append(
+            f"Language: {metadata.get('language', DEFAULT_LANGUAGE.value)}"
+        )
+
+        return "\n".join(result_lines)
 
     return execute
 
