@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-This is a Hangman evaluation benchmark for testing AI models' ability to play the classic word game using the [Inspect framework](https://github.com/UKGovernmentBEIS/inspect_ai). It implements a structured evaluation where models must guess letters to uncover words across different languages and difficulty levels.
+This is a Hangman benchmark for testing AI models' ability to play the classic word game using the [Inspect framework](https://github.com/UKGovernmentBEIS/inspect_ai). It implements a structured evaluation where models must guess letters to uncover words across different languages and difficulty levels.
 
 ## Development Commands
 
@@ -35,18 +35,18 @@ ruff format
 ### Running Evaluations
 ```bash
 # Basic evaluation
-inspect eval hangman_eval/hangman
+inspect eval hangman_bench/hangman
 
 # Limit samples
-inspect eval hangman_eval/hangman --limit=10
+inspect eval hangman_bench/hangman --limit=10
 
 # Specific model
-inspect eval hangman_eval/hangman --model openai/gpt-4o-mini
+inspect eval hangman_bench/hangman --model openai/gpt-4o-mini
 
 # Task parameters
-inspect eval hangman_eval/hangman -T allow-word-guesses=True
-inspect eval hangman_eval/hangman -T difficulty=3
-inspect eval hangman_eval/hangman -T max_guesses=8
+inspect eval hangman_bench/hangman -T allow-word-guesses=True
+inspect eval hangman_bench/hangman -T difficulty=3
+inspect eval hangman_bench/hangman -T max_guesses=8
 ```
 
 ## Architecture

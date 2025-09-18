@@ -1,6 +1,6 @@
-# Contributing to Hangman Eval
+# Contributing to Hangman Bench
 
-Thank you for your interest in contributing to Hangman Eval! Here's how you can help:
+Thank you for your interest in contributing to Hangman Bench! Here's how you can help:
 
 ## Reporting Issues
 

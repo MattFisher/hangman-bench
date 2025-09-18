@@ -1,6 +1,6 @@
-# Hangman Evaluation
+# Hangman Benchmark
 
-An evaluation for testing AI models' ability to play the classic game of Hangman.
+A benchmark for testing AI models' ability to play the classic game of Hangman.
 Uses the [Inspect framework](https://github.com/UKGovernmentBEIS/inspect_ai) to evaluate the models.
 
 This eval was built as a demonstration of how to enable models to play games using tools within the Inspect framework.
@@ -8,22 +8,22 @@ This eval was built as a demonstration of how to enable models to play games usi
 ## Installation
 
 ```bash
-pip install hangman-eval
+pip install hangman-bench
 ```
 
 ## Usage
 
 ```bash
-inspect eval hangman_eval/hangman
+inspect eval hangman_bench/hangman
 
 # To limit the number of samples to 10
-inspect eval hangman_eval/hangman --limit=10
+inspect eval hangman_bench/hangman --limit=10
 
 # To evaluate against a specific model
-inspect eval hangman_eval/hangman --model openai/gpt-4o-mini
+inspect eval hangman_bench/hangman --model openai/gpt-4o-mini
 
 # To allow the model to guess the word before guessing all letters
-inspect eval hangman_eval/hangman -T allow-word-guesses=True
+inspect eval hangman_bench/hangman -T allow-word-guesses=True
 ```
 
 ### Task Parameters

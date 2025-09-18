@@ -25,7 +25,7 @@ from inspect_ai.solver import (
 from inspect_ai.tool import Tool, tool
 from inspect_ai.util import store
 
-from hangman_eval.datasets import (
+from hangman_bench.datasets import (
     Language,
     get_words_by_difficulty,
     get_words_by_language,

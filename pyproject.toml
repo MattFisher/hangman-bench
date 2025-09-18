@@ -3,9 +3,9 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hangman-eval"
+name = "hangman-bench"
 version = "0.1.0"
-description = "Hangman game evaluation for AI models"
+description = "Hangman game benchmark for AI models"
 authors = [{ name = "Matt Fisher" }]
 readme = "README.md"
 requires-python = ">=3.9"
@@ -25,11 +25,11 @@ dependencies = ["inspect_ai@git+https://github.com/UKGovernmentBEIS/inspect_ai"]
 license = { text = "MIT" }
 
 [project.entry-points.inspect_ai]
-hangman_eval = "hangman_eval"
+hangman_bench = "hangman_bench"
 
 [project.optional-dependencies]
 dev = ["ruff>=0.12.0", "pytest>=7.0", "pytest-cov>=4.0"]
 
 [project.urls]
-"Homepage" = "https://github.com/MattFisher/hangman-eval"
-"Bug Tracker" = "https://github.com/MattFisher/hangman-eval/issues"
+"Homepage" = "https://github.com/MattFisher/hangman-bench"
+"Bug Tracker" = "https://github.com/MattFisher/hangman-bench/issues"
