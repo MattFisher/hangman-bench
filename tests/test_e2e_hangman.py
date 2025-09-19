@@ -33,7 +33,7 @@ class TestHangmanE2E:
         log = eval(
             tasks=hangman(
                 language="english",
-                difficulty=1,
+                difficulty="v_easy",
                 max_guesses=6,
                 shuffle=False,
             ),
@@ -54,9 +54,9 @@ class TestHangmanE2E:
         assert "game_scorer.all" in scores
         assert scores["game_scorer.all"] == 1.0
 
-        # Should have difficulty-1 accuracy of 1.0
-        assert "game_scorer.1" in scores
-        assert scores["game_scorer.1"] == 1.0
+        # Should have difficulty-v_easy accuracy of 1.0
+        assert "game_scorer.v_easy" in scores
+        assert scores["game_scorer.v_easy"] == 1.0
 
     def test_hangman_loss_hard_word(self) -> None:
         """Test hangman loss scenario with hard word and poor guesses."""
@@ -74,7 +74,7 @@ class TestHangmanE2E:
         log = eval(
             tasks=hangman(
                 language="english",
-                difficulty=5,  # Very hard words
+                difficulty="v_hard",  # Very hard words
                 max_guesses=5,  # Limited guesses
                 shuffle=False,
             ),
@@ -94,9 +94,9 @@ class TestHangmanE2E:
         assert "game_scorer.all" in scores
         assert scores["game_scorer.all"] == 0.0
 
-        # Should have difficulty-5 accuracy of 0.0
-        assert "game_scorer.5" in scores
-        assert scores["game_scorer.5"] == 0.0
+        # Should have difficulty-v_hard accuracy of 0.0
+        assert "game_scorer.v_hard" in scores
+        assert scores["game_scorer.v_hard"] == 0.0
 
     def test_hangman_mixed_results(self) -> None:
         """Test hangman with mixed win/loss results."""
@@ -139,8 +139,8 @@ class TestHangmanE2E:
         assert "game_scorer.all" in scores
         assert 0.0 <= scores["game_scorer.all"] <= 1.0
 
-        # Should have difficulty-1 specific scores
-        assert "game_scorer.1" in scores
+        # Should have difficulty-v_easy specific scores
+        assert "game_scorer.v_easy" in scores
 
     def test_hangman_word_guess_allowed_win(self) -> None:
         """Test hangman with word guessing allowed - early correct word guess."""
@@ -189,7 +189,7 @@ class TestHangmanE2E:
         log = eval(
             tasks=hangman(
                 language="english",
-                difficulty=1,
+                difficulty="v_easy",
                 allow_word_guesses=True,
                 shuffle=False,
             ),
@@ -259,20 +259,12 @@ class TestHangmanE2E:
         ):
             hangman(language="invalid_language")
 
-    def test_hangman_invalid_difficulty(self) -> None:
-        """Test that invalid difficulty raises ValueError."""
-        with pytest.raises(ValueError, match="Difficulty must be between 1 and 5"):
-            hangman(difficulty=6)
-
-        with pytest.raises(ValueError, match="Difficulty must be between 1 and 5"):
-            hangman(difficulty=0)
-
     def test_hangman_task_parameters(self) -> None:
         """Test that task parameters are correctly set."""
         # Test with specific parameters
         task = hangman(
             language="english",
-            difficulty=3,
+            difficulty="medium",
             max_guesses=8,
             allow_word_guesses=True,
             shuffle=False,
@@ -284,7 +276,7 @@ class TestHangmanE2E:
         # All samples should have difficulty 3
         for sample in task.dataset:
             metadata = sample.metadata or {}
-            assert metadata["difficulty"] == 3
+            assert metadata["difficulty"] == "medium"
             assert metadata["max_guesses"] == 8
             assert metadata["language"] == "english"
             assert metadata["allow_word_guesses"] is True
@@ -333,7 +325,8 @@ class TestHangmanE2E:
         difficulty_metrics = [
             name
             for name in all_metrics.keys()
-            if name.startswith("game_scorer.") and name.split(".")[1].isdigit()
+            if name.startswith("game_scorer.")
+            and name.split(".")[1] not in ("all", "stderr")
         ]
         assert len(difficulty_metrics) > 0
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, List
 
 from inspect_ai import Task, task
 from inspect_ai.dataset import MemoryDataset, Sample
@@ -29,6 +29,7 @@ from hangman_bench.datasets import (
     Language,
     get_words_by_difficulty,
     get_words_by_language,
+    Difficulty,
 )
 
 DEFAULT_MAX_GUESSES = 10
@@ -39,7 +40,7 @@ NUM_ALLOWABLE_EXTRA_MESSAGES = 5  # Extra messages beyond word length + max gues
 @task
 def hangman(
     language: str = DEFAULT_LANGUAGE.value,
-    difficulty: Optional[int] = None,
+    difficulty: Difficulty | None = None,
     max_guesses: int = DEFAULT_MAX_GUESSES,
     shuffle: bool = True,
     allow_word_guesses: bool = False,
@@ -48,7 +49,7 @@ def hangman(
 
     Args:
         language: The language to use for the words (default: english)
-        difficulty: Specific difficulty level to use (1-5), or None for mixed difficulties
+        difficulty: Specific difficulty label to use (v_easy, easy, medium, hard, v_hard), or None for mixed difficulties
         max_guesses: Maximum number of incorrect guesses allowed
         shuffle: Whether to shuffle the words before playing
         allow_word_guesses: Whether to allow the agent to guess the entire word
@@ -66,8 +67,6 @@ def hangman(
 
     # Get words based on language and optional difficulty
     if difficulty is not None:
-        if difficulty < 1 or difficulty > 5:
-            raise ValueError("Difficulty must be between 1 and 5")
         word_entries = get_words_by_difficulty(lang_enum, difficulty)
     else:
         word_entries = get_words_by_language(lang_enum)
@@ -312,7 +311,7 @@ def game_initialiser() -> Solver:
 
         max_guesses = metadata.get("max_guesses", DEFAULT_MAX_GUESSES)
         language = metadata.get("language", DEFAULT_LANGUAGE.value)
-        difficulty = metadata.get("difficulty", 3)
+        difficulty = metadata.get("difficulty", "medium")
         allow_word_guesses = metadata.get("allow_word_guesses", False)
 
         hangman_game = GameState.start(
@@ -364,7 +363,7 @@ def game_scorer() -> Scorer:
                 guessed_word = state.output.completion
                 explanation = (
                     f"Early guess. Word: {game_state.word}. Language: {language}. "
-                    f"Difficulty: {difficulty}/5. "
+                    f"Difficulty: {difficulty}. "
                     f"Guessed word: {guessed_word}. "
                     f"Guessed letters: {game_state.guessed_letters}. "
                     f"Final word state: {game_state.current_state}. "
@@ -404,7 +403,7 @@ def game_scorer() -> Scorer:
 
         explanation = (
             f"Game ended. Word: {game_state.word}. Language: {language}. "
-            f"Difficulty: {difficulty}/5."
+            f"Difficulty: {difficulty}. "
             f"Won: {game_state.won}. "
             f"Guessed letters: {game_state.guessed_letters}. "
             f"Final word state: {game_state.current_state}. "
