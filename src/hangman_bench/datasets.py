@@ -70,9 +70,7 @@ ENGLISH_WORDS = [
     WordEntry("orange", 2),
     WordEntry("purple", 2),
     WordEntry("silver", 2),
-    WordEntry("summer", 2),
     WordEntry("winter", 2),
-    WordEntry("yellow", 2),
     WordEntry("zebra", 2),
     # Difficulty 3 (Medium)
     WordEntry("bicycle", 3),
@@ -108,7 +106,6 @@ ENGLISH_WORDS = [
     WordEntry("buzzard", 5),
     WordEntry("crypt", 5),
     WordEntry("duplex", 5),
-    WordEntry("espionage", 5),
     WordEntry("foxglove", 5),
     WordEntry("galvanize", 5),
     WordEntry("hyphen", 5),
