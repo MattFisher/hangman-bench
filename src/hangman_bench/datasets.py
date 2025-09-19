@@ -46,9 +46,8 @@ ENGLISH_WORDS = [
     WordEntry("summer", "v_easy"),
     WordEntry("yellow", "v_easy"),
     WordEntry("people", "v_easy"),
-    WordEntry("window", "v_easy"),
     WordEntry("school", "v_easy"),
-    WordEntry("family", "v_easy"),
+    WordEntry("earth", "v_easy"),
     WordEntry("coffee", "v_easy"),
     WordEntry("cookie", "v_easy"),
     WordEntry("paper", "v_easy"),
@@ -57,8 +56,9 @@ ENGLISH_WORDS = [
     WordEntry("butter", "v_easy"),
     WordEntry("pizza", "v_easy"),
     WordEntry("puzzle", "v_easy"),
-    WordEntry("bubble", "v_easy"),
+    WordEntry("steam", "v_easy"),
     WordEntry("butterfly", "v_easy"),
+    WordEntry("strawberry", "v_easy"),
     # Difficulty easy (Easy)
     WordEntry("garden", "easy"),
     WordEntry("market", "easy"),
@@ -170,7 +170,9 @@ def get_words_by_language(language: Language) -> List[WordEntry]:
     return LANGUAGE_WORDS[language].copy()
 
 
-def get_words_by_difficulty(language: Language, difficulty: Difficulty) -> List[WordEntry]:
+def get_words_by_difficulty(
+    language: Language, difficulty: Difficulty
+) -> List[WordEntry]:
     """Get words of a specific difficulty level for a language.
 
     Args:
