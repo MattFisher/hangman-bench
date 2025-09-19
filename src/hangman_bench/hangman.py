@@ -382,6 +382,8 @@ def game_scorer() -> Scorer:
                         "guessed_letters": game_state.guessed_letters,
                         "final_word_state": game_state.current_state,
                         "remaining_guesses": game_state.remaining_guesses,
+                        "incorrect_guesses": game_state.incorrect_guesses,
+                        "num_incorrect_guesses": len(game_state.incorrect_guesses),
                     },
                 )
 
@@ -398,6 +400,8 @@ def game_scorer() -> Scorer:
                     "guessed_letters": game_state.guessed_letters,
                     "final_word_state": game_state.current_state,
                     "remaining_guesses": game_state.remaining_guesses,
+                    "incorrect_guesses": game_state.incorrect_guesses,
+                    "num_incorrect_guesses": len(game_state.incorrect_guesses),
                 },
             )
 
@@ -422,6 +426,8 @@ def game_scorer() -> Scorer:
                 "guessed_letters": game_state.guessed_letters,
                 "final_word_state": game_state.current_state,
                 "remaining_guesses": game_state.remaining_guesses,
+                "incorrect_guesses": game_state.incorrect_guesses,
+                "num_incorrect_guesses": len(game_state.incorrect_guesses),
             },
         )
 
