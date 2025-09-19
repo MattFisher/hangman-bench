@@ -295,7 +295,7 @@ def hangman_player(allow_word_guesses: bool = False) -> Solver:
             prompt=final_system_message,
             tools=[hangman_guess()],
             on_continue=on_continue,
-            submit=AgentSubmit(answer_only=True),
+            submit=AgentSubmit(answer_only=True) if allow_word_guesses else False,
         )
     )
 
