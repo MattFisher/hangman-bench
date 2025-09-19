@@ -28,7 +28,8 @@ license = { text = "MIT" }
 hangman_bench = "hangman_bench"
 
 [project.optional-dependencies]
-dev = ["ruff>=0.12.0", "pytest>=7.0", "pytest-cov>=4.0"]
+# Runtime extras that users can opt into, e.g. provider integrations
+openai = ["openai>=1.108.0"]
 
 [project.urls]
 "Homepage" = "https://github.com/MattFisher/hangman-bench"
@@ -39,4 +40,11 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 hangman_bench = ["py.typed"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.0",
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
 
