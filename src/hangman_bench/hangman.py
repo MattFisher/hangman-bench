@@ -112,8 +112,8 @@ def hangman(
 
 def _calculate_message_limit(word_length: int, max_guesses: int) -> int:
     # Models sometimes respond with commentary, then need a "continue" message,
-    # and then call the tool. So we allow 3 messages per guess.
-    return (word_length + max_guesses) * 3 + NUM_ALLOWABLE_EXTRA_MESSAGES
+    # and then call the tool and get the tool response. So we allow 4 messages per guess.
+    return (word_length + max_guesses) * 4 + NUM_ALLOWABLE_EXTRA_MESSAGES
 
 
 @dataclass
