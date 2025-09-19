@@ -18,10 +18,9 @@ from inspect_ai.solver import (
     Generate,
     Solver,
     TaskState,
-    basic_agent,
     solver,
-    system_message,
 )
+from inspect_ai.agent import react, as_solver, AgentSubmit
 from inspect_ai.tool import Tool, tool
 from inspect_ai.util import StoreModel, store_as
 from pydantic import Field
@@ -266,12 +265,13 @@ def hangman_player(allow_word_guesses: bool = False) -> Solver:
         if not allow_word_guesses
         else system_message_with_word_guesses
     )
-    return basic_agent(
-        init=system_message(final_system_message),
-        continue_message="If the game is over, submit('GG') to end the session.",
-        tools=[
-            hangman_guess(),
-        ],
+    return as_solver(
+        react(
+            prompt=final_system_message,
+            tools=[hangman_guess()],
+            on_continue="If the game is over, submit('GG') to end the session.",
+            submit=AgentSubmit(answer_only=True),
+        )
     )
 
 
