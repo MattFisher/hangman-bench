@@ -23,7 +23,8 @@ from inspect_ai.solver import (
     system_message,
 )
 from inspect_ai.tool import Tool, tool
-from inspect_ai.util import store
+from inspect_ai.util import StoreModel, store_as
+from pydantic import Field
 
 from hangman_bench.datasets import (
     Language,
@@ -106,6 +107,14 @@ def hangman(
     )
 
 
+class HangmanStore(StoreModel):
+    """Typed interface to the per-sample store."""
+
+    # Use Any to avoid strict validation issues for the dataclass GameState
+    game_state: Any | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 @dataclass
 class GameState:
     word: str
@@ -180,8 +189,9 @@ def hangman_guess() -> Tool:
             - Incorrect guesses made so far
             - Game status (ongoing, won, or lost)
         """
-        game_state = store().get("hangman:game_state", None)
-        metadata: dict[str, Any] = store().get("hangman:metadata", {})
+        hstore = store_as(HangmanStore)
+        game_state = hstore.game_state
+        metadata: dict[str, Any] = hstore.metadata or {}
 
         if game_state is None:
             raise RuntimeError(
@@ -285,16 +295,14 @@ def game_initialiser() -> Solver:
             max_guesses=max_guesses,
         )
 
-        # Store game state and metadata
-        state.store.set("hangman:game_state", hangman_game)
-        state.store.set(
-            "hangman:metadata",
-            {
-                "language": language,
-                "difficulty": difficulty,
-                "allow_word_guesses": allow_word_guesses,
-            },
-        )
+        # Store game state and metadata using a typed store model
+        hstore = store_as(HangmanStore)
+        hstore.game_state = hangman_game
+        hstore.metadata = {
+            "language": language,
+            "difficulty": difficulty,
+            "allow_word_guesses": allow_word_guesses,
+        }
 
         state.user_prompt.text = (
             f"Let's play hangman in {language}! You have {max_guesses} guesses.\n"
@@ -315,8 +323,9 @@ def game_scorer() -> Scorer:
     """Score the hangman game based on whether the player won or not"""
 
     async def score(state: TaskState, target: Target) -> Score:
-        game_state = state.store.get("hangman:game_state", None)
-        metadata: dict[str, Any] = state.store.get("hangman:metadata", {})
+        hstore = store_as(HangmanStore)
+        game_state = hstore.game_state
+        metadata: dict[str, Any] = hstore.metadata or {}
         language = metadata.get("language", DEFAULT_LANGUAGE.value)
         difficulty = metadata.get("difficulty", 3)
 
