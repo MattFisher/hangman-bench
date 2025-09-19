@@ -7,8 +7,14 @@ This eval was built as a demonstration of how to enable models to play games usi
 
 ## Installation
 
+### Using pip
 ```bash
 pip install hangman-bench
+```
+
+### Using uv (recommended)
+```bash
+uv add hangman-bench
 ```
 
 ## Usage
@@ -36,6 +42,22 @@ inspect eval hangman_bench/hangman -T allow-word-guesses=True
 
 ## Development
 
+### Using uv (recommended)
+1. Clone the repository
+2. Install with development dependencies:
+   ```bash
+   uv sync --dev
+   ```
+3. Run tests:
+   ```bash
+   uv run pytest
+   ```
+4. Run evaluations:
+   ```bash
+   uv run inspect eval hangman_bench/hangman
+   ```
+
+### Using pip
 1. Clone the repository
 2. Install with development dependencies:
    ```bash

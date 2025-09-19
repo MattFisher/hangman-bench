@@ -8,6 +8,17 @@ This is a Hangman benchmark for testing AI models' ability to play the classic w
 ## Development Commands
 
 ### Installation & Setup
+
+#### Using uv (recommended)
+```bash
+# Install with all dependencies
+uv sync --dev
+
+# Install pre-commit hooks (if contributing)
+uv run pre-commit install
+```
+
+#### Using pip
 ```bash
 # Install in development mode with all dependencies
 pip install -e ".[dev]"
@@ -17,6 +28,17 @@ pre-commit install
 ```
 
 ### Testing
+
+#### Using uv
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov
+```
+
+#### Using pip
 ```bash
 # Run all tests
 pytest
@@ -26,6 +48,15 @@ pytest --cov
 ```
 
 ### Code Quality
+
+#### Using uv
+```bash
+# Format and lint code
+uv run ruff check
+uv run ruff format
+```
+
+#### Using pip
 ```bash
 # Format and lint code (development dependency)
 ruff check
@@ -33,6 +64,25 @@ ruff format
 ```
 
 ### Running Evaluations
+
+#### Using uv
+```bash
+# Basic evaluation
+uv run inspect eval hangman_bench/hangman
+
+# Limit samples
+uv run inspect eval hangman_bench/hangman --limit=10
+
+# Specific model
+uv run inspect eval hangman_bench/hangman --model openai/gpt-4o-mini
+
+# Task parameters
+uv run inspect eval hangman_bench/hangman -T allow-word-guesses=True
+uv run inspect eval hangman_bench/hangman -T difficulty=3
+uv run inspect eval hangman_bench/hangman -T max_guesses=8
+```
+
+#### Using pip
 ```bash
 # Basic evaluation
 inspect eval hangman_bench/hangman

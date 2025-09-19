@@ -15,6 +15,21 @@ If you find a bug or have a feature request, please open an issue on GitHub. Whe
 
 ## Development Setup
 
+### Using uv (recommended)
+
+1. Fork the repository and clone it locally
+2. Install [uv](https://docs.astral.sh/uv/) if you haven't already
+3. Install the package with all dependencies:
+   ```bash
+   uv sync --dev
+   ```
+4. Install pre-commit hooks:
+   ```bash
+   uv run pre-commit install
+   ```
+
+### Using pip (alternative)
+
 1. Fork the repository and clone it locally
 2. Create a virtual environment:
    ```bash
@@ -39,8 +54,12 @@ If you find a bug or have a feature request, please open an issue on GitHub. Whe
 
 ## Testing
 
-Run the test suite with:
+### Using uv
+```bash
+uv run pytest
+```
 
+### Using pip
 ```bash
 pytest
 ```

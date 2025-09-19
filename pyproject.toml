@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Hangman game benchmark for AI models"
 authors = [{ name = "Matt Fisher" }]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
