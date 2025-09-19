@@ -374,6 +374,16 @@ def game_scorer() -> Scorer:
                     value=CORRECT if guessed_word == game_state.word else INCORRECT,
                     answer=guessed_word,
                     explanation=explanation,
+                    metadata={
+                        "won": game_state.won,
+                        "language": language,
+                        "difficulty": difficulty,
+                        "allow_word_guesses": allow_word_guesses,
+                        "guessed_word": guessed_word,
+                        "guessed_letters": game_state.guessed_letters,
+                        "final_word_state": game_state.current_state,
+                        "remaining_guesses": game_state.remaining_guesses,
+                    },
                 )
 
         if not game_state.game_over:
@@ -381,6 +391,15 @@ def game_scorer() -> Scorer:
                 value=INCORRECT,
                 answer=game_state.current_state,
                 explanation="The game did not complete.",
+                metadata={
+                    "won": game_state.won,
+                    "language": language,
+                    "difficulty": difficulty,
+                    "allow_word_guesses": allow_word_guesses,
+                    "guessed_letters": game_state.guessed_letters,
+                    "final_word_state": game_state.current_state,
+                    "remaining_guesses": game_state.remaining_guesses,
+                },
             )
 
         explanation = (
@@ -396,6 +415,15 @@ def game_scorer() -> Scorer:
             value=CORRECT if game_state.won else INCORRECT,
             answer=game_state.current_state,
             explanation=explanation,
+            metadata={
+                "won": game_state.won,
+                "language": language,
+                "difficulty": difficulty,
+                "allow_word_guesses": allow_word_guesses,
+                "guessed_letters": game_state.guessed_letters,
+                "final_word_state": game_state.current_state,
+                "remaining_guesses": game_state.remaining_guesses,
+            },
         )
 
     return score

@@ -215,7 +215,7 @@ class TestHangmanE2E:
             create_letter_guess("a"),
             create_letter_guess("e"),
             # Model stops without completing the game properly
-        ] + [ModelOutput.from_content(model="mockllm/model", content="I give up")] * 10
+        ] + [ModelOutput.from_content(model="mockllm/model", content="I give up")] * 20
 
         max_guesses = 4
         # Game should be terminated after 3 * (len("butterfly") + max_guesses) + NUM_ALLOWABLE_EXTRA_MESSAGES
