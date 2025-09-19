@@ -4,7 +4,7 @@ import pytest
 from inspect_ai import eval
 from inspect_ai.model import ModelOutput, get_model
 
-from hangman_bench.hangman import hangman, NUM_ALLOWABLE_EXTRA_MESSAGES
+from hangman_bench.hangman import hangman, _calculate_message_limit
 
 
 def create_letter_guess(letter: str) -> ModelOutput:
@@ -218,6 +218,9 @@ class TestHangmanE2E:
         ] + [ModelOutput.from_content(model="mockllm/model", content="I give up")] * 10
 
         max_guesses = 4
+        # Game should be terminated after 3 * (len("butterfly") + max_guesses) + NUM_ALLOWABLE_EXTRA_MESSAGES
+        expected_limit = _calculate_message_limit(len("butterfly"), max_guesses)
+        assert expected_limit == 44
 
         log = eval(
             tasks=hangman(
@@ -226,10 +229,6 @@ class TestHangmanE2E:
             model=get_model("mockllm/model", custom_outputs=mock_outputs),
             sample_id="apple",
         )[0]
-
-        # Game should be terminated after len("butterfly") + max_guesses + NUM_ALLOWABLE_EXTRA_MESSAGES
-        expected_limit = len("butterfly") + max_guesses + NUM_ALLOWABLE_EXTRA_MESSAGES
-        assert expected_limit == 18
 
         assert log.samples is not None
         assert log.samples[0].messages[-1].role == "user"

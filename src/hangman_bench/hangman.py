@@ -107,8 +107,14 @@ def hangman(
         solver=hangman_player(allow_word_guesses=allow_word_guesses),
         setup=game_initialiser(),
         scorer=game_scorer(),
-        message_limit=longest_word_length + max_guesses + NUM_ALLOWABLE_EXTRA_MESSAGES,
+        message_limit=_calculate_message_limit(longest_word_length, max_guesses),
     )
+
+
+def _calculate_message_limit(word_length: int, max_guesses: int) -> int:
+    # Models sometimes respond with commentary, then need a "continue" message,
+    # and then call the tool. So we allow 3 messages per guess.
+    return (word_length + max_guesses) * 3 + NUM_ALLOWABLE_EXTRA_MESSAGES
 
 
 @dataclass
