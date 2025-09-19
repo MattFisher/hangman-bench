@@ -4,7 +4,7 @@ import pytest
 from inspect_ai import eval
 from inspect_ai.model import ModelOutput, get_model
 
-from hangman_bench import hangman
+from hangman_bench.hangman import hangman, NUM_ALLOWABLE_EXTRA_MESSAGES
 
 
 def create_letter_guess(letter: str) -> ModelOutput:
@@ -28,11 +28,6 @@ class TestHangmanE2E:
             create_letter_guess("e"),
             create_letter_guess("p"),
             create_letter_guess("l"),
-            ModelOutput.for_tool_call(
-                model="mockllm/model",
-                tool_name="submit",
-                tool_arguments={"answer": "GG"},
-            ),
         ]
 
         log = eval(
@@ -68,17 +63,12 @@ class TestHangmanE2E:
         # Mock model outputs for losing on a difficult word
         # Strategy: guess uncommon letters that likely won't be in the word
         mock_outputs = [
-            create_letter_guess("z"),
+            create_letter_guess("w"),
             create_letter_guess("q"),
             create_letter_guess("x"),
             create_letter_guess("j"),
             create_letter_guess("k"),
-            ModelOutput.for_tool_call(
-                model="mockllm/model",
-                tool_name="submit",
-                tool_arguments={"answer": "GG"},
-                content="Game lost!",
-            ),
+            # Model should lose after 5 guesses
         ]
 
         log = eval(
@@ -89,7 +79,7 @@ class TestHangmanE2E:
                 shuffle=False,
             ),
             model=get_model("mockllm/model", custom_outputs=mock_outputs),
-            limit=1,
+            sample_id="buzzard",
         )[0]
 
         assert log.status == "success"
@@ -108,76 +98,33 @@ class TestHangmanE2E:
         assert "game_scorer.5" in scores
         assert scores["game_scorer.5"] == 0.0
 
-    def test_hangman_mixed_results_medium_difficulty(self) -> None:
-        """Test hangman with mixed win/loss results on medium difficulty."""
+    def test_hangman_mixed_results(self) -> None:
+        """Test hangman with mixed win/loss results."""
         # Mock outputs for multiple games with mixed results
         # This will test multiple samples if we increase the limit
         mock_outputs = [
             # First game - winning strategy
-            ModelOutput.from_content(
-                model="mockllm/model",
-                content='Starting with vowel: hangman_guess("e")',
-            ),
-            ModelOutput.from_content(
-                model="mockllm/model",
-                content='Another vowel: hangman_guess("a")',
-            ),
-            ModelOutput.from_content(
-                model="mockllm/model",
-                content='Common consonant: hangman_guess("r")',
-            ),
-            ModelOutput.from_content(
-                model="mockllm/model",
-                content='Another common one: hangman_guess("t")',
-            ),
-            ModelOutput.from_content(
-                model="mockllm/model",
-                content='Trying: hangman_guess("n")',
-            ),
-            ModelOutput.for_tool_call(
-                model="mockllm/model",
-                tool_name="submit",
-                tool_arguments={"answer": "GG"},
-                content="Game complete",
-            ),
+            create_letter_guess("a"),
+            create_letter_guess("p"),
+            create_letter_guess("l"),
+            create_letter_guess("e"),
             # Second game - losing strategy
-            ModelOutput.from_content(
-                model="mockllm/model",
-                content='Bad guess: hangman_guess("z")',
-            ),
-            ModelOutput.from_content(
-                model="mockllm/model",
-                content='Another bad guess: hangman_guess("q")',
-            ),
-            ModelOutput.from_content(
-                model="mockllm/model",
-                content='Still guessing poorly: hangman_guess("x")',
-            ),
-            ModelOutput.from_content(
-                model="mockllm/model",
-                content='More bad guesses: hangman_guess("j")',
-            ),
-            ModelOutput.from_content(
-                model="mockllm/model",
-                content='Final bad guess: hangman_guess("k")',
-            ),
-            ModelOutput.for_tool_call(
-                model="mockllm/model",
-                tool_name="submit",
-                tool_arguments={"answer": "GG"},
-                content="Lost",
-            ),
+            create_letter_guess("z"),
+            create_letter_guess("q"),
+            create_letter_guess("x"),
+            create_letter_guess("j"),
+            create_letter_guess("k"),
         ]
 
         log = eval(
             tasks=hangman(
                 language="english",
-                difficulty=3,
                 max_guesses=5,
                 shuffle=False,
             ),
             model=get_model("mockllm/model", custom_outputs=mock_outputs),
-            limit=2,  # Test two games
+            sample_id=["apple", "happy"],
+            max_samples=1,  # prevent parallel execution
         )[0]
 
         assert log.status == "success"
@@ -192,8 +139,8 @@ class TestHangmanE2E:
         assert "game_scorer.all" in scores
         assert 0.0 <= scores["game_scorer.all"] <= 1.0
 
-        # Should have difficulty-3 specific scores
-        assert "game_scorer.3" in scores
+        # Should have difficulty-1 specific scores
+        assert "game_scorer.1" in scores
 
     def test_hangman_word_guess_allowed_win(self) -> None:
         """Test hangman with word guessing allowed - early correct word guess."""
@@ -210,12 +157,10 @@ class TestHangmanE2E:
         log = eval(
             tasks=hangman(
                 language="english",
-                difficulty=1,
                 allow_word_guesses=True,
-                shuffle=False,
             ),
             model=get_model("mockllm/model", custom_outputs=mock_outputs),
-            limit=1,
+            sample_id="apple",
         )[0]
 
         assert log.status == "success"
@@ -270,23 +215,31 @@ class TestHangmanE2E:
             create_letter_guess("a"),
             create_letter_guess("e"),
             # Model stops without completing the game properly
-            ModelOutput.for_tool_call(
-                model="mockllm/model",
-                tool_name="submit",
-                tool_arguments={"answer": "GG"},
-            ),
-        ]
+        ] + [ModelOutput.from_content(model="mockllm/model", content="I give up")] * 10
+
+        max_guesses = 4
 
         log = eval(
             tasks=hangman(
-                language="english",
-                difficulty=2,
-                max_guesses=10,
-                shuffle=False,
+                max_guesses=max_guesses,
             ),
             model=get_model("mockllm/model", custom_outputs=mock_outputs),
-            limit=1,
+            sample_id="apple",
         )[0]
+
+        # Game should be terminated after len("butterfly") + max_guesses + NUM_ALLOWABLE_EXTRA_MESSAGES
+        expected_limit = len("butterfly") + max_guesses + NUM_ALLOWABLE_EXTRA_MESSAGES
+        assert expected_limit == 18
+
+        assert log.samples is not None
+        assert log.samples[0].messages[-1].role == "user"
+        assert (
+            "Continue by calling hangman_guess('a')" in log.samples[0].messages[-1].text
+        )
+        assert log.samples[0].limit is not None
+        assert log.samples[0].limit.type == "message"
+        assert log.samples[0].limit.limit == expected_limit
+        # assert log.messages[-1].content == "Game terminated after 10 messages"
 
         assert log.status == "success"
         assert log.results is not None

@@ -20,7 +20,7 @@ from inspect_ai.solver import (
     TaskState,
     solver,
 )
-from inspect_ai.agent import react, as_solver, AgentSubmit
+from inspect_ai.agent import react, as_solver, AgentSubmit, AgentState
 from inspect_ai.tool import Tool, tool
 from inspect_ai.util import StoreModel, store_as
 from pydantic import Field
@@ -33,6 +33,7 @@ from hangman_bench.datasets import (
 
 DEFAULT_MAX_GUESSES = 10
 DEFAULT_LANGUAGE = Language.ENGLISH
+NUM_ALLOWABLE_EXTRA_MESSAGES = 5  # Extra messages beyond word length + max guesses
 
 
 @task
@@ -71,11 +72,14 @@ def hangman(
     else:
         word_entries = get_words_by_language(lang_enum)
 
+    longest_word_length = max(len(entry.word) for entry in word_entries)
+
     # Create samples
     samples = []
     for entry in word_entries:
         samples.append(
             Sample(
+                id=entry.word,
                 input=(
                     f"You are playing a game of Hangman in {lang_enum.value}. "
                     f"Try to guess the word one letter at a time. "
@@ -103,15 +107,8 @@ def hangman(
         solver=hangman_player(allow_word_guesses=allow_word_guesses),
         setup=game_initialiser(),
         scorer=game_scorer(),
+        message_limit=longest_word_length + max_guesses + NUM_ALLOWABLE_EXTRA_MESSAGES,
     )
-
-
-class HangmanStore(StoreModel):
-    """Typed interface to the per-sample store."""
-
-    # Use Any to avoid strict validation issues for the dataclass GameState
-    game_state: Any | None = None
-    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 @dataclass
@@ -171,7 +168,14 @@ class GameState:
         return self
 
 
-@tool
+class HangmanStore(StoreModel):
+    """Typed interface to the per-sample store."""
+
+    game_state: GameState | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+@tool(parallel=False)
 def hangman_guess() -> Tool:
     """Tool for guessing letters in the hangman game"""
 
@@ -190,7 +194,7 @@ def hangman_guess() -> Tool:
         """
         hstore = store_as(HangmanStore)
         game_state = hstore.game_state
-        metadata: dict[str, Any] = hstore.metadata or {}
+        metadata = hstore.metadata or {}
 
         if game_state is None:
             raise RuntimeError(
@@ -249,7 +253,7 @@ def hangman_player(allow_word_guesses: bool = False) -> Solver:
         + """
     You must guess all the letters in the word to win the game.
     You can ONLY win by guessing all the letters in the word, one at a time.
-    Once the game is over, submit("GG") to end the session, whether you have won or lost.
+    The game will end automatically when it is over.
     """
     )
     system_message_with_word_guesses = (
@@ -257,7 +261,7 @@ def hangman_player(allow_word_guesses: bool = False) -> Solver:
         + """
     You can also guess the entire word at any point before running out of guesses,
     by submitting the word as a single string using `submit("word")`. This will end the game.
-    Once the game is over, submit("GG") to end the session, whether you have won or lost.
+    The game will end automatically when it is over.
     """
     )
     final_system_message = (
@@ -265,11 +269,26 @@ def hangman_player(allow_word_guesses: bool = False) -> Solver:
         if not allow_word_guesses
         else system_message_with_word_guesses
     )
+
+    async def on_continue(state: AgentState) -> bool | str:
+        # Stop automatically when game is over; otherwise, urge model to keep using tools
+        hstore = store_as(HangmanStore)
+        game_state = hstore.game_state
+        if game_state is None or game_state.game_over:
+            return False
+        # If the last response was a tool call, return True
+        if state.output.message.tool_calls:
+            return True
+        guidance = "Continue by calling hangman_guess('a') (replace 'a' with your next letter)."
+        if allow_word_guesses:
+            guidance += " If you know the full word, call submit('word')."
+        return guidance
+
     return as_solver(
         react(
             prompt=final_system_message,
             tools=[hangman_guess()],
-            on_continue="If the game is over, submit('GG') to end the session.",
+            on_continue=on_continue,
             submit=AgentSubmit(answer_only=True),
         )
     )
