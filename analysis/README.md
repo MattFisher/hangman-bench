@@ -124,6 +124,86 @@ uv run analysis/bin_difficulty.py \
 - `analysis/difficulty_binned*.tsv` — quantile-binned labels
 - `analysis/reclassified_from_*.py` — pasteable snippets for `src/hangman_bench/datasets.py`
 
+## Oracle replay: scoring *how* a game was played
+
+`analysis/oracle.py` and `analysis/pilot_oracle.py` score individual guesses
+against the belief state, rather than scoring only the final win or loss.
+
+The motivation is that the headline win rate saturates: `gpt-5-nano` reaches
+0.93 with a 10 wrong-guess budget, which is generous enough that a player can
+ignore all evidence and still usually win. Hangman is unusual in that the exact
+posterior over the hidden word and the best available move are both computable
+at every step, so we can measure the gap between winning and playing well.
+
+### Metrics
+
+Provable errors, requiring no judgement:
+
+- `invalid` — the guess was not a single alphabetic character.
+- `repeat` — the letter had already been guessed, so the guess cannot change
+  the belief state.
+- `dominated_miss` — a fresh letter appearing in **zero** consistent candidate
+  words: guaranteed to cost a life for no information.
+
+Quality relative to optimal play:
+
+- `hit_prob_regret` — shortfall between the best available hit probability and
+  that of the letter actually guessed, under a uniform posterior.
+- `wrong_guess_regret` — wrong guesses taken minus wrong guesses an oracle
+  solver needs on the same word and dictionary.
+
+### Running it
+
+```bash
+# Score real Inspect logs
+uv run analysis/pilot_oracle.py from-logs --logs logs/ --out analysis/pilot
+
+# Calibrate against reference agents of known quality
+uv run analysis/pilot_oracle.py simulate --out analysis/pilot_sim
+```
+
+Both write `<out>_per_guess.tsv` (one row per guess) and `<out>_summary.tsv`
+(one row per model).
+
+### Calibration
+
+Three reference agents, 100 dataset words, 10 wrong guesses allowed:
+
+| agent | win | repeat | dominated | subopt | regret | wrong | oracle | excess |
+| --------- | ---- | ----- | ----- | ----- | ----- | ---- | ---- | ---- |
+| optimal   | 0.98 | 0.000 | 0.000 | 0.000 | 0.000 | 3.92 | 3.92 | 0.00 |
+| frequency | 0.13 | 0.000 | 0.373 | 0.760 | 0.448 | 9.64 | 3.92 | 5.72 |
+| sloppy    | 0.08 | 0.149 | 0.405 | 0.786 | 0.452 | 9.79 | 3.92 | 5.87 |
+
+`frequency` plays a fixed `etaoin…` order and never conditions on evidence —
+which is roughly what the eval's own system prompt asks for ("common letter
+frequencies"). It makes a provably dead guess 37% of the time. `sloppy` adds
+deliberate repeats to confirm the repeat detector fires. The spread between
+these agents is what makes the metrics usable on real models.
+
+### Two correctness notes
+
+- `filter_candidates` in `measure_difficulty.py` is over-inclusive. It builds a
+  regex where `.` also matches the guessed letter, so for the board `.a.a.a` it
+  admits `aaaaaa` — a state that cannot occur, since guessing `a` reveals every
+  `a` at once. `oracle.consistent_candidates` enforces the exact-position
+  constraint instead. This affects the difficulty metrics in
+  `difficulty_report.tsv`, which have not been regenerated.
+- Trajectories must be recovered from `hangman_guess` tool calls, not from the
+  scorer's `guessed_letters`. `GameState.guess` returns early on a repeated
+  letter, so repeats never reach the store and are invisible to any
+  store-based analysis. `tests/test_oracle.py` pins this behaviour.
+
+### Known gaps this surfaced
+
+- A malformed guess (e.g. `"ab"`) raises `ValueError` inside the tool, which
+  propagates and **errors the whole sample** rather than being recorded as a
+  bad move. Invalid-guess rate is therefore currently unmeasurable, and win
+  rates are computed only over samples that survived.
+- `dwarves` and `pyjamas` are absent from `wordlist.txt`, so oracle metrics for
+  them are computed against an injected entry. This also explains the outlier
+  `wrong_coverage` of 16 for `dwarves` in `difficulty_binned.tsv`.
+
 ## Notes and caveats
 
 - Coverage vs Frequency vs Info Gain
