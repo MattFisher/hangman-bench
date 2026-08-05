@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, List
 
 from inspect_ai import Task, task
@@ -21,7 +21,7 @@ from inspect_ai.solver import (
     solver,
 )
 from inspect_ai.agent import react, as_solver, AgentSubmit, AgentState
-from inspect_ai.tool import Tool, tool
+from inspect_ai.tool import Tool, ToolError, tool
 from inspect_ai.util import StoreModel, store_as
 from pydantic import Field
 
@@ -116,6 +116,14 @@ def _calculate_message_limit(word_length: int, max_guesses: int) -> int:
     return (word_length + max_guesses) * 4 + NUM_ALLOWABLE_EXTRA_MESSAGES
 
 
+def _normalise(letter: str) -> str:
+    return (letter or "").strip().lower()
+
+
+def _is_valid_letter(letter: str) -> bool:
+    return len(letter) == 1 and letter.isalpha()
+
+
 @dataclass
 class GameState:
     word: str
@@ -123,6 +131,10 @@ class GameState:
     remaining_guesses: int
     game_over: bool = False
     won: bool = False
+    # Every guess as submitted, including repeats and malformed input. Repeats
+    # and invalid guesses never reach guessed_letters, so without this record
+    # they are invisible to any analysis of how the game was played.
+    attempts: list[str] = field(default_factory=list)
 
     @staticmethod
     def start(word: str, max_guesses: int = DEFAULT_MAX_GUESSES) -> "GameState":
@@ -131,6 +143,26 @@ class GameState:
             guessed_letters=[],
             remaining_guesses=max_guesses,
         )
+
+    @property
+    def invalid_attempts(self) -> List[str]:
+        """Submissions that were not a single letter."""
+        return [a for a in self.attempts if not _is_valid_letter(_normalise(a))]
+
+    @property
+    def repeated_attempts(self) -> List[str]:
+        """Valid letters submitted more than once, in the order repeated."""
+        seen: set[str] = set()
+        repeats: List[str] = []
+        for raw in self.attempts:
+            letter = _normalise(raw)
+            if not _is_valid_letter(letter):
+                continue
+            if letter in seen:
+                repeats.append(letter)
+            else:
+                seen.add(letter)
+        return repeats
 
     @property
     def current_state(self) -> str:
@@ -149,8 +181,8 @@ class GameState:
         if self.game_over:
             return self
 
-        letter = letter.lower()
-        if len(letter) != 1 or not letter.isalpha():
+        letter = _normalise(letter)
+        if not _is_valid_letter(letter):
             raise ValueError("Guess must be a single letter")
 
         if letter in self.guessed_letters:
@@ -206,8 +238,22 @@ def hangman_guess() -> Tool:
                 "No game in progress. The game must be started by the evaluation setup."
             )
 
+        # Record the raw submission before validating, so malformed and
+        # repeated guesses are still measurable.
+        game_state.attempts.append(letter)
+
+        normalised = _normalise(letter)
+        if not _is_valid_letter(normalised):
+            # A ToolError is reported back to the model, which can then correct
+            # itself. Letting the ValueError escape would abort the sample and
+            # drop the game from the results entirely.
+            raise ToolError(
+                f"'{letter}' is not a single letter. "
+                f"Guess exactly one letter, for example hangman_guess('a')."
+            )
+
         if not game_state.game_over:
-            game_state.guess(letter)  # Updates the game state
+            game_state.guess(normalised)  # Updates the game state
 
         # Format the result as a readable string
         result_lines = [
@@ -384,6 +430,9 @@ def game_scorer() -> Scorer:
                         "remaining_guesses": game_state.remaining_guesses,
                         "incorrect_guesses": game_state.incorrect_guesses,
                         "num_incorrect_guesses": len(game_state.incorrect_guesses),
+                        "attempts": game_state.attempts,
+                        "num_repeated_guesses": len(game_state.repeated_attempts),
+                        "num_invalid_guesses": len(game_state.invalid_attempts),
                     },
                 )
 
@@ -402,6 +451,9 @@ def game_scorer() -> Scorer:
                     "remaining_guesses": game_state.remaining_guesses,
                     "incorrect_guesses": game_state.incorrect_guesses,
                     "num_incorrect_guesses": len(game_state.incorrect_guesses),
+                    "attempts": game_state.attempts,
+                    "num_repeated_guesses": len(game_state.repeated_attempts),
+                    "num_invalid_guesses": len(game_state.invalid_attempts),
                 },
             )
 
@@ -428,6 +480,9 @@ def game_scorer() -> Scorer:
                 "remaining_guesses": game_state.remaining_guesses,
                 "incorrect_guesses": game_state.incorrect_guesses,
                 "num_incorrect_guesses": len(game_state.incorrect_guesses),
+                "attempts": game_state.attempts,
+                "num_repeated_guesses": len(game_state.repeated_attempts),
+                "num_invalid_guesses": len(game_state.invalid_attempts),
             },
         )
 

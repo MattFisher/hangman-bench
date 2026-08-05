@@ -212,5 +212,18 @@ these agents is what makes the metrics usable on real models.
   - `wrong_info_gain` minimizes expected remaining candidate set size using position masks; it may incur more wrong guesses but reduce total guesses.
 - Dictionary matters
   - Metrics depend on the dictionary for each word length. We use `analysis/wordlist.txt` derived from the simulation data and compatible with the Curlew wordlist.
+  - A solver cannot converge on a word its dictionary lacks: the candidate set
+    empties and the run degenerates into guessing the alphabet, which inflates
+    that word's difficulty instead of measuring it. `measure_difficulty.py`
+    therefore unions the dataset words into the dictionary and reports which
+    were missing. `dwarves` and `pyjamas` are absent from `wordlist.txt`; before
+    this was handled, `dwarves` scored `wrong_coverage` 16 rather than 1.
+- Candidate filtering
+  - `filter_candidates` matches revealed letters on *position set*, not by
+    regex. Guessing a letter reveals every occurrence at once, so a guessed
+    letter cannot hide in an unrevealed position. A regex over the board treats
+    `.` as matching any letter including the guessed one, which admits states
+    such as `aaaaaa` for the board `.a.a.a`. Correcting this changed a solver
+    metric for 72 of the 100 dataset words.
 - Reproducibility
   - All solvers here are deterministic; no weighted randomness.

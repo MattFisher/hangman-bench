@@ -1,5 +1,6 @@
 import pytest
 from hangman_bench import hangman
+from hangman_bench.hangman import GameState
 from hangman_bench.datasets import (
     Language,
     WordEntry,
@@ -78,3 +79,52 @@ def test_dataset_structure():
         assert metadata["language"] == "english"
         assert isinstance(metadata["max_guesses"], int)
         assert metadata["max_guesses"] > 0
+
+
+class TestGuessRecording:
+    """Repeats and malformed guesses must stay visible in the game state.
+
+    GameState.guess returns early on a repeat and rejects malformed input, so
+    neither reaches guessed_letters. The attempts list records what was
+    actually submitted.
+    """
+
+    def test_attempts_records_every_submission(self):
+        state = GameState.start("apple", max_guesses=6)
+        for letter in ["a", "a", "zz", "p"]:
+            state.attempts.append(letter)
+        assert state.attempts == ["a", "a", "zz", "p"]
+
+    def test_repeated_attempts_counts_only_duplicates(self):
+        state = GameState.start("apple", max_guesses=6)
+        state.attempts.extend(["a", "e", "a", "e", "a"])
+        assert state.repeated_attempts == ["a", "e", "a"]
+
+    def test_repeated_attempts_ignores_malformed_input(self):
+        state = GameState.start("apple", max_guesses=6)
+        state.attempts.extend(["ab", "ab"])
+        assert state.repeated_attempts == []
+
+    def test_invalid_attempts_flags_non_letters(self):
+        state = GameState.start("apple", max_guesses=6)
+        state.attempts.extend(["a", "ab", "", "3", "!", "e"])
+        assert state.invalid_attempts == ["ab", "", "3", "!"]
+
+    def test_attempts_are_normalised_before_comparison(self):
+        state = GameState.start("apple", max_guesses=6)
+        state.attempts.extend(["A", " a ", "a"])
+        assert state.repeated_attempts == ["a", "a"]
+        assert state.invalid_attempts == []
+
+    def test_guess_still_rejects_malformed_letters(self):
+        state = GameState.start("apple", max_guesses=6)
+        with pytest.raises(ValueError, match="single letter"):
+            state.guess("ab")
+
+    def test_guess_ignores_repeats_without_costing_a_life(self):
+        state = GameState.start("apple", max_guesses=6)
+        state.guess("z")
+        assert state.remaining_guesses == 5
+        state.guess("z")
+        assert state.remaining_guesses == 5
+        assert state.guessed_letters == ["z"]

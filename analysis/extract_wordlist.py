@@ -21,8 +21,7 @@ from typing import List
 def read_words(input_path: str) -> List[str]:
     words: List[str] = []
     with open(input_path, "r", encoding="utf-8", newline="") as f:
-        # Try DictReader first to honor header names
-        sniffer = csv.Sniffer()
+        # Try DictReader first to honor header names.
         # We know it's TSV, but DictReader needs fieldnames; we manually set delimiter
         reader = csv.DictReader(f, delimiter="\t")
         if reader.fieldnames and "word" in reader.fieldnames:
