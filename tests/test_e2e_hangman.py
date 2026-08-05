@@ -332,3 +332,72 @@ class TestHangmanE2E:
 
         # Should have stderr metric
         assert "game_scorer.stderr" in all_metrics
+
+
+class TestMalformedGuessHandling:
+    """A malformed guess must not abort the sample.
+
+    Before this was handled, the ValueError raised inside GameState.guess
+    propagated out of the tool and errored the whole sample, so the game was
+    dropped from the results rather than being scored.
+    """
+
+    def test_malformed_guess_does_not_error_the_sample(self) -> None:
+        mock_outputs = [
+            create_letter_guess("a"),
+            create_letter_guess("ab"),  # malformed
+            create_letter_guess("e"),
+            create_letter_guess("p"),
+            create_letter_guess("l"),
+        ]
+
+        log = eval(
+            tasks=hangman(
+                language="english",
+                difficulty="v_easy",
+                max_guesses=6,
+                shuffle=False,
+            ),
+            model=get_model("mockllm/model", custom_outputs=mock_outputs),
+            limit=1,
+        )[0]
+
+        assert log.status == "success"
+        assert log.samples is not None
+        sample = log.samples[0]
+        assert sample.error is None
+
+        metadata = sample.scores["game_scorer"].metadata
+        assert metadata["num_invalid_guesses"] == 1
+        assert "ab" in metadata["attempts"]
+        # The malformed guess must not have cost a life or entered the game.
+        assert "ab" not in metadata["guessed_letters"]
+
+    def test_repeated_guess_is_recorded_but_costs_no_life(self) -> None:
+        mock_outputs = [
+            create_letter_guess("a"),
+            create_letter_guess("a"),  # repeat
+            create_letter_guess("e"),
+            create_letter_guess("p"),
+            create_letter_guess("l"),
+        ]
+
+        log = eval(
+            tasks=hangman(
+                language="english",
+                difficulty="v_easy",
+                max_guesses=6,
+                shuffle=False,
+            ),
+            model=get_model("mockllm/model", custom_outputs=mock_outputs),
+            limit=1,
+        )[0]
+
+        assert log.status == "success"
+        assert log.samples is not None
+        metadata = log.samples[0].scores["game_scorer"].metadata
+
+        assert metadata["num_repeated_guesses"] == 1
+        assert metadata["attempts"].count("a") == 2
+        assert metadata["guessed_letters"].count("a") == 1
+        assert metadata["remaining_guesses"] == 6  # no wrong guesses at all

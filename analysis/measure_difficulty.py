@@ -29,7 +29,6 @@ import argparse
 import importlib.util
 import math
 import pathlib
-import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -78,10 +77,32 @@ def build_length_index(words: List[str]) -> Dict[int, List[str]]:
 def filter_candidates(
     board: str, wrong_guesses: List[str], dictionary: List[str]
 ) -> List[str]:
-    # Build regex from board: '.' means any letter
-    pattern = re.compile("^" + re.escape(board).replace("\\.", ".") + "$")
+    """Words consistent with the board and the letters known to be absent.
+
+    Guessing a letter reveals *every* occurrence of it at once, so a guessed
+    letter cannot remain hidden in an unrevealed position. A plain regex over
+    the board does not capture this: '.' also matches the guessed letter, so
+    the board '.a.a.a' would admit 'aaaaaa', a state that cannot occur. Each
+    revealed letter must therefore match on position set, not just on pattern.
+    """
+    revealed_positions: Dict[str, set] = {}
+    for i, ch in enumerate(board):
+        if ch != ".":
+            revealed_positions.setdefault(ch, set()).add(i)
+
     wrong_set = set(wrong_guesses)
-    return [w for w in dictionary if pattern.fullmatch(w) and not (set(w) & wrong_set)]
+    length = len(board)
+
+    out: List[str] = []
+    for w in dictionary:
+        if len(w) != length or (set(w) & wrong_set):
+            continue
+        for letter, positions in revealed_positions.items():
+            if {i for i, ch in enumerate(w) if ch == letter} != positions:
+                break
+        else:
+            out.append(w)
+    return out
 
 
 def best_move_freq_raw(
@@ -267,6 +288,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     dataset_words = load_dataset_words(datasets_path)
     dictionary_all = load_wordlist(dict_path)
+
+    # A solver can never converge on a word its dictionary does not contain:
+    # the candidate set empties out and the run degenerates into guessing the
+    # alphabet. That inflates the difficulty of the missing word rather than
+    # measuring it, so union the dataset in before indexing.
+    missing = sorted(set(dataset_words) - set(dictionary_all))
+    if missing:
+        print(
+            f"Note: {len(missing)} dataset word(s) absent from {dict_path.name}, "
+            f"added to the dictionary: {', '.join(missing)}"
+        )
+        dictionary_all = dictionary_all + missing
+
     length_index = build_length_index(dictionary_all)
     p_letter_len = precompute_letter_incidence(length_index)
 
