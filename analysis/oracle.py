@@ -60,11 +60,13 @@ def consistent_candidates(
     of positions where that letter occurs in the word is exactly the set of
     positions where it is revealed on the board. This is stricter than pattern
     matching: a guessed letter cannot hide in an unrevealed position, because
-    hangman reveals *all* of its occurrences at once.
+    hangman reveals *all* of its occurrences at once. Matching the board with a
+    regex misses this, since '.' also matches the guessed letter and so admits
+    words such as 'aaaaaa' for the board '.a.a.a'.
 
-    ``analysis/measure_difficulty.py:filter_candidates`` builds a regex in
-    which '.' also matches the guessed letter, so it admits words such as
-    'aaaaaa' for the board '.a.a.a'. Those words are not reachable states.
+    ``analysis/measure_difficulty.py:filter_candidates`` applies the same rule.
+    The two are kept separate because that module is a standalone script with
+    its own board/wrong-guess representation.
     """
     guessed_set = set(guessed)
     length = len(board)
@@ -281,9 +283,9 @@ def replay_trajectory(
     """Score every guess in ``raw_guesses`` against the belief state.
 
     ``raw_guesses`` is the sequence as the agent actually emitted it, including
-    repeats and malformed guesses. Those are invisible in the eval's stored
-    ``guessed_letters`` (``GameState.guess`` returns early on a repeat), which
-    is why the trajectory should be recovered from tool calls.
+    repeats and malformed guesses. Those never reach ``guessed_letters``, since
+    ``GameState.guess`` returns early on a repeat and rejects malformed input;
+    the eval records them separately in ``GameState.attempts``.
     """
     word = word.lower()
 

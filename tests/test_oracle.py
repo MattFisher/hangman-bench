@@ -204,3 +204,41 @@ class TestLogIngestion:
         )
         assert report.n_repeat == 1
         assert report.won
+
+
+class TestReferenceAgents:
+    """Reference agents must be deterministic across processes.
+
+    Seeding from hash(word) would not be: Python randomises str hashes per
+    process, so calibration numbers would drift between runs.
+    """
+
+    def test_sloppy_agent_is_reproducible(self) -> None:
+        from pilot_oracle import agent_sloppy
+
+        dictionary = ["cat", "cot", "cut", "cog", "dog", "log"]
+        first = agent_sloppy("cat", dictionary, 6)
+        second = agent_sloppy("cat", dictionary, 6)
+        assert first == second
+
+    def test_optimal_agent_makes_no_dominated_moves(self) -> None:
+        from pilot_oracle import agent_optimal
+
+        dictionary = ["cat", "cot", "cut", "cog", "dog", "log"]
+        guesses = agent_optimal("cat", dictionary, 6)
+        report = replay_trajectory(
+            word="cat", raw_guesses=guesses, dictionary=dictionary, max_wrong=6
+        )
+        assert report.n_dominated == 0
+        assert report.mean_hit_prob_regret == pytest.approx(0.0)
+
+    def test_frequency_agent_ignores_evidence(self) -> None:
+        """Fixed etaoin order should make provably dead guesses."""
+        from pilot_oracle import agent_frequency
+
+        dictionary = ["cat", "cot", "cut", "cog", "dog", "log"]
+        guesses = agent_frequency("cat", dictionary, 6)
+        report = replay_trajectory(
+            word="cat", raw_guesses=guesses, dictionary=dictionary, max_wrong=6
+        )
+        assert report.n_dominated > 0

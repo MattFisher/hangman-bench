@@ -36,6 +36,7 @@ import pathlib
 import random
 import statistics
 import sys
+import zlib
 from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -69,10 +70,14 @@ def extract_trajectories(
 ) -> List[Tuple[str, str, str, List[str]]]:
     """Recover (model, sample_id, word, guesses) from one .eval log.
 
-    The guess sequence is taken from hangman_guess tool calls rather than from
-    the scorer's stored ``guessed_letters``: ``GameState.guess`` returns early
-    on a repeated letter, so repeats never reach the store and would be
-    invisible to any analysis built on it.
+    The guess sequence comes from hangman_guess tool calls, which record what
+    the agent actually submitted. It must not be taken from the scorer's
+    ``guessed_letters``, which drops repeats and malformed guesses.
+
+    The eval also records raw submissions in the score's ``attempts``. That is
+    used as a fallback for logs stored without full message history; tool calls
+    stay primary because they are present in every log, including those written
+    before ``attempts`` existed.
     """
     from inspect_ai.log import read_eval_log
 
@@ -104,9 +109,22 @@ def extract_trajectories(
                 if letter is not None:
                     guesses.append(str(letter))
 
+        if not guesses:
+            guesses = _attempts_from_scores(sample)
+
         out.append((model, str(sample.id), str(word).lower(), guesses))
 
     return out
+
+
+def _attempts_from_scores(sample: object) -> List[str]:
+    """Raw submissions recorded by the scorer, for logs without message history."""
+    scores = getattr(sample, "scores", None) or {}
+    for score in scores.values():
+        attempts = (getattr(score, "metadata", None) or {}).get("attempts")
+        if attempts:
+            return [str(a) for a in attempts]
+    return []
 
 
 def find_logs(path: pathlib.Path) -> List[pathlib.Path]:
@@ -186,7 +204,9 @@ def agent_sloppy(word: str, dictionary: Sequence[str], max_wrong: int) -> List[s
     Exists to prove the error metrics fire. If the harness cannot detect this
     agent, it cannot detect a real model doing the same thing.
     """
-    rng = random.Random(hash(word) & 0xFFFF)
+    # Seed from a stable hash: Python randomises str hashes per process, so
+    # hash(word) would give different results on every run.
+    rng = random.Random(zlib.crc32(word.encode("utf-8")))
 
     def pick(board: str, guessed: List[str], candidates: List[str]) -> Optional[str]:
         roll = rng.random()

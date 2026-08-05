@@ -173,7 +173,7 @@ Three reference agents, 100 dataset words, 10 wrong guesses allowed:
 | --------- | ---- | ----- | ----- | ----- | ----- | ---- | ---- | ---- |
 | optimal   | 0.98 | 0.000 | 0.000 | 0.000 | 0.000 | 3.92 | 3.92 | 0.00 |
 | frequency | 0.13 | 0.000 | 0.373 | 0.760 | 0.448 | 9.64 | 3.92 | 5.72 |
-| sloppy    | 0.08 | 0.149 | 0.405 | 0.786 | 0.452 | 9.79 | 3.92 | 5.87 |
+| sloppy    | 0.09 | 0.148 | 0.403 | 0.787 | 0.451 | 9.82 | 3.92 | 5.90 |
 
 `frequency` plays a fixed `etaoin…` order and never conditions on evidence —
 which is roughly what the eval's own system prompt asks for ("common letter
@@ -181,28 +181,39 @@ frequencies"). It makes a provably dead guess 37% of the time. `sloppy` adds
 deliberate repeats to confirm the repeat detector fires. The spread between
 these agents is what makes the metrics usable on real models.
 
-### Two correctness notes
+All three agents are deterministic: `sloppy` seeds its randomness from a CRC32
+of the word, so runs are reproducible (Python randomises `str` hashes per
+process, so `hash()` would not be).
 
-- `filter_candidates` in `measure_difficulty.py` is over-inclusive. It builds a
-  regex where `.` also matches the guessed letter, so for the board `.a.a.a` it
-  admits `aaaaaa` — a state that cannot occur, since guessing `a` reveals every
-  `a` at once. `oracle.consistent_candidates` enforces the exact-position
-  constraint instead. This affects the difficulty metrics in
-  `difficulty_report.tsv`, which have not been regenerated.
-- Trajectories must be recovered from `hangman_guess` tool calls, not from the
-  scorer's `guessed_letters`. `GameState.guess` returns early on a repeated
-  letter, so repeats never reach the store and are invisible to any
-  store-based analysis. `tests/test_oracle.py` pins this behaviour.
+### Where the trajectory comes from
 
-### Known gaps this surfaced
+Guess sequences are recovered from `hangman_guess` tool calls, not from the
+scorer's `guessed_letters`: `GameState.guess` returns early on a repeated
+letter and rejects malformed input, so neither reaches that list. The eval
+records raw submissions separately in `GameState.attempts`, which the reader
+falls back to for logs stored without full message history.
+`tests/test_oracle.py` pins this behaviour.
 
-- A malformed guess (e.g. `"ab"`) raises `ValueError` inside the tool, which
-  propagates and **errors the whole sample** rather than being recorded as a
-  bad move. Invalid-guess rate is therefore currently unmeasurable, and win
-  rates are computed only over samples that survived.
-- `dwarves` and `pyjamas` are absent from `wordlist.txt`, so oracle metrics for
-  them are computed against an injected entry. This also explains the outlier
-  `wrong_coverage` of 16 for `dwarves` in `difficulty_binned.tsv`.
+### Bugs this work surfaced, since fixed
+
+Building the harness turned up four measurement bugs, all fixed in the eval and
+the difficulty scripts:
+
+- A malformed guess raised `ValueError` inside the tool, which propagated and
+  errored the whole sample, dropping the game from the results instead of
+  scoring it. The tool now raises `ToolError`, so the model can recover.
+- Repeats and malformed guesses never reached the store, making them invisible
+  to analysis. `GameState.attempts` now records every submission.
+- `filter_candidates` matched the board with a regex in which `.` also matched
+  the guessed letter, admitting unreachable states such as `aaaaaa` for
+  `.a.a.a`. Correcting it changed a solver metric for 72 of the 100 words.
+- `dwarves` and `pyjamas` are absent from `wordlist.txt`, so their difficulty
+  was measured against a dictionary that could never converge — the source of
+  the outlier `wrong_coverage` of 16 for `dwarves`. `measure_difficulty.py`
+  now unions the dataset into the dictionary.
+
+The oracle still injects a missing target into its own dictionary and reports
+when it does, since it can be pointed at any wordlist.
 
 ## Notes and caveats
 
