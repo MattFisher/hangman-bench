@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass, field
 from typing import Any, List
 
@@ -10,6 +11,7 @@ from inspect_ai.scorer import (
     Scorer,
     Target,
     accuracy,
+    mean,
     scorer,
     stderr,
     grouped,
@@ -25,6 +27,12 @@ from inspect_ai.tool import Tool, ToolError, tool
 from inspect_ai.util import StoreModel, store_as
 from pydantic import Field
 
+from hangman_bench.oracle import (
+    CHOOSERS,
+    load_dictionary_index,
+    replay_trajectory,
+    resolve_wordlist,
+)
 from hangman_bench.datasets import (
     Language,
     get_words_by_difficulty,
@@ -44,6 +52,8 @@ def hangman(
     max_guesses: int = DEFAULT_MAX_GUESSES,
     shuffle: bool = True,
     allow_word_guesses: bool = False,
+    oracle: bool = True,
+    oracle_wordlist: str | None = None,
 ) -> Task:
     """Evaluate an agent's ability to play Hangman
 
@@ -53,6 +63,9 @@ def hangman(
         max_guesses: Maximum number of incorrect guesses allowed
         shuffle: Whether to shuffle the words before playing
         allow_word_guesses: Whether to allow the agent to guess the entire word
+        oracle: Whether to also score each guess against optimal play
+        oracle_wordlist: Dictionary for the oracle scorer, defaulting to the
+            wordlist shipped with the package
 
     Returns:
         Task configured for the hangman game with specified parameters
@@ -101,11 +114,15 @@ def hangman(
     if shuffle:
         dataset.shuffle()
 
+    scorers: list[Scorer] = [game_scorer()]
+    if oracle:
+        scorers.append(oracle_scorer(wordlist=oracle_wordlist))
+
     return Task(
         dataset=dataset,
         solver=hangman_player(allow_word_guesses=allow_word_guesses),
         setup=game_initialiser(),
-        scorer=game_scorer(),
+        scorer=scorers,
         message_limit=_calculate_message_limit(longest_word_length, max_guesses),
     )
 
@@ -381,6 +398,155 @@ def game_initialiser() -> Solver:
         return state
 
     return solve
+
+
+def _guesses_from_messages(messages: list[Any]) -> List[str]:
+    """Raw letters submitted to hangman_guess, in order.
+
+    Tool calls record what the agent actually sent, including repeats and
+    malformed input that never reach guessed_letters.
+    """
+    guesses: List[str] = []
+    for message in messages:
+        for tool_call in getattr(message, "tool_calls", None) or []:
+            if getattr(tool_call, "function", None) != "hangman_guess":
+                continue
+            arguments = getattr(tool_call, "arguments", None) or {}
+            if isinstance(arguments, str):
+                try:
+                    arguments = json.loads(arguments)
+                except json.JSONDecodeError:
+                    continue
+            letter = arguments.get("letter")
+            if letter is not None:
+                guesses.append(str(letter))
+    return guesses
+
+
+@scorer(
+    metrics={
+        "excess_wrong_guesses": [mean(), stderr()],
+        "hit_prob_regret": [mean(), stderr()],
+        "dominated_rate": [mean(), stderr()],
+        "suboptimal_rate": [mean(), stderr()],
+        "repeat_rate": [mean()],
+        "invalid_rate": [mean()],
+    }
+)
+def oracle_scorer(
+    wordlist: str | None = None,
+    strategy: str = "max_hit_prob",
+) -> Scorer:
+    """Score how the game was played, not just whether it was won.
+
+    Hangman admits an exactly computable posterior over the hidden word and an
+    optimal next move at every step, so each guess can be compared against the
+    best available one. A model can win with a generous wrong-guess budget while
+    ignoring the evidence entirely; these metrics separate the two.
+
+    Reported per game:
+      excess_wrong_guesses  wrong guesses above what an oracle solver needs
+      hit_prob_regret     mean shortfall in hit probability per scored guess
+      dominated_rate      guesses of a letter in zero consistent candidates
+      suboptimal_rate     guesses below the best available hit probability
+      repeat_rate         letters guessed more than once
+      invalid_rate        submissions that were not a single letter
+
+    Args:
+        wordlist: Dictionary defining the belief state. Defaults to the
+            wordlist shipped with the package.
+        strategy: Reference policy, one of max_hit_prob or info_gain.
+
+    Returns:
+        Scorer producing a dict of oracle metrics per game.
+    """
+    if strategy not in CHOOSERS:
+        raise ValueError(
+            f"Unknown strategy '{strategy}'. Choose from: {', '.join(sorted(CHOOSERS))}"
+        )
+    # Resolve eagerly so a bad path fails at task construction, not mid-run.
+    wordlist_path = str(resolve_wordlist(wordlist))
+    chooser = CHOOSERS[strategy]
+
+    async def score(state: TaskState, target: Target) -> Score:
+        hstore = store_as(HangmanStore)
+        game_state = hstore.game_state
+        metadata: dict[str, Any] = state.metadata or {}
+
+        word = (metadata.get("word") or (game_state.word if game_state else "")).lower()
+        if not word:
+            raise RuntimeError("No word found in sample metadata or game state")
+        max_guesses = metadata.get("max_guesses", DEFAULT_MAX_GUESSES)
+
+        # Tool calls are present in every log; attempts only in those written
+        # after the eval began recording it.
+        guesses = _guesses_from_messages(state.messages)
+        if not guesses and game_state is not None:
+            guesses = list(game_state.attempts)
+
+        index = load_dictionary_index(wordlist_path)
+        report = replay_trajectory(
+            word=word,
+            raw_guesses=guesses,
+            dictionary=index.get(len(word), []),
+            chooser=chooser,
+            max_wrong=max_guesses,
+            sample_id=str(state.sample_id),
+            model=str(state.model),
+        )
+
+        emitted = len(report.steps)
+        scored = report.n_scored
+        value = {
+            "excess_wrong_guesses": float(report.excess_wrong_guesses),
+            "hit_prob_regret": report.mean_hit_prob_regret,
+            "dominated_rate": (report.n_dominated / scored) if scored else 0.0,
+            "suboptimal_rate": (report.n_suboptimal / scored) if scored else 0.0,
+            "repeat_rate": (report.n_repeat / emitted) if emitted else 0.0,
+            "invalid_rate": (report.n_invalid / emitted) if emitted else 0.0,
+        }
+
+        return Score(
+            value=value,
+            answer="".join(s.letter for s in report.steps if s.counted),
+            explanation=(
+                f"Word: {word}. Guesses: {emitted} emitted, {scored} scored. "
+                f"Wrong: {report.wrong_guesses} vs oracle {report.oracle_wrong_guesses}. "
+                f"Dominated: {report.n_dominated}. Repeats: {report.n_repeat}. "
+                f"Invalid: {report.n_invalid}."
+            ),
+            metadata={
+                "won": report.won,
+                "difficulty": metadata.get("difficulty"),
+                "wrong_guesses": report.wrong_guesses,
+                "oracle_wrong_guesses": report.oracle_wrong_guesses,
+                "num_dominated": report.n_dominated,
+                "num_repeat": report.n_repeat,
+                "num_invalid": report.n_invalid,
+                "num_suboptimal": report.n_suboptimal,
+                "guesses_emitted": emitted,
+                "guesses_scored": scored,
+                "target_in_dictionary": report.target_in_dictionary,
+                "strategy": strategy,
+                "per_guess": [
+                    {
+                        "letter": s.letter,
+                        "board_before": s.board_before,
+                        "candidates_before": s.candidates_before,
+                        "hit": s.hit,
+                        "hit_prob": round(s.hit_prob, 4),
+                        "best_hit_prob": round(s.best_hit_prob, 4),
+                        "optimal_letter": s.optimal_letter,
+                        "dominated_miss": s.dominated_miss,
+                        "repeat": s.repeat,
+                        "invalid": s.invalid,
+                    }
+                    for s in report.steps
+                ],
+            },
+        )
+
+    return score
 
 
 @scorer(

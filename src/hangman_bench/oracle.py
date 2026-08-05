@@ -17,19 +17,26 @@ Provable errors (no judgement required):
 - dominated_miss: a fresh letter that appears in ZERO consistent candidate
                   words. Guaranteed to cost a life for zero information.
 
-Quality relative to optimal play:
+Quality relative to the reference policy:
 - hit_prob_regret: (best available hit probability) - (hit probability of the
                   letter actually guessed), under a uniform posterior over the
-                  consistent candidate set.
-- wrong_guess_regret: wrong guesses taken by the agent minus wrong guesses an
-                  oracle solver takes on the same word and dictionary.
+                  consistent candidate set. A true regret, never negative.
+- excess_wrong_guesses: wrong guesses taken by the agent minus wrong guesses the
+                  reference solver takes on the same word and dictionary.
 
-This module uses only the standard library, matching the other analysis
-scripts.
+Note that the reference solvers are greedy, not globally optimal: maximising
+per-guess hit probability does not minimise total wrong guesses, and neither
+does minimising expected candidates. excess_wrong_guesses can therefore be
+negative when an agent gets a luckier or genuinely better line than the
+reference. Treat it as a comparison against a strong baseline, not a bound.
+
+This module uses only the standard library, so it can be imported from a
+scorer without pulling in the analysis scripts.
 """
 
 from __future__ import annotations
 
+import functools
 import pathlib
 from dataclasses import dataclass, field
 from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
@@ -243,7 +250,7 @@ class TrajectoryReport:
         return sum(s.hit_prob_regret for s in scored) / len(scored)
 
     @property
-    def wrong_guess_regret(self) -> int:
+    def excess_wrong_guesses(self) -> int:
         return self.wrong_guesses - self.oracle_wrong_guesses
 
 
@@ -366,9 +373,29 @@ def replay_trajectory(
 # --------------------------------------------------------------------------
 
 
+DEFAULT_WORDLIST = pathlib.Path(__file__).parent / "data" / "wordlist.txt"
+
+
 def load_wordlist(path: pathlib.Path) -> List[str]:
     with path.open("r", encoding="utf-8", errors="ignore") as handle:
         return [line.strip().lower() for line in handle if line.strip().isalpha()]
+
+
+def resolve_wordlist(path: str | pathlib.Path | None) -> pathlib.Path:
+    """Wordlist to score against, defaulting to the one shipped with the package."""
+    resolved = pathlib.Path(path) if path is not None else DEFAULT_WORDLIST
+    if not resolved.is_file():
+        raise FileNotFoundError(
+            f"Wordlist not found: {resolved}. Pass an explicit path, for example "
+            f"-S wordlist=/path/to/words.txt"
+        )
+    return resolved
+
+
+@functools.lru_cache(maxsize=4)
+def load_dictionary_index(path: str) -> Dict[int, List[str]]:
+    """Length-indexed dictionary, cached so each scorer loads it once."""
+    return by_length(load_wordlist(pathlib.Path(path)))
 
 
 def by_length(dictionary: Sequence[str]) -> Dict[int, List[str]]:

@@ -28,7 +28,7 @@ Results vary greatly depending on the solvers used, so the words have not curren
 
 - `analysis/extract_wordlist.py`
   - Extracts a unique, lowercased wordlist (first column) from the parsed TSV.
-  - Output: `analysis/wordlist.txt`.
+  - Output: `src/hangman_bench/data/wordlist.txt`.
 
 - `analysis/zen_hangman.py`
   - Python port of Dan Q’s “Hardest Hangman” heuristic with one improvement.
@@ -72,15 +72,18 @@ uv run analysis/ingest_simulation.py \
 ```bash
 uv run analysis/extract_wordlist.py \
   --input analysis/SimulationData_parsed.tsv \
-  --output analysis/wordlist.txt
+  --output src/hangman_bench/data/wordlist.txt
 ```
+
+The wordlist ships inside the package so `oracle_scorer` can find it without
+the analysis directory.
 
 3) Compute objective difficulty metrics
 
 ```bash
 uv run analysis/measure_difficulty.py \
   --datasets src/hangman_bench/datasets.py \
-  --wordlist analysis/wordlist.txt \
+  --wordlist src/hangman_bench/data/wordlist.txt \
   --output analysis/difficulty_report.tsv
 ```
 
@@ -119,15 +122,17 @@ uv run analysis/bin_difficulty.py \
 ## Outputs
 
 - `analysis/SimulationData_parsed.tsv` — parsed simulation means by word
-- `analysis/wordlist.txt` — dictionary for the solvers
+- `src/hangman_bench/data/wordlist.txt` — dictionary for the solvers and scorer
 - `analysis/difficulty_report.tsv` — metrics per dataset word
 - `analysis/difficulty_binned*.tsv` — quantile-binned labels
 - `analysis/reclassified_from_*.py` — pasteable snippets for `src/hangman_bench/datasets.py`
 
 ## Oracle replay: scoring *how* a game was played
 
-`analysis/oracle.py` and `analysis/pilot_oracle.py` score individual guesses
-against the belief state, rather than scoring only the final win or loss.
+`hangman_bench/oracle.py` scores individual guesses against the belief state,
+rather than scoring only the final win or loss. It is exposed two ways: as an
+Inspect scorer (`oracle_scorer`, included in the task's scorer list by default)
+and as a batch script over logs (`analysis/pilot_oracle.py`).
 
 The motivation is that the headline win rate saturates: `gpt-5-nano` reaches
 0.93 with a 10 wrong-guess budget, which is generous enough that a player can
@@ -149,10 +154,44 @@ Quality relative to optimal play:
 
 - `hit_prob_regret` — shortfall between the best available hit probability and
   that of the letter actually guessed, under a uniform posterior.
-- `wrong_guess_regret` — wrong guesses taken minus wrong guesses an oracle
+- `excess_wrong_guesses` — wrong guesses taken minus wrong guesses an oracle
   solver needs on the same word and dictionary.
 
-### Running it
+`excess_wrong_guesses` compares against a *greedy* reference solver, not a
+globally optimal one — maximising per-guess hit probability does not minimise
+total wrong guesses. It can therefore be negative when an agent finds a better
+line. Treat it as a comparison against a strong baseline, not a bound.
+`hit_prob_regret` is a true regret and is never negative.
+
+### Running it as a scorer
+
+`oracle_scorer` is in the task's scorer list by default, so a normal run
+reports both the win rate and the oracle metrics:
+
+```bash
+uv run inspect eval src/hangman_bench/hangman.py@hangman --model <model>
+
+# Opt out, or point at a different dictionary
+uv run inspect eval src/hangman_bench/hangman.py@hangman -T oracle=false
+uv run inspect eval src/hangman_bench/hangman.py@hangman -T oracle_wordlist=/path/words.txt
+```
+
+Because it is a real scorer, oracle metrics can be added to logs that were
+produced before it existed:
+
+```bash
+uv run inspect score <log.eval> \
+  --scorer src/hangman_bench/hangman.py@oracle_scorer \
+  --action append --overwrite
+```
+
+Pass `--scorer` explicitly. Bare `inspect score <log>`, which re-creates the
+scorers recorded in the log, currently fails for this and any other package:
+`scorer_from_spec` falls back to loading from the task file only on
+`ValueError`, but `scorer_create` raises `LookupError`, so the fallback never
+runs (`inspect_ai/_eval/loader.py`).
+
+### Running it as a batch script
 
 ```bash
 # Score real Inspect logs
@@ -163,7 +202,8 @@ uv run analysis/pilot_oracle.py simulate --out analysis/pilot_sim
 ```
 
 Both write `<out>_per_guess.tsv` (one row per guess) and `<out>_summary.tsv`
-(one row per model).
+(one row per model). The script reports across models and games; the scorer
+reports per game inside the eval itself.
 
 ### Calibration
 
@@ -207,7 +247,7 @@ the difficulty scripts:
 - `filter_candidates` matched the board with a regex in which `.` also matched
   the guessed letter, admitting unreachable states such as `aaaaaa` for
   `.a.a.a`. Correcting it changed a solver metric for 72 of the 100 words.
-- `dwarves` and `pyjamas` are absent from `wordlist.txt`, so their difficulty
+- `dwarves` and `pyjamas` are absent from the wordlist, so their difficulty
   was measured against a dictionary that could never converge — the source of
   the outlier `wrong_coverage` of 16 for `dwarves`. `measure_difficulty.py`
   now unions the dataset into the dictionary.
@@ -222,12 +262,12 @@ when it does, since it can be pointed at any wordlist.
   - `wrong_freq_raw` counts raw occurrences (duplicates included); simple baseline; can overweight double letters.
   - `wrong_info_gain` minimizes expected remaining candidate set size using position masks; it may incur more wrong guesses but reduce total guesses.
 - Dictionary matters
-  - Metrics depend on the dictionary for each word length. We use `analysis/wordlist.txt` derived from the simulation data and compatible with the Curlew wordlist.
+  - Metrics depend on the dictionary for each word length. We use `src/hangman_bench/data/wordlist.txt` derived from the simulation data and compatible with the Curlew wordlist.
   - A solver cannot converge on a word its dictionary lacks: the candidate set
     empties and the run degenerates into guessing the alphabet, which inflates
     that word's difficulty instead of measuring it. `measure_difficulty.py`
     therefore unions the dataset words into the dictionary and reports which
-    were missing. `dwarves` and `pyjamas` are absent from `wordlist.txt`; before
+    were missing. `dwarves` and `pyjamas` are absent from the wordlist; before
     this was handled, `dwarves` scored `wrong_coverage` 16 rather than 1.
 - Candidate filtering
   - `filter_candidates` matches revealed letters on *position set*, not by

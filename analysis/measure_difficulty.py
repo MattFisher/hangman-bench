@@ -19,7 +19,7 @@ Metrics per word:
 Usage:
   uv run analysis/measure_difficulty.py \
     --datasets src/hangman_bench/datasets.py \
-    --wordlist analysis/wordlist.txt \
+    --wordlist src/hangman_bench/data/wordlist.txt \
     --output analysis/difficulty_report.tsv
 
 This script uses only the Python standard library.
@@ -272,7 +272,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
     parser.add_argument(
         "--wordlist",
-        default=str(REPO_ROOT / "analysis/wordlist.txt"),
+        default=str(REPO_ROOT / "src/hangman_bench/data/wordlist.txt"),
         help="Path to dictionary wordlist",
     )
     parser.add_argument(

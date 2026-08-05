@@ -19,11 +19,11 @@ Two modes:
 Usage:
   uv run analysis/pilot_oracle.py from-logs \\
       --logs logs/ \\
-      --wordlist analysis/wordlist.txt \\
+      --wordlist src/hangman_bench/data/wordlist.txt \\
       --out analysis/pilot
 
   uv run analysis/pilot_oracle.py simulate \\
-      --wordlist analysis/wordlist.txt \\
+      --wordlist src/hangman_bench/data/wordlist.txt \\
       --out analysis/pilot_sim
 """
 
@@ -39,11 +39,10 @@ import sys
 import zlib
 from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-
-from oracle import (  # noqa: E402
+from hangman_bench.oracle import (
     ALPHABET,
     CHOOSERS,
+    DEFAULT_WORDLIST,
     TrajectoryReport,
     by_length,
     choose_max_hit_probability,
@@ -326,8 +325,8 @@ def summarise(reports: Sequence[TrajectoryReport]) -> List[Dict[str, object]]:
                 "mean_oracle_wrong": statistics.mean(
                     r.oracle_wrong_guesses for r in group
                 ),
-                "mean_wrong_regret": statistics.mean(
-                    r.wrong_guess_regret for r in group
+                "mean_excess_wrong": statistics.mean(
+                    r.excess_wrong_guesses for r in group
                 ),
             }
         )
@@ -367,7 +366,7 @@ def print_summary(rows: Sequence[Dict[str, object]]) -> None:
             f"{row['mean_hit_prob_regret']:>7.3f} "
             f"{row['mean_wrong_guesses']:>6.2f} "
             f"{row['mean_oracle_wrong']:>7.2f} "
-            f"{row['mean_wrong_regret']:>7.2f}"
+            f"{row['mean_excess_wrong']:>7.2f}"
         )
     print()
     print(
@@ -495,7 +494,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     def add_common(p: argparse.ArgumentParser) -> None:
         p.add_argument(
             "--wordlist",
-            default=str(REPO_ROOT / "analysis" / "wordlist.txt"),
+            default=str(DEFAULT_WORDLIST),
             help="Dictionary defining the oracle's belief state.",
         )
         p.add_argument(

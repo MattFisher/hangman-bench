@@ -10,7 +10,7 @@ import pytest
 ANALYSIS_DIR = pathlib.Path(__file__).resolve().parents[1] / "analysis"
 sys.path.insert(0, str(ANALYSIS_DIR))
 
-from oracle import (  # noqa: E402
+from hangman_bench.oracle import (  # noqa: E402
     choose_max_hit_probability,
     consistent_candidates,
     hit_probabilities,
@@ -141,7 +141,7 @@ class TestReplay:
         assert not report.target_in_dictionary
         assert report.won
 
-    def test_wrong_guess_regret_is_relative_to_the_oracle(self) -> None:
+    def test_excess_wrong_guesses_is_relative_to_the_oracle(self) -> None:
         dictionary = ["cat", "cot", "cut"]
         report = replay_trajectory(
             word="cat",
@@ -153,7 +153,7 @@ class TestReplay:
             "cat", dictionary, choose_max_hit_probability, max_wrong=6
         )
         assert report.oracle_wrong_guesses == expected
-        assert report.wrong_guess_regret == report.wrong_guesses - expected
+        assert report.excess_wrong_guesses == report.wrong_guesses - expected
 
 
 class TestLogIngestion:
@@ -242,3 +242,101 @@ class TestReferenceAgents:
             word="cat", raw_guesses=guesses, dictionary=dictionary, max_wrong=6
         )
         assert report.n_dominated > 0
+
+
+class TestOracleScorer:
+    """The oracle metrics must be available as an Inspect scorer.
+
+    Being a real Scorer is what allows `inspect score <log>` to add oracle
+    metrics to logs that were produced before the scorer existed.
+    """
+
+    @staticmethod
+    def _run(letters: list[str], **task_kwargs: object):
+        from inspect_ai import eval as inspect_eval
+        from inspect_ai.model import ModelOutput, get_model
+
+        from hangman_bench.hangman import hangman
+
+        outputs = [
+            ModelOutput.for_tool_call(
+                model="mockllm/model",
+                tool_name="hangman_guess",
+                tool_arguments={"letter": letter},
+            )
+            for letter in letters
+        ]
+        return inspect_eval(
+            tasks=hangman(
+                difficulty="v_easy", max_guesses=6, shuffle=False, **task_kwargs
+            ),
+            model=get_model("mockllm/model", custom_outputs=outputs),
+            limit=1,
+        )[0]
+
+    def test_both_scorers_run_and_report_metrics(self) -> None:
+        log = self._run(["a", "e", "p", "l"])
+        assert log.status == "success"
+        assert log.samples is not None
+
+        scores = log.samples[0].scores
+        assert "game_scorer" in scores
+        assert "oracle_scorer" in scores
+
+        value = scores["oracle_scorer"].value
+        assert isinstance(value, dict)
+        for key in (
+            "excess_wrong_guesses",
+            "hit_prob_regret",
+            "dominated_rate",
+            "suboptimal_rate",
+            "repeat_rate",
+            "invalid_rate",
+        ):
+            assert key in value
+
+    def test_scorer_counts_repeats_and_invalid_guesses(self) -> None:
+        log = self._run(["a", "a", "zz", "e", "p", "l"])
+        assert log.samples is not None
+        metadata = log.samples[0].scores["oracle_scorer"].metadata
+
+        assert metadata["num_repeat"] == 1
+        assert metadata["num_invalid"] == 1
+        assert metadata["guesses_emitted"] == 6
+        assert len(metadata["per_guess"]) == 6
+
+    def test_oracle_can_be_disabled(self) -> None:
+        log = self._run(["a", "e", "p", "l"], oracle=False)
+        assert log.samples is not None
+        assert "oracle_scorer" not in log.samples[0].scores
+
+    def test_scorer_can_be_applied_to_an_existing_log(self) -> None:
+        """A log scored without the oracle can have it added afterwards."""
+        from inspect_ai import score
+        from inspect_ai.log import read_eval_log
+
+        from hangman_bench.hangman import oracle_scorer
+
+        log = self._run(["e", "t", "a", "o", "p", "l"], oracle=False)
+        assert log.location is not None
+        original = read_eval_log(log.location)
+        assert "oracle_scorer" not in (original.samples or [])[0].scores
+
+        rescored = score(original, oracle_scorer(), action="append", display="none")
+        assert rescored.samples is not None
+        scores = rescored.samples[0].scores
+        # The original score is preserved and the oracle metrics are added.
+        assert "game_scorer" in scores
+        assert isinstance(scores["oracle_scorer"].value, dict)
+
+    def test_unknown_strategy_fails_at_construction(self) -> None:
+        from hangman_bench.hangman import oracle_scorer
+
+        with pytest.raises(ValueError, match="Unknown strategy"):
+            oracle_scorer(strategy="nonsense")
+
+    def test_missing_wordlist_fails_at_construction(self) -> None:
+        from hangman_bench.hangman import oracle_scorer
+
+        with pytest.raises(FileNotFoundError, match="Wordlist not found"):
+            oracle_scorer(wordlist="/nonexistent/words.txt")
