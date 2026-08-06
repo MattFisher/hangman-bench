@@ -107,7 +107,7 @@ The evaluation is built around three main modules:
 - **hangman.py**: Main evaluation logic with `@task`, `@solver`, `@scorer`, and `@tool` decorators
 - **datasets.py**: Word datasets with difficulty ratings (1-5 scale) and language support
 - **oracle.py**: Belief-state replay used by `oracle_scorer` to score individual guesses against optimal play
-- **data/wordlist.txt**: Dictionary shipped with the package, defining the oracle's candidate sets
+- **data/wordlist_en_GB.txt**: Dictionary shipped with the package, defining the oracle's candidate sets. Built from SCOWL by `analysis/build_wordlist.py`; one file per dialect so others (en_US, en_AU, en_CA) can be added without disturbing it.
 - **__init__.py**: Package exports
 
 ### Key Classes and Functions
@@ -135,7 +135,7 @@ The evaluation is built around three main modules:
 - `shuffle`: Randomize word order (default: True)
 - `allow_word_guesses`: Allow full word guesses (default: False)
 - `oracle`: Also score each guess against optimal play (default: True)
-- `oracle_wordlist`: Dictionary for the oracle scorer (default: packaged wordlist)
+- `oracle_wordlist`: Dictionary for the oracle scorer (default: packaged SCOWL en_GB wordlist)
 
 ## Testing Strategy
 Tests cover dataset functions, task creation, and parameter validation. Located in `tests/test_hangman.py` with pytest framework.

@@ -9,9 +9,16 @@ Results vary greatly depending on the solvers used, so the words have not curren
 - Wolfram SimulationData
   - Downloaded by our ingestion script from the Wolfram MathSource Library:
     - https://library.wolfram.com/infocenter/MathSource/7635/SimulationData.zip?file_id=7257
-- Reference wordlist for heuristic solvers
-  - Curlew Communications wordlist: https://www.curlewcommunications.uk/wordlist.html
-  - We also extract a wordlist directly from the parsed simulation output.
+- Reference wordlist for the heuristic solvers
+  - **Current:** SCOWL 2020.12.07, British English, built by
+    `analysis/build_wordlist.py` to `src/hangman_bench/data/wordlist_en_GB.txt`.
+    See `RESEARCH_NOTES.md` for why the dictionary is part of the measurement.
+  - **Historical:** earlier revisions used a wordlist extracted from the Wolfram
+    simulation output via `analysis/extract_wordlist.py`. That list had unclear
+    redistribution terms, was American despite being credited to the British
+    Curlew Communications list, and contained initialisms and proper nouns. It
+    is no longer the source of the shipped dictionary; the scripts remain as a
+    record of the original analysis.
 - Original Mathematica “Demonstration” notebook (the source of the simulation’s logic)
   - Blog post: [25 Best Hangman Words](https://blog.wolfram.com/2010/08/13/25-best-hangman-words/)
   - Url: <http://demonstrations.wolfram.com/HangmanWordGameForAComputerPlayer/>
@@ -26,9 +33,15 @@ Results vary greatly depending on the solvers used, so the words have not curren
   - Parses `SimulationData.txt` into TSV with columns: `word`, `wrong_guesses` (list), `mean_wrong_guesses`.
   - If `SimulationData.txt` isn’t present, it downloads and extracts it from the Wolfram link above.
 
-- `analysis/extract_wordlist.py`
+- `analysis/build_wordlist.py`
+  - Builds the oracle dictionary from SCOWL, one dialect per file.
+  - Output: `src/hangman_bench/data/wordlist_<dialect>.txt`, plus the SCOWL
+    copyright notice its licence requires.
+
+- `analysis/extract_wordlist.py` (historical)
   - Extracts a unique, lowercased wordlist (first column) from the parsed TSV.
-  - Output: `src/hangman_bench/data/wordlist.txt`.
+  - Superseded by `build_wordlist.py`; retained to document the original
+    pipeline.
 
 - `analysis/zen_hangman.py`
   - Python port of Dan Q’s “Hardest Hangman” heuristic with one improvement.
@@ -67,12 +80,10 @@ uv run analysis/ingest_simulation.py \
   --output analysis/SimulationData_parsed.tsv
 ```
 
-2) Extract a wordlist from the parsed TSV (first column)
+2) Build the dictionary from SCOWL
 
 ```bash
-uv run analysis/extract_wordlist.py \
-  --input analysis/SimulationData_parsed.tsv \
-  --output src/hangman_bench/data/wordlist.txt
+uv run analysis/build_wordlist.py --dialect en_GB
 ```
 
 The wordlist ships inside the package so `oracle_scorer` can find it without
@@ -83,7 +94,7 @@ the analysis directory.
 ```bash
 uv run analysis/measure_difficulty.py \
   --datasets src/hangman_bench/datasets.py \
-  --wordlist src/hangman_bench/data/wordlist.txt \
+  --wordlist src/hangman_bench/data/wordlist_en_GB.txt \
   --output analysis/difficulty_report.tsv
 ```
 
@@ -122,7 +133,7 @@ uv run analysis/bin_difficulty.py \
 ## Outputs
 
 - `analysis/SimulationData_parsed.tsv` — parsed simulation means by word
-- `src/hangman_bench/data/wordlist.txt` — dictionary for the solvers and scorer
+- `src/hangman_bench/data/wordlist_en_GB.txt` — dictionary for the solvers and scorer
 - `analysis/difficulty_report.tsv` — metrics per dataset word
 - `analysis/difficulty_binned*.tsv` — quantile-binned labels
 - `analysis/reclassified_from_*.py` — pasteable snippets for `src/hangman_bench/datasets.py`
@@ -211,9 +222,9 @@ Three reference agents, 100 dataset words, 10 wrong guesses allowed:
 
 | agent | win | repeat | dominated | subopt | regret | wrong | oracle | excess |
 | --------- | ---- | ----- | ----- | ----- | ----- | ---- | ---- | ---- |
-| optimal   | 0.98 | 0.000 | 0.000 | 0.000 | 0.000 | 3.92 | 3.92 | 0.00 |
-| frequency | 0.13 | 0.000 | 0.373 | 0.760 | 0.448 | 9.64 | 3.92 | 5.72 |
-| sloppy    | 0.09 | 0.148 | 0.403 | 0.787 | 0.451 | 9.82 | 3.92 | 5.90 |
+| optimal   | 1.00 | 0.000 | 0.000 | 0.000 | 0.000 | 3.75 | 3.75 | 0.00 |
+| frequency | 0.13 | 0.000 | 0.383 | 0.755 | 0.461 | 9.64 | 3.75 | 5.89 |
+| sloppy    | 0.09 | 0.148 | 0.413 | 0.781 | 0.466 | 9.82 | 3.75 | 6.07 |
 
 `frequency` plays a fixed `etaoin…` order and never conditions on evidence —
 which is roughly what the eval's own system prompt asks for ("common letter
@@ -247,7 +258,7 @@ the difficulty scripts:
 - `filter_candidates` matched the board with a regex in which `.` also matched
   the guessed letter, admitting unreachable states such as `aaaaaa` for
   `.a.a.a`. Correcting it changed a solver metric for 72 of the 100 words.
-- `dwarves` and `pyjamas` are absent from the wordlist, so their difficulty
+- `dwarves` and `pyjamas` were absent from the old Wolfram wordlist, so their difficulty
   was measured against a dictionary that could never converge — the source of
   the outlier `wrong_coverage` of 16 for `dwarves`. `measure_difficulty.py`
   now unions the dataset into the dictionary.
@@ -262,12 +273,12 @@ when it does, since it can be pointed at any wordlist.
   - `wrong_freq_raw` counts raw occurrences (duplicates included); simple baseline; can overweight double letters.
   - `wrong_info_gain` minimizes expected remaining candidate set size using position masks; it may incur more wrong guesses but reduce total guesses.
 - Dictionary matters
-  - Metrics depend on the dictionary for each word length. We use `src/hangman_bench/data/wordlist.txt` derived from the simulation data and compatible with the Curlew wordlist.
+  - Metrics depend on the dictionary for each word length. We use `src/hangman_bench/data/wordlist_en_GB.txt`, built from SCOWL.
   - A solver cannot converge on a word its dictionary lacks: the candidate set
     empties and the run degenerates into guessing the alphabet, which inflates
     that word's difficulty instead of measuring it. `measure_difficulty.py`
     therefore unions the dataset words into the dictionary and reports which
-    were missing. `dwarves` and `pyjamas` are absent from the wordlist; before
+    were missing. `dwarves` and `pyjamas` were absent from the old Wolfram wordlist; before
     this was handled, `dwarves` scored `wrong_coverage` 16 rather than 1.
 - Candidate filtering
   - `filter_candidates` matches revealed letters on *position set*, not by

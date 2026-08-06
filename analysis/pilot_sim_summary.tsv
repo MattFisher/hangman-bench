@@ -1,4 +1,4 @@
-model	games	win_rate	guesses_emitted	guesses_scored	repeat_rate	invalid_rate	dominated_rate	suboptimal_rate	mean_hit_prob_regret	mean_wrong_guesses	mean_oracle_wrong	mean_wrong_regret
-frequency	100	0.1300	1370	1370	0.0000	0.0000	0.3730	0.7599	0.4478	9.6400	3.9200	5.7200
-optimal	100	0.9800	955	955	0.0000	0.0000	0.0000	0.0000	0.0000	3.9200	3.9200	0
-sloppy	100	0.0900	1586	1351	0.1482	0.0000	0.4034	0.7868	0.4511	9.8200	3.9200	5.9000
+model	games	win_rate	guesses_emitted	guesses_scored	repeat_rate	invalid_rate	dominated_rate	suboptimal_rate	mean_hit_prob_regret	mean_wrong_guesses	mean_oracle_wrong	mean_excess_wrong
+frequency	100	0.1300	1369	1369	0.0000	0.0000	0.3835	0.7546	0.4612	9.6400	3.7500	5.8900
+optimal	100	1.0000	939	939	0.0000	0.0000	0.0000	0.0000	0.0000	3.7500	3.7500	0
+sloppy	100	0.0900	1585	1350	0.1483	0.0000	0.4133	0.7807	0.4655	9.8200	3.7500	6.0700

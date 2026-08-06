@@ -373,7 +373,12 @@ def replay_trajectory(
 # --------------------------------------------------------------------------
 
 
-DEFAULT_WORDLIST = pathlib.Path(__file__).parent / "data" / "wordlist.txt"
+DATA_DIR = pathlib.Path(__file__).parent / "data"
+
+# One wordlist per dialect, built by analysis/build_wordlist.py from SCOWL.
+# Only en_GB ships today; others can be generated without touching this file.
+DEFAULT_DIALECT = "en_GB"
+DEFAULT_WORDLIST = DATA_DIR / f"wordlist_{DEFAULT_DIALECT}.txt"
 
 
 def load_wordlist(path: pathlib.Path) -> List[str]:
