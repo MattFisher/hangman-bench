@@ -190,6 +190,9 @@ class GuessRecord:
 
     hit: bool
     hit_prob: float
+    # Both of these describe the *configured* reference policy, not the best
+    # move in some absolute sense. Under max_hit_prob they coincide; under
+    # info_gain the reference deliberately gives up hit probability.
     best_hit_prob: float
     optimal_letter: Optional[str]
 
@@ -221,6 +224,15 @@ class TrajectoryReport:
     wrong_guesses: int = 0
     oracle_wrong_guesses: int = 0
     target_in_dictionary: bool = True
+    # The recorded outcome, when the replay cannot infer it from letters alone.
+    # A game won by submitting the full word ends before every letter is
+    # revealed, so replaying only the letter guesses would score it as a loss.
+    recorded_won: Optional[bool] = None
+
+    @property
+    def final_won(self) -> bool:
+        """Outcome to report: the recorded one if known, else the replay's."""
+        return self.won if self.recorded_won is None else self.recorded_won
 
     @property
     def n_invalid(self) -> int:
@@ -323,7 +335,13 @@ def replay_trajectory(
         candidates = consistent_candidates(board, guessed, working_dictionary)
         probs = hit_probabilities(candidates, frozenset(guessed))
         best_letter = chooser(candidates, frozenset(guessed))
-        best_prob = max(probs.values()) if probs else 0.0
+        # Score against the letter the configured reference policy would play,
+        # not against the highest hit probability available. Taking these from
+        # different policies makes info_gain contradict itself: its own move is
+        # reported as optimal_letter while simultaneously scoring as suboptimal
+        # with positive regret, because it trades hit probability for a better
+        # partition. For max_hit_prob the two are identical by construction.
+        best_prob = probs.get(best_letter, 0.0) if best_letter is not None else 0.0
         hit_prob = probs.get(letter, 0.0) if not invalid else 0.0
 
         # A fresh letter in zero candidate words is a guaranteed miss for zero

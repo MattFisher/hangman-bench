@@ -192,15 +192,16 @@ class TestLogIngestion:
 
         trajectories = extract_trajectories(pathlib.Path(log.location))
         assert len(trajectories) == 1
-        _model, _sample_id, word, guesses = trajectories[0]
-        assert word == "apple"
-        assert guesses == emitted
+        game = trajectories[0]
+        assert game.word == "apple"
+        assert game.guesses == emitted
+        assert game.max_guesses == 6
 
         report = replay_trajectory(
-            word=word,
-            raw_guesses=guesses,
+            word=game.word,
+            raw_guesses=game.guesses,
             dictionary=["apple", "ample", "adobe"],
-            max_wrong=6,
+            max_wrong=game.max_guesses,
         )
         assert report.n_repeat == 1
         assert report.won
@@ -340,3 +341,171 @@ class TestOracleScorer:
 
         with pytest.raises(FileNotFoundError, match="Wordlist not found"):
             oracle_scorer(wordlist="/nonexistent/words.txt")
+
+
+class TestReviewFixes:
+    """Regressions for three issues raised in review of the oracle harness."""
+
+    def test_reference_letter_and_its_probability_agree(self) -> None:
+        """Under info_gain, the chooser's own move must not score as suboptimal.
+
+        best_hit_prob previously came from the maximum hit probability while
+        optimal_letter came from the configured chooser, so info_gain — which
+        trades hit probability for a better partition — contradicted itself.
+        """
+        from hangman_bench.oracle import CHOOSERS, choose_min_expected_candidates
+
+        dictionary = ["cat", "cot", "cut", "cog", "dog", "log", "bat", "bag"]
+        reference = choose_min_expected_candidates(dictionary, frozenset())
+        assert reference is not None
+
+        report = replay_trajectory(
+            word="cat",
+            raw_guesses=[reference],
+            dictionary=dictionary,
+            chooser=CHOOSERS["info_gain"],
+            max_wrong=6,
+        )
+        step = report.steps[0]
+        assert step.optimal_letter == reference
+        assert step.is_optimal
+        assert step.hit_prob_regret == pytest.approx(0.0)
+
+    def test_max_hit_prob_scoring_is_unchanged(self) -> None:
+        """The default strategy must behave exactly as before the fix."""
+        dictionary = ["cat", "cot", "cut", "cog", "dog", "log"]
+        report = replay_trajectory(
+            word="cat", raw_guesses=["z"], dictionary=dictionary, max_wrong=6
+        )
+        step = report.steps[0]
+        probs = hit_probabilities(dictionary, frozenset())
+        assert step.best_hit_prob == pytest.approx(max(probs.values()))
+
+    def test_recorded_outcome_overrides_the_replay(self) -> None:
+        report = replay_trajectory(
+            word="apple",
+            raw_guesses=["a", "e"],
+            dictionary=["apple", "ample"],
+            max_wrong=6,
+        )
+        assert not report.won
+        assert not report.final_won
+        report.recorded_won = True
+        assert report.final_won
+        assert not report.won  # the replay's own verdict is left intact
+
+
+class TestLogMetadataIsHonoured:
+    """The replay must use the limit and outcome the game was actually played under."""
+
+    @staticmethod
+    def _run(letters, **kwargs):
+        from inspect_ai import eval as inspect_eval
+        from inspect_ai.model import ModelOutput, get_model
+
+        from hangman_bench.hangman import hangman
+
+        outputs = [
+            ModelOutput.for_tool_call(
+                model="mockllm/model",
+                tool_name="hangman_guess",
+                tool_arguments={"letter": letter},
+            )
+            for letter in letters
+        ]
+        return inspect_eval(
+            tasks=hangman(difficulty="v_easy", shuffle=False, **kwargs),
+            model=get_model("mockllm/model", custom_outputs=outputs),
+            limit=1,
+        )[0]
+
+    def test_per_sample_max_guesses_is_used(self) -> None:
+        """A log run at max_guesses=15 must not be replayed at the CLI default."""
+        from pilot_oracle import extract_trajectories
+
+        # 12 wrong guesses then a win: legal only under the logged limit of 15.
+        letters = list("bcdfghijkmnq") + ["a", "p", "l", "e"]
+        log = self._run(letters, max_guesses=15)
+        assert log.location is not None
+
+        games = extract_trajectories(pathlib.Path(log.location), default_max_guesses=10)
+        assert len(games) == 1
+        game = games[0]
+        assert game.max_guesses == 15
+
+        report = replay_trajectory(
+            word=game.word,
+            raw_guesses=game.guesses,
+            dictionary=["apple", "ample", "adobe"],
+            max_wrong=game.max_guesses,
+        )
+        assert report.won
+        assert report.wrong_guesses == 12
+
+    def test_default_is_only_a_fallback(self) -> None:
+        """Metadata wins; the CLI value applies only when the log omits it."""
+        from pilot_oracle import extract_trajectories
+
+        log = self._run(["a", "e", "p", "l"], max_guesses=6)
+        assert log.location is not None
+        games = extract_trajectories(pathlib.Path(log.location), default_max_guesses=99)
+        assert games[0].max_guesses == 6
+
+    def test_word_submission_outcome_is_preserved(self) -> None:
+        """A win by submitting the full word must not be replayed as a loss."""
+        from inspect_ai import eval as inspect_eval
+        from inspect_ai.model import ModelOutput, get_model
+
+        from hangman_bench.hangman import hangman
+        from pilot_oracle import extract_trajectories
+
+        def guess(letter: str) -> ModelOutput:
+            return ModelOutput.for_tool_call(
+                model="mockllm/model",
+                tool_name="hangman_guess",
+                tool_arguments={"letter": letter},
+            )
+
+        log = inspect_eval(
+            tasks=hangman(
+                difficulty="v_easy",
+                max_guesses=6,
+                shuffle=False,
+                allow_word_guesses=True,
+            ),
+            model=get_model(
+                "mockllm/model",
+                custom_outputs=[
+                    guess("a"),
+                    guess("e"),
+                    ModelOutput.for_tool_call(
+                        model="mockllm/model",
+                        tool_name="submit",
+                        tool_arguments={"answer": "apple"},
+                    ),
+                ],
+            ),
+            limit=1,
+        )[0]
+
+        assert log.samples is not None
+        sample = log.samples[0]
+        assert sample.scores["game_scorer"].value == "C"
+        # The scorer's own view must agree with the eval.
+        assert sample.scores["oracle_scorer"].metadata["won"] is True
+
+        # And so must the batch reader, which only sees the letter guesses.
+        assert log.location is not None
+        game = extract_trajectories(pathlib.Path(log.location))[0]
+        assert game.guesses == ["a", "e"]
+        assert game.recorded_won is True
+
+        report = replay_trajectory(
+            word=game.word,
+            raw_guesses=game.guesses,
+            dictionary=["apple", "ample"],
+            max_wrong=game.max_guesses,
+        )
+        report.recorded_won = game.recorded_won
+        assert not report.won  # letters alone do not complete the word
+        assert report.final_won  # but the game was genuinely won

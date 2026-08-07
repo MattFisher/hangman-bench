@@ -88,14 +88,20 @@ Quality against a reference policy:
 
 | metric | meaning |
 | --- | --- |
-| `hit_prob_regret` | shortfall against the best available hit probability. A true regret; never negative |
+| `hit_prob_regret` | shortfall against the hit probability of the reference policy's own move. A true regret; never negative |
 | `excess_wrong_guesses` | wrong guesses taken minus what the reference solver needs |
-| `suboptimal_rate` | fraction of guesses below the best available hit probability |
+| `suboptimal_rate` | fraction of guesses below the reference policy's own hit probability |
 
 `excess_wrong_guesses` compares against a *greedy* solver, not a globally
 optimal one — maximising per-guess hit probability does not minimise total
 wrong guesses. It can be negative. It is a comparison against a strong
 baseline, not a bound. Do not call it "regret" in the paper.
+
+Both `hit_prob_regret` and `suboptimal_rate` are measured against the
+*configured* reference policy (`--strategy` / `-S strategy=`). Under the
+default `max_hit_prob` that is also the best available hit probability; under
+`info_gain` the reference deliberately gives up hit probability for a better
+partition, so the two differ. State which policy produced a number.
 
 ### Calibration
 
@@ -361,6 +367,23 @@ already provides that today without ESDB.
   LLM-chosen. Needs thousands, stratified by computed difficulty, with a
   contamination-controlled held-out set — these 100 are on public GitHub.
 
+**Fixed after review** (raised by an automated reviewer on PR #3, all three
+confirmed by reproduction before fixing):
+
+- `from-logs` applied one global `--max-guesses` to every replay instead of the
+  limit each sample was played under. On a log run at 15, replaying at the
+  default 10 turned a genuine win into a loss and truncated the wrong-guess
+  count from 12 to 10. The logged value now wins; the flag is a fallback only.
+- Games won by submitting the full word were replayed as losses, because
+  `extract_trajectories` drops the `submit` action and the letter sequence
+  alone never completes the word. Both the batch reader and `oracle_scorer`
+  now take the outcome from the recorded score.
+- Under `--strategy info_gain`, `optimal_letter` came from the chooser while
+  `best_hit_prob` came from the maximum hit probability, so the reference
+  policy scored as suboptimal against itself. Both now come from the
+  configured policy. The default `max_hit_prob` is unaffected — calibration
+  output is byte-identical.
+
 **Known issues:**
 
 - `tests/test_e2e_hangman.py::TestHangmanE2E::test_hangman_incomplete_game`
@@ -392,12 +415,24 @@ already provides that today without ESDB.
    benchmark into a discriminative one and gives a competence-gap curve.
 5. **Scale the dataset.** Thousands of words, stratified by computed
    difficulty, held-out set for contamination control.
-6. **The lexical-access ablation.** Give the model the explicit candidate list
+6. **Score commitment, if word guesses are used.** `allow_word_guesses=True`
+   lets a model end the game by submitting the whole word. That is a *commit*
+   action, and it measures something letter guesses cannot: whether the model
+   knows that it knows. The oracle can score it exactly — was the submitted
+   word still in the consistent candidate set (submitting one the board had
+   ruled out is a provable error), how many candidates remained at the moment
+   of commit, and does realised success match the 1/|candidates| prior. That
+   last one is a calibration measurement and may be a better headline than
+   `dominated_rate`. Word guesses are currently out of scope for the primary
+   experiment and off by default; the replay no longer mis-scores them, but it
+   does not score the commitment itself.
+
+7. **The lexical-access ablation.** Give the model the explicit candidate list
    at each step. If it then plays near-optimally, the bottleneck is
    character-level lexical retrieval; if not, it is sequential decision-making
    under uncertainty. Cheap and decisive, and it turns the character-level
    question into a measured variable instead of an assumption.
-7. **Write up.** Aim at a NeurIPS/ICLR evaluation or datasets-and-benchmarks
+8. **Write up.** Aim at a NeurIPS/ICLR evaluation or datasets-and-benchmarks
    workshop rather than a cold arXiv drop: 4–8 pages, real review, still goes
    on arXiv. Note that arXiv cs.* requires endorsement for first-time
    submitters without an institutional affiliation — sort that early.

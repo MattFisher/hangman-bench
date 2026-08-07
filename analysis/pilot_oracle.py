@@ -19,11 +19,11 @@ Two modes:
 Usage:
   uv run analysis/pilot_oracle.py from-logs \\
       --logs logs/ \\
-      --wordlist src/hangman_bench/data/wordlist.txt \\
+      --wordlist src/hangman_bench/data/wordlist_en_GB.txt \\
       --out analysis/pilot
 
   uv run analysis/pilot_oracle.py simulate \\
-      --wordlist src/hangman_bench/data/wordlist.txt \\
+      --wordlist src/hangman_bench/data/wordlist_en_GB.txt \\
       --out analysis/pilot_sim
 """
 
@@ -37,8 +37,12 @@ import random
 import statistics
 import sys
 import zlib
+from dataclasses import dataclass
 from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
+from inspect_ai.scorer import CORRECT, INCORRECT
+
+from hangman_bench.hangman import DEFAULT_MAX_GUESSES
 from hangman_bench.oracle import (
     ALPHABET,
     CHOOSERS,
@@ -64,10 +68,27 @@ FREQUENCY_ORDER = "etaoinshrdlcumwfgypbvkjxqz"
 # --------------------------------------------------------------------------
 
 
+@dataclass
+class LoggedGame:
+    """One game recovered from an Inspect log."""
+
+    model: str
+    sample_id: str
+    word: str
+    guesses: List[str]
+    # The limit the game was actually played under. Replaying against a
+    # different limit rewrites the result: too low truncates a real win into a
+    # loss, too high lets the oracle baseline play beyond the recorded rules.
+    max_guesses: int
+    # The scored outcome. Needed because a game can be won by submitting the
+    # full word, which ends it before every letter is revealed.
+    recorded_won: Optional[bool]
+
+
 def extract_trajectories(
-    log_path: pathlib.Path,
-) -> List[Tuple[str, str, str, List[str]]]:
-    """Recover (model, sample_id, word, guesses) from one .eval log.
+    log_path: pathlib.Path, default_max_guesses: int = DEFAULT_MAX_GUESSES
+) -> List[LoggedGame]:
+    """Recover each game from one .eval log.
 
     The guess sequence comes from hangman_guess tool calls, which record what
     the agent actually submitted. It must not be taken from the scorer's
@@ -77,12 +98,15 @@ def extract_trajectories(
     used as a fallback for logs stored without full message history; tool calls
     stay primary because they are present in every log, including those written
     before ``attempts`` existed.
+
+    ``default_max_guesses`` applies only to logs whose metadata omits the
+    limit; the logged value wins whenever it is present.
     """
     from inspect_ai.log import read_eval_log
 
     log = read_eval_log(str(log_path))
     model = log.eval.model or "unknown"
-    out: List[Tuple[str, str, str, List[str]]] = []
+    out: List[LoggedGame] = []
 
     for sample in log.samples or []:
         metadata = sample.metadata or {}
@@ -111,9 +135,40 @@ def extract_trajectories(
         if not guesses:
             guesses = _attempts_from_scores(sample)
 
-        out.append((model, str(sample.id), str(word).lower(), guesses))
+        out.append(
+            LoggedGame(
+                model=model,
+                sample_id=str(sample.id),
+                word=str(word).lower(),
+                guesses=guesses,
+                max_guesses=int(metadata.get("max_guesses", default_max_guesses)),
+                recorded_won=_recorded_outcome(sample),
+            )
+        )
 
     return out
+
+
+def _recorded_outcome(sample: object) -> Optional[bool]:
+    """Whether the game was scored as won, from the eval's own game scorer.
+
+    Returns None when no such score is present, in which case the replay's own
+    verdict stands.
+    """
+    scores = getattr(sample, "scores", None) or {}
+    score = scores.get("game_scorer")
+    if score is None:
+        return None
+    won = (getattr(score, "metadata", None) or {}).get("won")
+    if isinstance(won, bool):
+        # A game won by submitting the full word never sets game_state.won, so
+        # fall through to the score value rather than trusting this flag alone.
+        if won:
+            return True
+    value = getattr(score, "value", None)
+    if value in (CORRECT, INCORRECT):
+        return value == CORRECT
+    return None
 
 
 def _attempts_from_scores(sample: object) -> List[str]:
@@ -303,7 +358,7 @@ def summarise(reports: Sequence[TrajectoryReport]) -> List[Dict[str, object]]:
             {
                 "model": model,
                 "games": len(group),
-                "win_rate": statistics.mean(1.0 if r.won else 0.0 for r in group),
+                "win_rate": statistics.mean(1.0 if r.final_won else 0.0 for r in group),
                 "guesses_emitted": emitted,
                 "guesses_scored": scored,
                 "repeat_rate": (sum(r.n_repeat for r in group) / emitted)
@@ -414,18 +469,18 @@ def run_from_logs(args: argparse.Namespace) -> int:
     index = by_length(dictionary)
     reports: List[TrajectoryReport] = []
     for log_path in logs:
-        for model, sample_id, word, guesses in extract_trajectories(log_path):
-            reports.append(
-                replay_trajectory(
-                    word=word,
-                    raw_guesses=guesses,
-                    dictionary=index.get(len(word), []),
-                    chooser=chooser,
-                    max_wrong=args.max_guesses,
-                    sample_id=sample_id,
-                    model=model,
-                )
+        for game in extract_trajectories(log_path, args.max_guesses):
+            report = replay_trajectory(
+                word=game.word,
+                raw_guesses=game.guesses,
+                dictionary=index.get(len(game.word), []),
+                chooser=chooser,
+                max_wrong=game.max_guesses,
+                sample_id=game.sample_id,
+                model=game.model,
             )
+            report.recorded_won = game.recorded_won
+            reports.append(report)
 
     emit(reports, pathlib.Path(args.out))
     return 0
@@ -503,7 +558,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             default="max_hit_prob",
             help="Reference policy the agent is scored against.",
         )
-        p.add_argument("--max-guesses", type=int, default=10)
+        p.add_argument(
+            "--max-guesses",
+            type=int,
+            default=DEFAULT_MAX_GUESSES,
+            help=(
+                "Wrong-guess limit. For from-logs this is only a fallback: the "
+                "limit recorded per sample takes precedence."
+            ),
+        )
         p.add_argument("--out", default=str(REPO_ROOT / "analysis" / "pilot"))
 
     p_logs = sub.add_parser("from-logs", help="Score Inspect .eval logs.")

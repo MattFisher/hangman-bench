@@ -495,6 +495,19 @@ def oracle_scorer(
             model=str(state.model),
         )
 
+        # A game won by submitting the full word ends before every letter is
+        # revealed, so replaying the letter guesses alone would call it a loss.
+        # Recover the real outcome the same way game_scorer does.
+        if (
+            metadata.get("allow_word_guesses")
+            and game_state
+            and not game_state.game_over
+        ):
+            submitted = state.output.completion
+            report.recorded_won = submitted == word
+        elif game_state is not None:
+            report.recorded_won = game_state.won
+
         emitted = len(report.steps)
         scored = report.n_scored
         value = {
@@ -516,7 +529,7 @@ def oracle_scorer(
                 f"Invalid: {report.n_invalid}."
             ),
             metadata={
-                "won": report.won,
+                "won": report.final_won,
                 "difficulty": metadata.get("difficulty"),
                 "wrong_guesses": report.wrong_guesses,
                 "oracle_wrong_guesses": report.oracle_wrong_guesses,
