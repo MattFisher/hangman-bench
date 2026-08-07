@@ -4,9 +4,14 @@ Working notes for turning hangman-bench into a paper. Written to be picked up
 cold — by a person or an agent in a different environment — so it states what
 exists, what we found, what to do next, and what is still undecided.
 
-**Status:** infrastructure and methodology are built. The central empirical
-claim has not yet been tested against a real model. That test is the next
-action and is described in full under [The pilot](#the-pilot).
+**Status:** the pilot ran on 2026-08-07 — three models spanning a capability
+generation, all 100 words. The central claim survived first contact, with a
+bonus: `dominated_rate` orders the models by generation (gpt-4o 0.18,
+gpt-5-nano 0.06, claude-sonnet-5 0.03) and keeps separating them after win
+rate saturates (0.93 / 0.99 for the two current models). Results, and the one
+harness artifact the pilot uncovered, are under [The pilot](#the-pilot). The
+continue-prompt artifact is fixed in code but post-dates these runs. Next:
+scale up (section 7).
 
 ---
 
@@ -138,7 +143,9 @@ This environment has no model API keys, so the pilot needs to run elsewhere.
 git clone https://github.com/MattFisher/hangman-bench
 cd hangman-bench
 git checkout claude/hangmanbench-paper-scope-hdyz69
-uv sync --dev
+# --all-extras pulls in the openai/anthropic provider SDKs, which are
+# optional-dependency extras; a bare `uv sync --dev` removes them.
+uv sync --dev --all-extras
 
 # Two models, all 100 words, oracle scoring on by default
 uv run inspect eval src/hangman_bench/hangman.py@hangman \
@@ -188,6 +195,96 @@ Sanity-check a handful of trajectories by hand against
 `analysis/pilot_sim_per_guess.tsv` format. The oracle has been validated on
 synthetic agents and a mocked Inspect log, but **never on a real model
 trajectory**. First contact with real data is where harness bugs surface.
+
+### Result (run 2026-08-07)
+
+Ran as a single `inspect eval-set` (all 100 words, defaults,
+`--continue-on-fail`) at commit 68493ba, inspect-ai 0.3.132: first
+gpt-5-nano and claude-sonnet-5, then a third leg re-invoking the same
+eval-set with gpt-4o added, which resumed cleanly (the completed evals were
+skipped untouched — worth knowing for scale-up). gpt-4o is there as a
+2024-era reference point: it tests whether the metrics track capability
+across generations, not just between two current models. All three legs
+played under the pre-fix continue nudge, so they are directly comparable.
+All completed 100/100 with status success. Logs in `logs/pilot`
+(gitignored); aggregates committed as `analysis/pilot_summary.tsv` and
+`analysis/pilot_per_guess.tsv`.
+
+Validation before trusting the numbers, per the plan above:
+
+- The simulate calibration reproduced byte-identically in the new environment.
+- Every trajectory was cross-checked step by step against the boards the tool
+  actually returned to the model (a stricter check than eyeballing a handful):
+  199/200 clean. The one flag is benign — on `happy` the model's final tool
+  call went unanswered because the sample hit its message limit, so the replay
+  scores one trailing repeat the game never processed. One guess in one game;
+  no effect on any conclusion.
+
+Two aggregation conventions are in play: `oracle_scorer` reports the mean of
+per-game rates (± stderr below); `pilot_oracle.py from-logs` pools per guess.
+Both are shown; say which one a number is whenever citing it.
+
+| metric | gpt-4o | gpt-5-nano | claude-sonnet-5 | optimal | frequency |
+| --- | --- | --- | --- | --- | --- |
+| win rate | 0.69 | 0.93 | 0.99 | 1.00 | 0.13 |
+| dominated_rate (per-game) | 0.179 ± 0.017 | 0.057 ± 0.011 | 0.026 ± 0.006 | 0.000 | 0.383 |
+| dominated_rate (pooled) | 0.201 | 0.072 | 0.031 | 0.000 | 0.383 |
+| suboptimal_rate (per-game) | 0.648 ± 0.015 | 0.529 ± 0.017 | 0.462 ± 0.015 | 0.000 | 0.755 |
+| hit_prob_regret (per-game) | 0.297 ± 0.015 | 0.178 ± 0.012 | 0.124 ± 0.007 | 0.000 | 0.461 |
+| wrong guesses / game | 6.45 | 4.24 | 4.02 | 3.75 | 9.64 |
+| excess_wrong_guesses | +2.70 ± 0.33 | +0.49 ± 0.27 | +0.27 ± 0.23 | 0.00 | +5.89 |
+| repeat_rate (pooled) | 0.003 | 0.021 (artifact, see below) | 0.000 | 0.000 | 0.000 |
+| invalid_rate | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 |
+
+**The thesis holds, and the metric tracks capability.** For the two current
+models, win rate sits at the ceiling (0.93 / 0.99, and nano's 0.93 matches
+the registered report) while `dominated_rate` stays meaningfully above zero —
+the eval barely separates them on outcome but separates them cleanly on
+process (nano makes provably dead guesses at about twice sonnet's rate). The
+2024-era reference point extends this into a monotone gradient on every
+process metric: gpt-4o → nano → sonnet is 0.18 → 0.06 → 0.03 dominated, +2.7
+→ +0.5 → +0.3 excess wrong. Two consequences for the paper. First, the
+benchmark was *not* saturated a generation ago (gpt-4o wins 0.69); saturation
+is a property of current models, and the process metrics keep discriminating
+after it sets in. Second, current models are far closer to the optimal
+reference than to the frequency baseline, so the claim to make is "wins while
+sometimes playing provably wrong", not "wins while playing badly".
+
+**Where the dead guesses live.** For all three models the dominated guesses
+concentrate in the endgame: 86% (nano) / 97% (sonnet) / 91% (gpt-4o) were
+made with three or fewer candidates remaining, and 86–87% (all three) while a
+*certain* letter (hit probability 1.0) was available. The canonical failure:
+board `.a..i.es`, candidate set = {bagpipes}, and nano guesses c, d, u, m, h
+on five consecutive turns. The board plus dictionary has already pinned the
+word; the model cannot retrieve it. This makes the lexical-access ablation
+(roadmap item 7) the single most informative next experiment — the failure is
+concentrated exactly where it would bite, and it holds across a model
+generation.
+
+**Losses.** nano lost 7: bagpipes, puppy, foxglove, jukebox, zephyr, ivy,
+happy. sonnet lost 1: puppy — a v_easy label, which says again that the
+LLM-authored difficulty labels do not track computed difficulty. gpt-4o lost
+31, dominated by rare-letter and doubled-letter words (quartz, sphinx, onyx,
+nymph, lymph, larynx, jinx, kayak, kiosk, haiku, zephyr, zodiac, …). One
+nuance to keep honest: gpt-4o's win rate *does* fall along the LLM-authored
+labels (v_easy 0.80, medium 0.95, hard 0.55, v_hard 0.25), even though the
+labels do not correlate with solver-computed difficulty — plausibly both the
+labeller and the player are sensitive to word rarity. Worth one line in the
+benchmark-construction paper, not more.
+
+**A harness artifact the pilot uncovered.** All 21 of nano's repeat guesses —
+across happy (15), zephyr (3), jukebox (2), jinx (1) — were the letter `a`,
+emitted after the solver's continue nudge, which read "Continue by calling
+hangman_guess('a') (replace 'a' with your next letter)." The model follows the
+literal example instead of substituting, in the worst case narrating the game
+back to itself ("Proceeding to submit the guess 'a' again as requested") for
+fifteen consecutive turns on `happy` until the message limit ended the sample.
+The artifact is model-specific: sonnet emitted zero repeats and gpt-4o's three
+(g, d, d) are organic slips, not the example letter. As measured, nano's
+`repeat_rate` is harness-induced instruction-literalism, not spontaneous
+state-tracking failure. The nudge has since been reworded to name no letter;
+these three runs all predate the fix, so their numbers are comparable with
+each other but `repeat_rate` should be re-measured before being cited.
 
 ---
 
@@ -386,6 +483,21 @@ confirmed by reproduction before fixing):
 
 **Known issues:**
 
+- `hangman_player`'s `on_continue` guidance embedded a concrete example
+  letter — "Continue by calling hangman_guess('a') (replace 'a' with your
+  next letter)." — and gpt-5-nano followed it literally: every repeat guess
+  in the pilot was the letter `a`, emitted immediately after that nudge (see
+  section 3). The nudge now names the tool without naming a letter (and the
+  `submit('word')` example went with it), but all three pilot runs predate
+  the fix: re-measure before citing `repeat_rate`.
+- The pilot runbook previously said `uv sync --dev`, which does not install
+  the model-provider SDKs (and actively removes them if present): they are
+  optional-dependency extras. `pyproject.toml` now has both `openai` and
+  `anthropic` extras; use `uv sync --dev --all-extras`.
+- A sample that ends by message limit can leave the model's final tool call
+  unanswered; the replay counts it as an attempt the game never processed.
+  Observed once in 200 games (`happy`, a trailing repeat). Cosmetic at current
+  scale; worth an explicit rule (score only answered calls) if it recurs.
 - `tests/test_e2e_hangman.py::TestHangmanE2E::test_hangman_incomplete_game`
   fails on `main` and on the working branch. It is stale in three independent
   ways: the `44` constant predates the turn-limit change to four messages per
@@ -402,7 +514,10 @@ confirmed by reproduction before fixing):
 
 ## 7. Roadmap
 
-1. **Run the pilot.** Nothing else is worth doing first. See section 3.
+1. **Run the pilot.** Done 2026-08-07; the thesis held. Results in section 3.
+   Follow-ups it created: reword the `on_continue` nudge (known issues), then
+   the lexical-access ablation (item 7) has first claim on the next run —
+   the pilot showed dead guesses concentrate exactly where it tests.
 2. **Add `prior=uniform|frequency` to the oracle**, so the comparison is a
    first-class result rather than a fork in the code. Frequencies are one flag
    away: `build_wordlist.py --with-frequencies` emits `word<TAB>frequency`
@@ -456,3 +571,6 @@ construction. Mention and move on; do not try to fit both.
   computed difficulty. Do not use them as a difficulty axis without saying so.
 - The current 100 words are LLM-chosen and are not a sample of human hangman
   targets.
+- `repeat_rate` in the pilot is a harness artifact (the continue nudge's
+  literal example letter), not a model property. Do not cite it until the
+  nudge is reworded and the measurement repeated.

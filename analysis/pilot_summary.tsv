@@ -1,0 +1,4 @@
+model	games	win_rate	guesses_emitted	guesses_scored	repeat_rate	invalid_rate	dominated_rate	suboptimal_rate	mean_hit_prob_regret	mean_wrong_guesses	mean_oracle_wrong	mean_excess_wrong
+anthropic/claude-sonnet-5	100	0.9900	965	965	0.0000	0.0000	0.0311	0.4705	0.1244	4.0200	3.7500	0.2700
+openai/gpt-4o	100	0.6900	1135	1132	0.0026	0.0000	0.2014	0.6608	0.2967	6.4500	3.7500	2.7000
+openai/gpt-5-nano	100	0.9300	990	969	0.0212	0.0000	0.0722	0.5428	0.1779	4.2400	3.7500	0.4900
