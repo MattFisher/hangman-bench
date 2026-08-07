@@ -30,6 +30,7 @@ hangman_bench = "hangman_bench"
 [project.optional-dependencies]
 # Runtime extras that users can opt into, e.g. provider integrations
 openai = ["openai>=1.108.0"]
+anthropic = ["anthropic>=0.69.0"]
 
 [project.urls]
 "Homepage" = "https://github.com/MattFisher/hangman-bench"
