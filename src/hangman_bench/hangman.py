@@ -347,9 +347,13 @@ def hangman_player(allow_word_guesses: bool = False) -> Solver:
         # If the last response was a tool call, return True
         if state.output.message.tool_calls:
             return True
-        guidance = "Continue by calling hangman_guess('a') (replace 'a' with your next letter)."
+        # No concrete example letter here: models follow one literally,
+        # guessing 'a' every turn (see RESEARCH_NOTES.md, pilot 2026-08-07).
+        guidance = (
+            "Continue the game by calling the hangman_guess tool with your next letter."
+        )
         if allow_word_guesses:
-            guidance += " If you know the full word, call submit('word')."
+            guidance += " If you know the full word, submit it with the submit tool."
         return guidance
 
     return as_solver(

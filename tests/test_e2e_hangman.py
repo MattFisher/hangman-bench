@@ -233,7 +233,8 @@ class TestHangmanE2E:
         assert log.samples is not None
         assert log.samples[0].messages[-1].role == "user"
         assert (
-            "Continue by calling hangman_guess('a')" in log.samples[0].messages[-1].text
+            "Continue the game by calling the hangman_guess tool"
+            in log.samples[0].messages[-1].text
         )
         assert log.samples[0].limit is not None
         assert log.samples[0].limit.type == "message"
