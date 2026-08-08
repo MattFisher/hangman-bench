@@ -4,6 +4,7 @@ import pytest
 from inspect_ai import eval
 from inspect_ai.model import ModelOutput, get_model
 
+from hangman_bench.datasets import ENGLISH_WORDS
 from hangman_bench.hangman import hangman, _calculate_message_limit
 
 
@@ -211,16 +212,22 @@ class TestHangmanE2E:
 
     def test_hangman_incomplete_game(self) -> None:
         """Test hangman when game doesn't complete (model stops early)."""
+        # Enough refusals to actually reach the message limit. Too few and the
+        # mock runs out of outputs first, which errors the sample instead of
+        # exercising the limit.
         mock_outputs = [
             create_letter_guess("a"),
             create_letter_guess("e"),
             # Model stops without completing the game properly
-        ] + [ModelOutput.from_content(model="mockllm/model", content="I give up")] * 20
+        ] + [ModelOutput.from_content(model="mockllm/model", content="I give up")] * 30
 
         max_guesses = 4
-        # Game should be terminated after 3 * (len("butterfly") + max_guesses) + NUM_ALLOWABLE_EXTRA_MESSAGES
-        expected_limit = _calculate_message_limit(len("butterfly"), max_guesses)
-        assert expected_limit == 44
+        # The task derives its limit from the longest word in the whole dataset,
+        # not from the sample under test, so this must not hardcode a word:
+        # 4 * (longest word + max_guesses) + NUM_ALLOWABLE_EXTRA_MESSAGES
+        longest_word = max(len(entry.word) for entry in ENGLISH_WORDS)
+        expected_limit = _calculate_message_limit(longest_word, max_guesses)
+        assert expected_limit == 61
 
         log = eval(
             tasks=hangman(
@@ -231,15 +238,18 @@ class TestHangmanE2E:
         )[0]
 
         assert log.samples is not None
-        assert log.samples[0].messages[-1].role == "user"
-        assert (
-            "Continue the game by calling the hangman_guess tool"
-            in log.samples[0].messages[-1].text
+        messages = log.samples[0].messages
+
+        # The solver should have nudged the model to keep playing. Which role
+        # ends the transcript depends on where the limit happens to bite, so
+        # assert the nudge was issued rather than that it came last.
+        assert any(
+            "Continue the game by calling the hangman_guess tool" in (m.text or "")
+            for m in messages
         )
         assert log.samples[0].limit is not None
         assert log.samples[0].limit.type == "message"
         assert log.samples[0].limit.limit == expected_limit
-        # assert log.messages[-1].content == "Game terminated after 10 messages"
 
         assert log.status == "success"
         assert log.results is not None

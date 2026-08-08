@@ -498,12 +498,13 @@ confirmed by reproduction before fixing):
   unanswered; the replay counts it as an attempt the game never processed.
   Observed once in 200 games (`happy`, a trailing repeat). Cosmetic at current
   scale; worth an explicit rule (score only answered calls) if it recurs.
-- `tests/test_e2e_hangman.py::TestHangmanE2E::test_hangman_incomplete_game`
-  fails on `main` and on the working branch. It is stale in three independent
-  ways: the `44` constant predates the turn-limit change to four messages per
-  guess (now 57), the mock supplies too few outputs to reach the raised limit,
-  and it asserts on the final message role, which is incidental. Fixing it
-  needs a decision about what the test is meant to pin.
+- The registered evaluation report cannot be updated with the pilot results
+  yet. A registry entry pins a `repository_commit` that a reader can check out
+  and reproduce from, and the pilot ran at 68493ba — on the PR #3 branch, not
+  on `main`. `main` is currently at ab0fcc8 and the register still pins
+  9f1f396, older than both. Update the register once PR #3 merges: bump
+  `source.repository_commit`, and replace the single stale gpt-5-nano row with
+  the three-model table from section 3.
 - The registered evaluation report (0.93, `gpt-5-nano`) predates the malformed
   guess fix. Samples that previously errored out and vanished are now scored,
   so it is not comparable. Re-baseline before citing it.
