@@ -575,3 +575,190 @@ construction. Mention and move on; do not try to fit both.
 - `repeat_rate` in the pilot is a harness artifact (the continue nudge's
   literal example letter), not a model property. Do not cite it until the
   nudge is reworded and the measurement repeated.
+
+## External review (2026-08-09)
+
+Condensed from an advisory review of PR #3 and the pilot. Items are things
+the notes do *not* already say, or say and then fail to act on.
+
+### The two-theses problem
+
+The notes state Thesis B (prior sensitivity) as the working thesis, but the
+pilot, PR, and roadmap are organised around Thesis A (process metrics keep
+discriminating after saturation). These are different papers. A alone is
+modest — "score the trajectory" is established, and one game is a case study.
+B is the more general contribution but **has never been tested on real
+trajectories**: the dictionary-sensitivity table used synthetic agents at
+dominated ≈ 0.35–0.57, a different regime from the models' 0.03–0.20, and it
+shows the numbers move, not the conclusions.
+
+**Decisive, zero-API-cost experiment (do first, before the lexical-access
+ablation):** re-score the 300 pilot trajectories under {SCOWL-50, SCOWL-70,
+25% subsample, en_US} × {uniform, wordfreq}. If model ranking and the
+endgame-concentration finding are invariant → Thesis A is the paper, B is a
+robustness section. If anything flips → B is the paper, pilot is its example.
+
+**Unexploited structural point:** `dominated_rate` depends only on the
+*support* of the prior (a zero-coverage letter is dominated under any prior on
+the candidates); the graded metrics depend on the *weights*. So the headline
+metric is provably invariant to uniform-vs-frequency and sensitive only to the
+dictionary. Support-sensitive vs weight-sensitive is the organising idea of
+the metrics section, whichever thesis wins.
+
+### "Provably wrong" needs reframing
+
+A dominated miss is provable only relative to a dictionary the model was never
+told about — it conflates irrationality with specification mismatch. This is
+not hypothetical: four targets were *converted* to en-GB (`oxidise`,
+`galvanise`, `whisky`, `pyjamas`/`dwarfs`), so a US-prior model can score a
+"provably dead" guess for a spelling convention. Actions: audit pilot
+dominated misses for dialect-orthographic cases; reword "provable error" →
+"error under a declared reference specification"; optionally use a union
+dictionary for the dominance test only (widening support is conservative).
+
+### The prompt instructs the failure mode
+
+The system prompt says "make smart guesses based on common letter
+frequencies" — and the notes already observe the `frequency` baseline is
+"roughly what the eval's own system prompt asks for" without following
+through: `dominated_rate` may partly measure *compliance*. Prompt ablation
+(current / neutral / "consider which words fit the pattern") is cheaper than
+and logically prior to the candidate-list ablation. If dominated collapses
+under the belief-eliciting prompt, the claim changes entirely.
+
+Adjacent harness defects: the `Sample.input` text is dead code
+(`game_initialiser` overwrites `user_prompt.text`); the system prompt
+describes tool-output fields (`current_state`, `game_over`, `won`) that don't
+match what the tool returns ("Word:", "Status:").
+
+### Nudge artifact is not confined to repeat_rate
+
+nano entered the 'a'-loop on `happy` at 9/10 wrong with 11 candidates left
+(best move p=0.45) and was killed by message limit → scored a loss. So the
+0.93 win rate contains one artifact-contested loss, and "matches the
+registered report" partly rests on it. Correct the "other metrics unaffected"
+claim.
+
+### Capability-gradient claim is under-designed
+
+Three models confound vendor × scale × generation × (unrecorded) reasoning
+effort; one run each; generation config unpinned; monotone-over-3 across six
+correlated metrics is weak. For scale-up: pin/record configs; replicate ≥1
+model ×3 for seed variance; same-family ladder; reasoning-effort sweep (if
+dominated falls steeply with thinking budget, it's largely a test-time-compute
+metric and the language changes). Use **paired stats** — all models play the
+same 100 words; per-word deltas + McNemar, cluster by word (dominated guesses
+concentrate in few words, e.g. bagpipes). Drop `suboptimal_rate` from
+headlines: any-epsilon-below-argmax, sits ≈0.46 even for strong play;
+`hit_prob_regret` subsumes it.
+
+### Retrieval is one of four hypotheses
+
+Endgame dead guesses could be: retrieval failure, verification failure,
+tokenization (mapping `. a . . i . e s` to a lexeme), or never attempting
+enumeration because the prompt says frequencies. The planned candidate-list
+ablation tests verification+choice only. Replace with a matrix:
+pattern→generate (retrieval); pattern+word→fits? (verification);
+pattern+list→choose (decision); spaced vs contiguous board (tokenization).
+
+**Human baseline:** nobody enumerates 61k words mid-game, so nonzero dominated
+is not per se damning; but in the ≤3-candidate endgame humans plausibly hit
+zero (`.a..i.es` → bagpipes is easy for people). Small study (10 people × 10
+endgame boards) buys the sentence "models fail exactly where humans don't".
+
+### Benchmark additions, ranked
+
+1. **Verbalised-posterior probe** (not on roadmap; should be near top): ask
+   the model to state candidate count / name up to k candidates; score count
+   accuracy, precision/recall vs oracle set, calibration. Direct measurement
+   of whether a belief state exists; reframes the project as *belief-state
+   evaluation with computable ground truth*.
+2. Commit calibration (roadmap item 6) — agree it may beat dominated_rate as
+   headline.
+3. Budget sweep reframed: publish the win-vs-budget *curve* per model against
+   the oracle's curve as the primary outcome-level artifact.
+4. Memory ablation: omit the board after turn 1 → clean state-tracking test.
+5. Evil hangman (adversarial setter, still computable) — later.
+
+State explicitly that `allow_word_guesses=False` *creates* the endgame regime
+where the effect lives; report the commit variant alongside.
+
+### Dataset generation: sample from the dictionary at runtime
+
+Generate targets from the oracle's dictionary with a seeded, stratified
+sampler instead of committing a word list. Be clear what this does and does
+not buy:
+
+- **A public seed is not a contamination defence.** Dictionary + sampler +
+  seed in a public repo fully determines the list; it's a committed list with
+  one level of indirection. Secrecy comes from the seed being secret or
+  fresh, not from generation happening at runtime.
+- What it *does* buy: no words or per-letter solutions ever committed;
+  `target_in_dictionary` holds by construction (which also softens the
+  specification-mismatch caveat — say so); cheap scale to thousands of words.
+- **Uniform sampling changes the construct.** Uniform SCOWL-50 draws land on
+  the accepted-but-never-an-answer distribution from the Wordle analysis, not
+  a hangman-target distribution. Stratify by length, frequency band
+  (`--with-frequencies`), and computed difficulty; filter to lemma forms via
+  AGID. The strata spec becomes part of the benchmark specification — a
+  reproducibility claim no hand-curated list can make.
+
+Three tiers:
+
+1. **Public dev set** — fixed published seed. Reproducible, preserves the
+   paired design (all models play identical words). Assume it gets
+   contaminated; it's for development and comparability.
+2. **Private held-out set** — same generator, secret seed, never committed;
+   publish a salted hash manifest so the set can be proven later. Headline
+   numbers come from here.
+3. **Fresh-seed mode** — `seed=None` draws one and records it in the Inspect
+   log. Reproducible after the fact, no canonical list to memorise; labs
+   compare by sharing a seed.
+
+Implementation: pin the dictionary version and sort the wordlist before
+sampling (a rebuild or file-order change must not silently alter the draw);
+derive RNG state from a hash of (sorted wordlist, seed, strata spec), not
+incidental determinism.
+
+**Contamination as a measurement, not just a threat.** Because ground truth
+is computable, compare endgame retrieval (the bagpipes regime) on dev-set
+words vs freshly-sampled words matched on length, frequency band, and
+computed difficulty — the oracle supplies matched controls for free. A
+systematic dev-set advantage is a behavioural contamination signal. Few
+benchmarks can write this paragraph; it turns fresh-seed mode into an
+instrument.
+
+### Hygiene
+
+- `pilot_per_guess.tsv` publishes complete per-letter solutions for all 100
+  words — fine for the pilot, fatal for the scaled benchmark. The runtime
+  generator above supersedes committed lists; held-out words are never
+  committed, salted hash manifest only.
+- Publish raw Inspect logs, not only derived TSVs (the extraction pipeline has
+  already produced six scoring bugs; readers shouldn't have to trust it).
+- Lit sweep gap: prior work on LLMs playing Wordle/deduction games is closer
+  than either cluster currently cited; engage process-reward / trajectory-eval
+  literature explicitly for Thesis A's novelty question.
+
+### The other paper
+
+The quarantined benchmark-construction findings (labels-are-noise;
+frequency/concreteness skew with the Wordle split as human-curation control)
+have a larger audience than hangman process metrics and most evidence already
+collected. Choose deliberately, not by default toward the project with more
+code.
+
+### Order of operations
+
+1. Ranking-invariance re-scoring (free, decides the thesis).
+2. Prompt ablation.
+3. Dominated-miss dialect audit + "provable error" reframing.
+4. Fix the nudge-artifact containment claim.
+5. Scale-up prerequisites: pinned configs, seed replication, family ladder,
+   effort sweep, paired power calc, and the stratified runtime generator
+   (dev / held-out / fresh-seed tiers) in place of a committed word list.
+6. Ablation matrix (replaces single candidate-list ablation).
+7. Verbalised-posterior probe + commit calibration.
+8. Human endgame study.
+9. Contamination hygiene.
+10. Deliberate A-vs-B-vs-other-paper decision.
