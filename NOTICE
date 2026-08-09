@@ -1,0 +1,17 @@
+hangman-bench
+Copyright (c) Matt Fisher
+Licensed under the MIT License (see LICENSE).
+
+This product includes third-party data:
+
+SCOWL (Spell Checker Oriented Word Lists)
+  src/hangman_bench/data/wordlist_en_GB.txt is derived from SCOWL 2020.12.07
+  by Kevin Atkinson, available at https://wordlist.aspell.net/ and
+  https://github.com/en-wl/wordlist.
+
+  SCOWL is distributed under an MIT-like licence which requires its copyright
+  notice to accompany copies. That notice is retained verbatim at
+  src/hangman_bench/data/SCOWL-Copyright.
+
+  The wordlist can be regenerated, for this or any other supported dialect,
+  with: uv run analysis/build_wordlist.py --dialect en_GB

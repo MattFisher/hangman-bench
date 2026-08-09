@@ -9,7 +9,7 @@ back to taking the first column.
 Usage:
   uv run analysis/extract_wordlist.py \
     --input analysis/SimulationData_parsed.tsv \
-    --output analysis/wordlist.txt
+    --output src/hangman_bench/data/wordlist.txt
 """
 from __future__ import annotations
 

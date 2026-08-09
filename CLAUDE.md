@@ -106,6 +106,8 @@ The evaluation is built around three main modules:
 
 - **hangman.py**: Main evaluation logic with `@task`, `@solver`, `@scorer`, and `@tool` decorators
 - **datasets.py**: Word datasets with difficulty ratings (1-5 scale) and language support
+- **oracle.py**: Belief-state replay used by `oracle_scorer` to score individual guesses against optimal play
+- **data/wordlist_en_GB.txt**: Dictionary shipped with the package, defining the oracle's candidate sets. Built from SCOWL by `analysis/build_wordlist.py`; one file per dialect so others (en_US, en_AU, en_CA) can be added without disturbing it.
 - **__init__.py**: Package exports
 
 ### Key Classes and Functions
@@ -122,12 +124,18 @@ The evaluation is built around three main modules:
 - `grouped` scorer by difficulty level with accuracy metrics
 - `store()` for maintaining game state across tool calls
 
+### Scorers
+- `game_scorer`: win/loss, grouped by difficulty
+- `oracle_scorer`: per-guess quality — dominated moves, repeats, invalid guesses, and shortfall against the best available guess. Runs by default; disable with `-T oracle=false`. Can be applied to existing logs with `inspect score <log> --scorer src/hangman_bench/hangman.py@oracle_scorer --action append`.
+
 ### Task Parameters
 - `language`: Word language (default: "english")
 - `difficulty`: Specific difficulty 1-5, or None for mixed
 - `max_guesses`: Maximum incorrect guesses (default: 10)
 - `shuffle`: Randomize word order (default: True)
 - `allow_word_guesses`: Allow full word guesses (default: False)
+- `oracle`: Also score each guess against optimal play (default: True)
+- `oracle_wordlist`: Dictionary for the oracle scorer (default: packaged SCOWL en_GB wordlist)
 
 ## Testing Strategy
 Tests cover dataset functions, task creation, and parameter validation. Located in `tests/test_hangman.py` with pytest framework.
