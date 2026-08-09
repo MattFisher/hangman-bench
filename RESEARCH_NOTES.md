@@ -10,8 +10,12 @@ bonus: `dominated_rate` orders the models by generation (gpt-4o 0.18,
 gpt-5-nano 0.06, claude-sonnet-5 0.03) and keeps separating them after win
 rate saturates (0.93 / 0.99 for the two current models). Results, and the one
 harness artifact the pilot uncovered, are under [The pilot](#the-pilot). The
-continue-prompt artifact is fixed in code but post-dates these runs. Next:
-scale up (section 7).
+continue-prompt artifact is fixed in code but post-dates these runs. The
+re-scoring grid (2026-08-09, section 4) decided the thesis question: rankings
+are dictionary-invariant, so **thesis A — process metrics that keep
+discriminating after saturation — is the paper**, with prior/dictionary
+sensitivity as its robustness section. Next: prompt ablation, then scale up
+(section 7).
 
 ---
 
@@ -313,6 +317,37 @@ completely fixed and varying only the dictionary used to score them:
 "Model X makes provably dead guesses 35% of the time" is not a fact about the
 model. It is a fact about (model, dictionary). This must be reported as a
 sensitivity analysis, not hidden behind a default.
+
+**Re-scored on the 300 real pilot trajectories (2026-08-09): rankings and
+structure are dictionary-invariant; magnitudes are not.** The table above
+used synthetic agents in the 0.35–0.57 dominated regime; the external review
+asked whether the models' 0.03–0.20 regime behaves the same. Grid: {SCOWL
+en_GB tier-50 (shipped), en_GB tier-70, deterministic 25% subsample
+(`crc32(word) % 4 == 0`), en_US tier-50}, trajectories held fixed. Full table
+in `analysis/rescore_grid_summary.tsv`; what it shows:
+
+- Model ranking (gpt-4o > gpt-5-nano > claude-sonnet-5) is unchanged in every
+  cell, on every metric.
+- Endgame concentration survives everywhere: dominated misses with ≤3
+  candidates stay at 86–97% across cells; with a certain letter available,
+  73–91%.
+- Magnitudes move as the synthetic table predicted, and hardest for the best
+  model: sonnet's dominated_rate triples under the 25% subsample
+  (0.031 → 0.095) and the gpt-4o/sonnet contrast compresses from 6.5× to
+  3.0×. Dictionary choice changes between-model *contrast*, not order.
+- en_US ≈ en_GB to three decimals — consistent with the dialect audit finding
+  zero orthographic dominated misses.
+- Caveats: the 25% cell injects 222/300 targets, so it stress-tests the
+  injected-target regime more than it represents a plausible dictionary. And
+  the grid covers the only axis that can move `dominated_rate` at all — by
+  the support argument, the pending wordfreq prior axis can only move the
+  graded metrics (given the smoothing floor preserves support).
+
+**Verdict per the review's decision rule: thesis A is the paper** — process
+metrics keep discriminating after outcome saturation, and that finding is
+stable across defensible dictionaries. Prior/dictionary sensitivity becomes
+the robustness section, with "declare your dictionary" as a reporting
+requirement: magnitudes remain a fact about (model, dictionary).
 
 **Frequency weighting differentially helps common words.** Replacing the
 uniform posterior with a wordfreq-weighted one, wrong guesses needed:
@@ -789,11 +824,13 @@ Working through the list above; status and divergences:
   caveat live.
 - **Item 4 — done.** Containment claim corrected in section 3; the artifact
   also contests one nano loss (`happy`).
-- **Item 1 — in progress.** Dictionary axis first (SCOWL-50 / SCOWL-70 / 25%
-  subsample / en_US); the prior axis waits on the `prior=` parameter, and by
-  the reviewer's own support argument it cannot move `dominated_rate`, only
-  the graded metrics — with the caveat that this invariance requires the
-  frequency prior's smoothing floor to preserve support.
+- **Item 1 — done, verdict: thesis A.** Rankings and endgame concentration
+  are invariant across the dictionary grid; magnitudes move (up to 3× for
+  the best model). Details in section 4. The prior axis waits on the
+  `prior=` parameter, and by the reviewer's own support argument it cannot
+  move `dominated_rate`, only the graded metrics — with the caveat that this
+  invariance requires the frequency prior's smoothing floor to preserve
+  support.
 - **Item 2 — queued.** All three arms (current / neutral / belief-eliciting
   prompt) will run under the post-fix nudge, including a re-run of the
   current-prompt arm, so the ablation varies exactly one thing and the
