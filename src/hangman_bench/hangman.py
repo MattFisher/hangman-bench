@@ -52,6 +52,7 @@ def hangman(
     max_guesses: int = DEFAULT_MAX_GUESSES,
     shuffle: bool = True,
     allow_word_guesses: bool = False,
+    strategy_hint: str = "frequency",
     oracle: bool = True,
     oracle_wordlist: str | None = None,
 ) -> Task:
@@ -63,6 +64,9 @@ def hangman(
         max_guesses: Maximum number of incorrect guesses allowed
         shuffle: Whether to shuffle the words before playing
         allow_word_guesses: Whether to allow the agent to guess the entire word
+        strategy_hint: Strategy sentence in the system prompt — one of
+            frequency (the original wording), neutral (no advice), or belief
+            (reason from the consistent candidate set)
         oracle: Whether to also score each guess against optimal play
         oracle_wordlist: Dictionary for the oracle scorer, defaulting to the
             wordlist shipped with the package
@@ -120,7 +124,9 @@ def hangman(
 
     return Task(
         dataset=dataset,
-        solver=hangman_player(allow_word_guesses=allow_word_guesses),
+        solver=hangman_player(
+            allow_word_guesses=allow_word_guesses, strategy_hint=strategy_hint
+        ),
         setup=game_initialiser(),
         scorer=scorers,
         message_limit=_calculate_message_limit(longest_word_length, max_guesses),
@@ -296,14 +302,36 @@ def hangman_guess() -> Tool:
     return execute
 
 
-@solver
-def hangman_player(allow_word_guesses: bool = False) -> Solver:
-    """Solver that uses the hangman_guess tool to play hangman"""
-    SYSTEM_MESSAGE = """
+# The strategy sentence in the system prompt is an experimental variable: the
+# default instructs frequency play, which is itself a failure mode the oracle
+# penalises (RESEARCH_NOTES.md, external review 2026-08-09). "frequency" must
+# reproduce the original prompt byte-for-byte so runs remain comparable; a
+# test pins this.
+STRATEGY_HINTS: dict[str, str] = {
+    "frequency": (
+        " Make smart guesses based on common letter frequencies\n"
+        "    and word patterns in the specified language, and the result of previous guesses."
+    ),
+    "neutral": "",
+    "belief": (
+        " Before each guess, consider which words are consistent with the\n"
+        "    revealed pattern and the letters already ruled out, and guess a letter\n"
+        "    likely to appear in one of those words."
+    ),
+}
+
+
+def _build_system_message(allow_word_guesses: bool, strategy_hint: str) -> str:
+    """System prompt for the player, with the strategy sentence as a variable."""
+    if strategy_hint not in STRATEGY_HINTS:
+        raise ValueError(
+            f"Unknown strategy_hint '{strategy_hint}'. "
+            f"Choose from: {', '.join(sorted(STRATEGY_HINTS))}"
+        )
+    base = f"""
     You are playing a game of Hangman. Try to guess the word one letter at a time.
     The current state shows '_' for unguessed letters and reveals correctly guessed letters.
-    You have limited guesses before losing. Make smart guesses based on common letter frequencies
-    and word patterns in the specified language, and the result of previous guesses.
+    You have limited guesses before losing.{STRATEGY_HINTS[strategy_hint]}
 
     Guess one letter at a time using the hangman_guess tool like `hangman_guess("a")`.
     The tool will return:
@@ -316,27 +344,31 @@ def hangman_player(allow_word_guesses: bool = False) -> Solver:
 
     Adapt your strategy based on the language.
     """
-    system_message_without_word_guesses = (
-        SYSTEM_MESSAGE
+    if allow_word_guesses:
+        return (
+            base
+            + """
+    You can also guess the entire word at any point before running out of guesses,
+    by submitting the word as a single string using `submit("word")`. This will end the game.
+    The game will end automatically when it is over.
+    """
+        )
+    return (
+        base
         + """
     You must guess all the letters in the word to win the game.
     You can ONLY win by guessing all the letters in the word, one at a time.
     The game will end automatically when it is over.
     """
     )
-    system_message_with_word_guesses = (
-        SYSTEM_MESSAGE
-        + """
-    You can also guess the entire word at any point before running out of guesses,
-    by submitting the word as a single string using `submit("word")`. This will end the game.
-    The game will end automatically when it is over.
-    """
-    )
-    final_system_message = (
-        system_message_without_word_guesses
-        if not allow_word_guesses
-        else system_message_with_word_guesses
-    )
+
+
+@solver
+def hangman_player(
+    allow_word_guesses: bool = False, strategy_hint: str = "frequency"
+) -> Solver:
+    """Solver that uses the hangman_guess tool to play hangman"""
+    final_system_message = _build_system_message(allow_word_guesses, strategy_hint)
 
     async def on_continue(state: AgentState) -> bool | str:
         # Stop automatically when game is over; otherwise, urge model to keep using tools
