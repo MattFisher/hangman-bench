@@ -14,8 +14,11 @@ continue-prompt artifact is fixed in code but post-dates these runs. The
 re-scoring grid (2026-08-09, section 4) decided the thesis question: rankings
 are dictionary-invariant, so **thesis A — process metrics that keep
 discriminating after saturation — is the paper**, with prior/dictionary
-sensitivity as its robustness section. Next: prompt ablation, then scale up
-(section 7).
+sensitivity as its robustness section. The prompt ablation (same day) ruled
+out the other deflationary reading: a belief-eliciting prompt does not
+collapse `dominated_rate`, so the metric measures capability, not
+instruction compliance. Next: scale up (section 7), ablation matrix and
+verbalised-posterior probe first among the additions.
 
 ---
 
@@ -297,6 +300,14 @@ runs all predate the fix, so their numbers are comparable with each other but
 `repeat_rate` (and nano's exact win rate) should be re-measured before being
 cited.
 
+Re-measured under the fixed nudge (2026-08-09, the ablation's frequency arm):
+the example-letter artifact is gone — but nano still spiralled, this time
+organically. On `flopping` it repeated `g`, a letter it had already *hit*,
+ten times and lost. So the refined claim is: the old nudge chose the
+*letter*; the loop tendency is nano's own. `repeat_rate` is now citable as
+model behaviour: nano 13/976 guesses (10 of them that one spiral), sonnet 0
+across every arm, gpt-4o ≤ 6 scattered singles.
+
 ---
 
 ## 4. Findings so far
@@ -348,6 +359,36 @@ metrics keep discriminating after outcome saturation, and that finding is
 stable across defensible dictionaries. Prior/dictionary sensitivity becomes
 the robustness section, with "declare your dictionary" as a reporting
 requirement: magnitudes remain a fact about (model, dictionary).
+
+**The prompt does not drive the dead guesses (2026-08-09).** The system
+prompt instructs frequency play, so `dominated_rate` might have measured
+compliance rather than capability. Ablation: {frequency (original), neutral
+(no advice), belief (reason from the consistent candidate set)} × three
+models × the same 100 words, all under the post-fix nudge; paired by word
+(`analysis/compare_arms.py`, `analysis/ablation_summary.tsv`). Pooled
+dominated_rate:
+
+| model | frequency | neutral | belief |
+| --- | --- | --- | --- |
+| claude-sonnet-5 | 0.037 | 0.032 | 0.051 |
+| gpt-5-nano | 0.077 | 0.065 | 0.073 |
+| gpt-4o | 0.230 | 0.236 | 0.193 |
+
+No comparison reaches significance (all McNemar p ≥ 0.24; the closest sign
+test is gpt-4o frequency-vs-belief at p = 0.060, −0.49 dominated per word
+under belief). The belief-eliciting prompt does **not** collapse the metric —
+the review's conditional resolves in thesis A's favour: dominated_rate
+measures capability, not instruction compliance. The only directional hints
+are that belief-prompting weakly helps the weakest model and, if anything,
+slightly hurts the strongest (sonnet +0.14/word, p = 0.12) — consistent with
+prompt-following mattering most where the underlying skill is weakest, and
+too weak to claim without replication.
+
+The identical-prompt arms also calibrate single-run noise: pilot vs the
+re-run frequency arm (only the nudge wording differs) flips 18 of gpt-4o's
+100 word outcomes (12:6, p = 0.24) and moves its win rate 0.69 → 0.63.
+Word-level flips of this size on one seed are why the review's replication
+requirement stands before any headline claim.
 
 **Frequency weighting differentially helps common words.** Replacing the
 uniform posterior with a wordfreq-weighted one, wrong guesses needed:
@@ -621,9 +662,12 @@ construction. Mention and move on; do not try to fit both.
   computed difficulty. Do not use them as a difficulty axis without saying so.
 - The current 100 words are LLM-chosen and are not a sample of human hangman
   targets.
-- `repeat_rate` in the pilot is a harness artifact (the continue nudge's
-  literal example letter), not a model property. Do not cite it until the
-  nudge is reworded and the measurement repeated.
+- `repeat_rate` in the *pilot* is a harness artifact (the continue nudge's
+  literal example letter), not a model property. Re-measured under the fixed
+  nudge on 2026-08-09: the artifact is gone and `repeat_rate` is citable from
+  the ablation arms onward — with the nuance that nano's residual repeats are
+  one organic spiral (`flopping`, g × 10), so report it alongside its
+  concentration, not as a smooth rate.
 
 ## External review (2026-08-09)
 
@@ -831,10 +875,12 @@ Working through the list above; status and divergences:
   move `dominated_rate`, only the graded metrics — with the caveat that this
   invariance requires the frequency prior's smoothing floor to preserve
   support.
-- **Item 2 — queued.** All three arms (current / neutral / belief-eliciting
-  prompt) will run under the post-fix nudge, including a re-run of the
-  current-prompt arm, so the ablation varies exactly one thing and the
-  repeat_rate/win-rate re-measurement comes for free.
+- **Item 2 — done, verdict: not compliance.** The belief-eliciting prompt
+  does not collapse `dominated_rate` (no significant difference in any
+  paired comparison; details in section 4). The metric measures capability.
+  The re-run also cleared the nudge artifact: the example letter is gone,
+  nano's residual repeating is organic (one g-spiral on `flopping`), and
+  `repeat_rate` is citable from the ablation arms onward.
 - Pushback on dropping `suboptimal_rate` entirely: agreed off headlines, kept
   in tables (it is the only per-decision rate; `hit_prob_regret` headlines).
 - Noted for scale-up: of the confound list, the reasoning-effort sweep is the
