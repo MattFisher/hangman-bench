@@ -237,8 +237,9 @@ Both are shown; say which one a number is whenever citing it.
 | invalid_rate | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 |
 
 **The thesis holds, and the metric tracks capability.** For the two current
-models, win rate sits at the ceiling (0.93 / 0.99, and nano's 0.93 matches
-the registered report) while `dominated_rate` stays meaningfully above zero —
+models, win rate sits at the ceiling (0.93 / 0.99; nano's 0.93 matches the
+registered report, though one of its seven losses is artifact-contested — see
+the nudge paragraph) while `dominated_rate` stays meaningfully above zero —
 the eval barely separates them on outcome but separates them cleanly on
 process (nano makes provably dead guesses at about twice sonnet's rate). The
 2024-era reference point extends this into a monotone gradient on every
@@ -282,9 +283,15 @@ fifteen consecutive turns on `happy` until the message limit ended the sample.
 The artifact is model-specific: sonnet emitted zero repeats and gpt-4o's three
 (g, d, d) are organic slips, not the example letter. As measured, nano's
 `repeat_rate` is harness-induced instruction-literalism, not spontaneous
-state-tracking failure. The nudge has since been reworded to name no letter;
-these three runs all predate the fix, so their numbers are comparable with
-each other but `repeat_rate` should be re-measured before being cited.
+state-tracking failure. The artifact is **not confined to `repeat_rate`**
+(external review, 2026-08-09): nano entered the loop on `happy` at 9/10 wrong
+with 11 candidates and a p=0.45 best move still available, and the message
+limit then scored the game a loss — so the 0.93 win rate contains one
+artifact-contested loss, and its match with the registered report partly
+rests on it. The nudge has since been reworded to name no letter; these three
+runs all predate the fix, so their numbers are comparable with each other but
+`repeat_rate` (and nano's exact win rate) should be re-measured before being
+cited.
 
 ---
 
@@ -565,7 +572,14 @@ construction. Mention and move on; do not try to fit both.
   is not the oracle's. Some of what looks like model error is a specification
   mismatch. This applies at the orthographic level too: if the hidden word is
   `realise` and the model guesses `z`, it is penalised for a convention nobody
-  communicated.
+  communicated. Call a dominated miss an "error under a declared reference
+  specification", not a "provable error" simpliciter. Audited in the pilot
+  (2026-08-09): **zero of the 328 dominated misses are dialect-orthographic**
+  — no `z` guesses on the `-ise` boards; `whisky`/`dwarfs` differ from their
+  US forms in length; `pajamas` was already excluded by the board evidence
+  wherever it could have mattered. The caveat is conceptually right and
+  currently empty; it becomes live when a scaled dataset admits `-ise/-ize`
+  verbs, so the wording change costs nothing now and pre-empts that.
 - The reference solvers are greedy, not optimal. `excess_wrong_guesses` can be
   negative.
 - Difficulty labels in the current dataset are LLM-authored and do not track
@@ -762,3 +776,34 @@ code.
 8. Human endgame study.
 9. Contamination hygiene.
 10. Deliberate A-vs-B-vs-other-paper decision.
+
+### Disposition (2026-08-09)
+
+Working through the list above; status and divergences:
+
+- **Item 3 — done, result: empty.** Zero of 328 pilot dominated misses are
+  dialect-orthographic (details in section 8 caveats). Wording reframed.
+  Pushback on the union-dictionary suggestion: widening support redefines the
+  metric ("dead in every dialect") rather than fixing it; keep strict as
+  primary and add union as a robustness pair when a scaled dataset makes the
+  caveat live.
+- **Item 4 — done.** Containment claim corrected in section 3; the artifact
+  also contests one nano loss (`happy`).
+- **Item 1 — in progress.** Dictionary axis first (SCOWL-50 / SCOWL-70 / 25%
+  subsample / en_US); the prior axis waits on the `prior=` parameter, and by
+  the reviewer's own support argument it cannot move `dominated_rate`, only
+  the graded metrics — with the caveat that this invariance requires the
+  frequency prior's smoothing floor to preserve support.
+- **Item 2 — queued.** All three arms (current / neutral / belief-eliciting
+  prompt) will run under the post-fix nudge, including a re-run of the
+  current-prompt arm, so the ablation varies exactly one thing and the
+  repeat_rate/win-rate re-measurement comes for free.
+- Pushback on dropping `suboptimal_rate` entirely: agreed off headlines, kept
+  in tables (it is the only per-decision rate; `hit_prob_regret` headlines).
+- Noted for scale-up: of the confound list, the reasoning-effort sweep is the
+  most urgent (nano reasons, gpt-4o does not; the gradient may be partly
+  test-time compute).
+- The verbalised-posterior probe has direct supporting evidence already: nano
+  spontaneously verbalises candidate lists mid-game ("Possible words remain:
+  gawky, …" on `happy`), so existing transcripts may be minable before any
+  probe is built.
