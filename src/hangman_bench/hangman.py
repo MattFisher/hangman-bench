@@ -144,7 +144,10 @@ def _normalise(letter: str) -> str:
 
 
 def _is_valid_letter(letter: str) -> bool:
-    return len(letter) == 1 and letter.isalpha()
+    # ASCII a-z only: str.isalpha() admits any Unicode letter, and a letter
+    # outside a-z can never be revealed, so accepting one would make a
+    # 26-wrong-guess budget reachable and break the unlimited-budget protocol.
+    return len(letter) == 1 and "a" <= letter <= "z"
 
 
 @dataclass
@@ -206,7 +209,7 @@ class GameState:
 
         letter = _normalise(letter)
         if not _is_valid_letter(letter):
-            raise ValueError("Guess must be a single letter")
+            raise ValueError("Guess must be a single letter a-z")
 
         if letter in self.guessed_letters:
             return self
@@ -271,7 +274,7 @@ def hangman_guess() -> Tool:
             # itself. Letting the ValueError escape would abort the sample and
             # drop the game from the results entirely.
             raise ToolError(
-                f"'{letter}' is not a single letter. "
+                f"'{letter}' is not a single letter from a to z. "
                 f"Guess exactly one letter, for example hangman_guess('a')."
             )
 

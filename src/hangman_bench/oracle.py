@@ -11,7 +11,7 @@ final win/loss.
 The metrics fall into two families.
 
 Provable errors (no judgement required):
-- invalid:        the guess was not a single alphabetic character.
+- invalid:        the guess was not a single letter a-z.
 - repeat:         the letter had already been guessed, so the guess cannot
                   change the belief state. Strictly wasted.
 - dominated_miss: a fresh letter that appears in ZERO consistent candidate
@@ -328,7 +328,9 @@ def replay_trajectory(
 
     for step, raw in enumerate(raw_guesses):
         letter = (raw or "").strip().lower()
-        invalid = len(letter) != 1 or not letter.isalpha()
+        # Mirrors the game's _is_valid_letter: a-z only, not isalpha(), so a
+        # Unicode letter is scored as invalid exactly as the tool rejects it.
+        invalid = len(letter) != 1 or not ("a" <= letter <= "z")
         repeat = (not invalid) and letter in guessed
 
         board = reveal(word, guessed)

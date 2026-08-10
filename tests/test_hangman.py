@@ -183,6 +183,27 @@ class TestGuessRecording:
         with pytest.raises(ValueError, match="single letter"):
             state.guess("ab")
 
+    def test_non_ascii_letters_are_invalid(self):
+        # str.isalpha() would accept these; a letter outside a-z can never be
+        # revealed, so it must not reach the game and cost a life.
+        state = GameState.start("apple", max_guesses=6)
+        with pytest.raises(ValueError, match="single letter"):
+            state.guess("é")
+        state.attempts.extend(["é", "ß", "λ"])
+        assert state.invalid_attempts == ["é", "ß", "λ"]
+        assert state.remaining_guesses == 6
+
+    def test_wrong_guess_budget_of_26_is_unreachable(self):
+        # The unlimited-budget protocol rests on this: guessing every letter
+        # of the alphabet completes any word before 26 wrong guesses accrue.
+        state = GameState.start("apple", max_guesses=26)
+        for letter in "abcdefghijklmnopqrstuvwxyz":
+            state.guess(letter)
+            if state.game_over:
+                break
+        assert state.won
+        assert state.remaining_guesses > 0
+
     def test_guess_ignores_repeats_without_costing_a_life(self):
         state = GameState.start("apple", max_guesses=6)
         state.guess("z")

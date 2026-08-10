@@ -34,9 +34,7 @@ from typing import Iterable, List, Tuple
 ENTRY_REGEX = re.compile(r"\{\s*\"([^\"]+)\"\s*,\s*\{([^}]*)\}\s*\}", re.DOTALL)
 
 # Source ZIP containing SimulationData.txt
-SIMULATION_ZIP_URL = (
-    "https://library.wolfram.com/infocenter/MathSource/7635/SimulationData.zip?file_id=7257"
-)
+SIMULATION_ZIP_URL = "https://library.wolfram.com/infocenter/MathSource/7635/SimulationData.zip?file_id=7257"
 
 
 def download_and_extract_simulation_data(dest_path: str) -> str:
@@ -90,7 +88,7 @@ def parse_simulation_data(text: str) -> Iterable[Tuple[str, List[int]]]:
         numbers_blob = match.group(2)
         # Split by commas and parse integers, ignoring whitespace and newlines
         nums: List[int] = []
-        for part in numbers_blob.split(','):
+        for part in numbers_blob.split(","):
             s = part.strip()
             if not s:
                 continue
@@ -111,9 +109,11 @@ def write_tsv(rows: Iterable[Tuple[str, List[int]]], out_path: str) -> None:
     Columns: word, wrong_guesses, mean_wrong_guesses
     wrong_guesses is a comma-separated list inside square brackets.
     """
-    os.makedirs(os.path.dirname(out_path), exist_ok=True) if os.path.dirname(out_path) else None
-    with open(out_path, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f, delimiter='\t')
+    os.makedirs(os.path.dirname(out_path), exist_ok=True) if os.path.dirname(
+        out_path
+    ) else None
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f, delimiter="\t")
         writer.writerow(["word", "wrong_guesses", "mean_wrong_guesses"])
         for word, nums in rows:
             m = float(mean(nums)) if nums else 0.0
@@ -123,9 +123,13 @@ def write_tsv(rows: Iterable[Tuple[str, List[int]]], out_path: str) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Ingest SimulationData.txt and export TSV per word with mean.")
+    parser = argparse.ArgumentParser(
+        description="Ingest SimulationData.txt and export TSV per word with mean."
+    )
     parser.add_argument("--input", required=True, help="Path to SimulationData.txt")
-    parser.add_argument("--output", default="SimulationData_parsed.tsv", help="Path to output TSV file")
+    parser.add_argument(
+        "--output", default="SimulationData_parsed.tsv", help="Path to output TSV file"
+    )
     args = parser.parse_args()
 
     in_path = args.input
@@ -136,7 +140,7 @@ def main() -> None:
         download_and_extract_simulation_data(in_path)
 
     # Read entire file (approx 50MB)
-    with open(in_path, 'r', encoding='utf-8', errors='ignore') as f:
+    with open(in_path, "r", encoding="utf-8", errors="ignore") as f:
         text = f.read()
 
     rows = list(parse_simulation_data(text))

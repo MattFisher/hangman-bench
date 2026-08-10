@@ -418,7 +418,13 @@ trajectories cross-checked clean):
   hiding gpt-4o's tail: 37% of its words complete only above b=10, all by
   b=20. This is the small-scale analogue of AISI's inference-scaling result
   in cyber evals (≈8% of their tasks solved only at the 50M-token budget):
-  a fixed evaluation budget understates the weaker model most.
+  a fixed evaluation budget understates the weaker model most. Repeats and
+  invalid submissions never cost a life, so the one failure mode left at
+  b=26 is a spiral into the message limit — the DNF column; none occurred,
+  and the worst game used 58 of 145 messages. gpt-4o won `larynx` only
+  after guessing the entire alphabet (20 wrong guesses): at full budget
+  even alphabet-exhaustion wins, which is exactly why b=26 is a cap in
+  name only.
 - **Play is budget-conditional, in the direction of rising to scarcity.**
   The derived curve assumes the model plays the same regardless of the
   budget it is told. It does not: the real constrained runs beat the derived
@@ -443,10 +449,16 @@ trajectories cross-checked clean):
 - **Framing against the AISI cyber result**
   (https://www.aisi.gov.uk/blog/evidence-for-inference-scaling-in-ai-cyber-tasks-increased-evaluation-budgets-reveal-higher-success-rates):
   what transfers is "report curves, not fixed-budget points". What hangman
-  adds is an exact frontier and floor: the task's intrinsic information cost
-  (even optimal play needs a median of 3 wrong guesses) separates cleanly
-  from model inefficiency — the horizontal gap to the oracle at the 90th
-  percentile is +2 / +5 / +11 wrong guesses for sonnet / nano / gpt-4o.
+  adds is an exactly *computable* reference pair — the greedy uniform-prior
+  baseline (median 3 wrong guesses) and the frequency floor — so a declared
+  share of each curve is attributable to the task rather than the model.
+  The horizontal gap at the 90th percentile — +2 / +5 / +11 wrong guesses
+  for sonnet / nano / gpt-4o — is relative to that declared greedy baseline,
+  **not to an optimum**: the reference maximises per-guess hit probability,
+  which does not minimise wrong guesses, and the models crossing it at low
+  budgets (above) is the proof. Truly optimal play is exactly computable
+  where the findings concentrate — the ≤3-candidate endgame — and is worth
+  adding at scale-up.
   Honest disanalogies: success here is guaranteed at b=26, so this measures
   efficiency rather than capability emergence (the emergence analogue, DNF,
   did not occur); and this budget buys *evidence*, where theirs buys
@@ -678,7 +690,8 @@ confirmed by reproduction before fixing):
    point calibrates the scarcity effect it cannot see (models beat the
    derived prediction under tight budgets — section 4). At scale-up, add
    per-word replication and the reasoning-effort axis for a 2D
-   evidence × compute scaling surface against the exact frontier.
+   evidence × compute scaling surface against the computable reference
+   policies.
 5. **Scale the dataset.** Thousands of words, stratified by computed
    difficulty, held-out set for contamination control.
 6. **Score commitment, if word guesses are used.** `allow_word_guesses=True`

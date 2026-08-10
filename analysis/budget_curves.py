@@ -34,7 +34,7 @@ from typing import Dict
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 from compare_arms import binom_two_sided, load_arm  # noqa: E402
-from pilot_oracle import agent_frequency, load_dataset_words  # noqa: E402
+from pilot_oracle import agent_frequency  # noqa: E402
 
 from hangman_bench.oracle import (  # noqa: E402
     load_dictionary_index,
@@ -72,8 +72,16 @@ def main() -> int:
     arm = load_arm(pathlib.Path(args.unlimited), index)
     models = sorted(arm)
 
-    # Reference agents on the same words, from the dictionary alone.
-    words = [w for w, _ in load_dataset_words()]
+    # Reference agents play exactly the words the loaded arm played, so the
+    # curves stay comparable when the run was filtered or partial.
+    word_sets = {model: set(games) for model, games in arm.items()}
+    words_union = set.union(*word_sets.values())
+    words = sorted(set.intersection(*word_sets.values()))
+    if len(words) != len(words_union):
+        print(
+            f"note: word sets differ across models; using the {len(words)} words "
+            f"common to all models (dropping {len(words_union) - len(words)})."
+        )
     oracle_needed: Dict[str, int | None] = {}
     frequency_needed: Dict[str, int | None] = {}
     for word in words:
@@ -95,7 +103,8 @@ def main() -> int:
         "frequency(etaoin)": frequency_needed,
     }
     for model in models:
-        curves[model] = wrong_needed(arm[model])
+        needed = wrong_needed(arm[model])
+        curves[model] = {w: needed[w] for w in words}
 
     budgets = list(range(1, MAX_BUDGET + 1))
     print("win rate at wrong-guess budget b (derived from the unlimited run):")
