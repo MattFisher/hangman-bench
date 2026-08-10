@@ -41,8 +41,17 @@ ArmGames = Dict[str, Dict[str, TrajectoryReport]]  # model -> word -> report
 
 def load_arm(path: pathlib.Path, index) -> ArmGames:
     out: ArmGames = {}
+    sources: Dict[tuple, pathlib.Path] = {}
     for log_path in find_logs(path):
         for game in extract_trajectories(log_path):
+            key = (game.model, game.word)
+            if key in sources:
+                raise ValueError(
+                    f"Duplicate trajectory for {game.model} on {game.word!r}: "
+                    f"{sources[key]} and {log_path}. An arm must contain exactly "
+                    f"one run per model; point at a single run's logs."
+                )
+            sources[key] = log_path
             report = replay_trajectory(
                 word=game.word,
                 raw_guesses=game.guesses,
@@ -144,6 +153,17 @@ def main() -> int:
                 if not comp:
                     continue
                 words = sorted(set(base) & set(comp))
+                unpaired = (set(base) | set(comp)) - set(words)
+                if unpaired:
+                    # An incomplete arm drops words from the paired population,
+                    # and missingness likely correlates with difficulty. Say so
+                    # rather than silently shrinking the test.
+                    print(
+                        f"  note: {len(unpaired)} unpaired words dropped from "
+                        f"{args.baseline} vs {arm_name} for {model}: "
+                        f"{', '.join(sorted(unpaired)[:5])}"
+                        + ("…" if len(unpaired) > 5 else "")
+                    )
                 b_only = sum(
                     1 for w in words if base[w].final_won and not comp[w].final_won
                 )

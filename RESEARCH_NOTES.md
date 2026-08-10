@@ -305,8 +305,9 @@ the example-letter artifact is gone — but nano still spiralled, this time
 organically. On `flopping` it repeated `g`, a letter it had already *hit*,
 ten times and lost. So the refined claim is: the old nudge chose the
 *letter*; the loop tendency is nano's own. `repeat_rate` is now citable as
-model behaviour: nano 13/976 guesses (10 of them that one spiral), sonnet 0
-across every arm, gpt-4o ≤ 6 scattered singles.
+model behaviour: nano 13/976 guesses (10 of them that one spiral), sonnet
+zero in three arms and two in the belief arm (g and i, out of 957 guesses),
+gpt-4o ≤ 6 scattered singles per arm.
 
 ---
 
