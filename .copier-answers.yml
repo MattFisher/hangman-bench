@@ -1,0 +1,17 @@
+# This file is auto-generated and updated by Copier; do not edit by hand.
+# Run `copier update` to pull in template changes.
+_commit: v1.8.1
+_src_path: gh:MattFisher/python-project-template
+author_email: m@ttfisher.com
+author_name: Matt Fisher
+github_owner: MattFisher
+license: MIT
+project_description: Hangman game benchmark for AI models
+project_kind: library
+project_name: hangman-bench
+publish_to_pypi: false
+python_version: '3.12'
+use_coverage_gate: false
+use_frontend: false
+use_template_update: true
+use_typos: false
