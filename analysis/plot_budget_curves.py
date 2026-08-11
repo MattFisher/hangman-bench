@@ -15,26 +15,20 @@ import argparse
 import csv
 import pathlib
 
-import matplotlib.pyplot as plt
+from figstyle import (
+    FIGURES_DIR,
+    GRID,
+    INK_MUTED,
+    INK_SECONDARY,
+    MODEL_COLORS as SERIES,
+    REFERENCE_STYLES as REFERENCES,
+    SURFACE,
+    finish,
+    new_axes,
+    save,
+)
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
-
-# Reference palette (dataviz skill): first three categorical slots, validated
-# all-pairs on the light surface; baselines wear ink, not series hues.
-SURFACE = "#fcfcfb"
-INK = "#0b0b0b"
-INK_SECONDARY = "#52514e"
-INK_MUTED = "#898781"
-GRID = "#e1e0d9"
-SERIES = {
-    "anthropic/claude-sonnet-5": ("claude-sonnet-5", "#2a78d6"),
-    "openai/gpt-5-nano": ("gpt-5-nano", "#eb6834"),
-    "openai/gpt-4o": ("gpt-4o", "#1baf7a"),
-}
-REFERENCES = {
-    "oracle(greedy)": ("greedy oracle (uniform prior)", INK_SECONDARY, (0, (4, 2))),
-    "frequency(etaoin)": ("frequency player (etaoin…)", INK_MUTED, (0, (1, 2))),
-}
 
 
 def read_curves(path: pathlib.Path) -> dict[str, list[float]]:
@@ -64,19 +58,14 @@ def main() -> int:
         "--validation",
         default=str(REPO_ROOT / "analysis" / "budget_validation.tsv"),
     )
-    parser.add_argument(
-        "--out",
-        default=str(REPO_ROOT / "analysis" / "figures" / "budget_curves.png"),
-    )
+    parser.add_argument("--out", default=str(FIGURES_DIR / "budget_curves.png"))
     args = parser.parse_args()
 
     curves = read_curves(pathlib.Path(args.curves))
     validation = read_validation(pathlib.Path(args.validation))
     budgets = list(range(1, max(len(v) for v in curves.values()) + 1))
 
-    fig, ax = plt.subplots(figsize=(8.4, 5.2), dpi=200)
-    fig.patch.set_facecolor(SURFACE)
-    ax.set_facecolor(SURFACE)
+    fig, ax = new_axes()
 
     # Reference policies: ink, dashed/dotted, drawn first so models sit on top.
     for agent, (label, color, dashes) in REFERENCES.items():
@@ -163,31 +152,12 @@ def main() -> int:
     ax.set_xticks([1, 4, 8, 12, 16, 20, 26])
     ax.set_xlabel("wrong-guess budget b", color=INK_SECONDARY, fontsize=10)
     ax.set_ylabel("win rate", color=INK_SECONDARY, fontsize=10)
-    ax.set_title(
+    finish(
+        ax,
         "Win rate vs wrong-guess budget — 100 words, derived from one unlimited run",
-        color=INK,
-        fontsize=11.5,
-        loc="left",
-        pad=24,
-    )
-    ax.text(
-        0,
-        1.015,
         "dots: real constrained runs at b=4 and b=10 — models beat their own "
         "derived curve under scarcity",
-        transform=ax.transAxes,
-        color=INK_MUTED,
-        fontsize=8.5,
-        va="bottom",
     )
-
-    ax.grid(axis="y", color=GRID, linewidth=0.7)
-    ax.tick_params(colors=INK_MUTED, labelsize=8.5)
-    for spine in ("top", "right"):
-        ax.spines[spine].set_visible(False)
-    for spine in ("left", "bottom"):
-        ax.spines[spine].set_color(GRID)
-
     ax.legend(
         loc="lower right",
         fontsize=8.5,
@@ -196,11 +166,7 @@ def main() -> int:
         handlelength=2.4,
     )
 
-    out = pathlib.Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    fig.tight_layout()
-    fig.savefig(out, facecolor=SURFACE, bbox_inches="tight")
-    print(f"Wrote {out}")
+    save(fig, pathlib.Path(args.out))
     return 0
 
 
