@@ -128,8 +128,7 @@ def write_frequencies(words: Sequence[str], path: pathlib.Path) -> None:
         from wordfreq import word_frequency
     except ImportError:
         raise SystemExit(
-            "wordfreq is required for --with-frequencies. "
-            "Install it with: uv pip install wordfreq"
+            "wordfreq is required for --with-frequencies. Install it with: uv pip install wordfreq"
         )
 
     missing = 0
@@ -140,8 +139,7 @@ def write_frequencies(words: Sequence[str], path: pathlib.Path) -> None:
                 missing += 1
             handle.write(f"{word}\t{freq:.6e}\n")
     print(
-        f"{missing}/{len(words)} words have zero frequency and need smoothing "
-        f"when used as a prior",
+        f"{missing}/{len(words)} words have zero frequency and need smoothing when used as a prior",
         file=sys.stderr,
     )
 
@@ -194,11 +192,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         scowl_dir = download_scowl(REPO_ROOT / ".scowl-cache")
 
     words = collect_words(scowl_dir, DIALECTS[args.dialect], args.tier, args.min_length)
-    output = (
-        pathlib.Path(args.output)
-        if args.output
-        else DATA_DIR / f"wordlist_{args.dialect}.txt"
-    )
+    output = pathlib.Path(args.output) if args.output else DATA_DIR / f"wordlist_{args.dialect}.txt"
     write_wordlist(words, output)
     print(f"Wrote {len(words)} words to {output}")
 

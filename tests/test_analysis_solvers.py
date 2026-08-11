@@ -6,9 +6,7 @@ import importlib.util
 import pathlib
 import sys
 
-MEASURE_PATH = (
-    pathlib.Path(__file__).resolve().parents[1] / "analysis" / "measure_difficulty.py"
-)
+MEASURE_PATH = pathlib.Path(__file__).resolve().parents[1] / "analysis" / "measure_difficulty.py"
 
 
 def _load_module():

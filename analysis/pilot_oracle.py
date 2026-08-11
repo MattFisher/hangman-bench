@@ -361,28 +361,14 @@ def summarise(reports: Sequence[TrajectoryReport]) -> List[Dict[str, object]]:
                 "win_rate": statistics.mean(1.0 if r.final_won else 0.0 for r in group),
                 "guesses_emitted": emitted,
                 "guesses_scored": scored,
-                "repeat_rate": (sum(r.n_repeat for r in group) / emitted)
-                if emitted
-                else 0.0,
-                "invalid_rate": (sum(r.n_invalid for r in group) / emitted)
-                if emitted
-                else 0.0,
-                "dominated_rate": (sum(r.n_dominated for r in group) / scored)
-                if scored
-                else 0.0,
-                "suboptimal_rate": (sum(r.n_suboptimal for r in group) / scored)
-                if scored
-                else 0.0,
-                "mean_hit_prob_regret": statistics.mean(
-                    r.mean_hit_prob_regret for r in group
-                ),
+                "repeat_rate": (sum(r.n_repeat for r in group) / emitted) if emitted else 0.0,
+                "invalid_rate": (sum(r.n_invalid for r in group) / emitted) if emitted else 0.0,
+                "dominated_rate": (sum(r.n_dominated for r in group) / scored) if scored else 0.0,
+                "suboptimal_rate": (sum(r.n_suboptimal for r in group) / scored) if scored else 0.0,
+                "mean_hit_prob_regret": statistics.mean(r.mean_hit_prob_regret for r in group),
                 "mean_wrong_guesses": statistics.mean(r.wrong_guesses for r in group),
-                "mean_oracle_wrong": statistics.mean(
-                    r.oracle_wrong_guesses for r in group
-                ),
-                "mean_excess_wrong": statistics.mean(
-                    r.excess_wrong_guesses for r in group
-                ),
+                "mean_oracle_wrong": statistics.mean(r.oracle_wrong_guesses for r in group),
+                "mean_excess_wrong": statistics.mean(r.excess_wrong_guesses for r in group),
             }
         )
     return rows
@@ -448,9 +434,7 @@ def load_dataset_words() -> List[Tuple[str, str]]:
     return [(entry.word.lower(), entry.difficulty) for entry in module.ENGLISH_WORDS]
 
 
-def restrict_dictionary(
-    dictionary: Sequence[str], words: Iterable[str]
-) -> Dict[int, List[str]]:
+def restrict_dictionary(dictionary: Sequence[str], words: Iterable[str]) -> Dict[int, List[str]]:
     """Index the dictionary by length; replay only ever needs one length."""
     index = by_length(dictionary)
     for word in words:

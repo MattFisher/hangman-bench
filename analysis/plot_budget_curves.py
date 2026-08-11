@@ -36,9 +36,7 @@ def read_curves(path: pathlib.Path) -> dict[str, list[float]]:
     with path.open() as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
             budgets = [k for k in row if k.startswith("b")]
-            curves[row["agent"]] = [
-                float(row[f"b{b}"]) for b in range(1, len(budgets) + 1)
-            ]
+            curves[row["agent"]] = [float(row[f"b{b}"]) for b in range(1, len(budgets) + 1)]
     return curves
 
 
@@ -51,9 +49,7 @@ def read_validation(path: pathlib.Path) -> list[dict]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--curves", default=str(REPO_ROOT / "analysis" / "budget_curves.tsv")
-    )
+    parser.add_argument("--curves", default=str(REPO_ROOT / "analysis" / "budget_curves.tsv"))
     parser.add_argument(
         "--validation",
         default=str(REPO_ROOT / "analysis" / "budget_validation.tsv"),

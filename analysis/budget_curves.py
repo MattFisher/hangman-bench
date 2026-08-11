@@ -114,10 +114,7 @@ def main() -> int:
 
     budgets = list(range(1, MAX_BUDGET + 1))
     print("win rate at wrong-guess budget b (derived from the unlimited run):")
-    print(
-        f"{'agent':<28}"
-        + "".join(f"b={b:<5}" for b in [1, 2, 3, 4, 6, 8, 10, 13, 16, 20, 26])
-    )
+    print(f"{'agent':<28}" + "".join(f"b={b:<5}" for b in [1, 2, 3, 4, 6, 8, 10, 13, 16, 20, 26]))
     shown = [1, 2, 3, 4, 6, 8, 10, 13, 16, 20, 26]
     for agent, needed in curves.items():
         row = "".join(f"{win_at(needed, b):<7.2f}" for b in shown)
@@ -152,9 +149,7 @@ def main() -> int:
                 continue
             needed = curves[model]
             words_both = sorted(set(needed) & set(actual))
-            predicted = {
-                w: needed[w] is not None and needed[w] < budget for w in words_both
-            }
+            predicted = {w: needed[w] is not None and needed[w] < budget for w in words_both}
             real = {w: actual[w].final_won for w in words_both}
             pred_only = sum(1 for w in words_both if predicted[w] and not real[w])
             real_only = sum(1 for w in words_both if real[w] and not predicted[w])

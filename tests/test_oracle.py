@@ -161,9 +161,7 @@ class TestReplay:
             dictionary=dictionary,
             max_wrong=6,
         )
-        expected = oracle_play(
-            "cat", dictionary, choose_max_hit_probability, max_wrong=6
-        )
+        expected = oracle_play("cat", dictionary, choose_max_hit_probability, max_wrong=6)
         assert report.oracle_wrong_guesses == expected
         assert report.excess_wrong_guesses == report.wrong_guesses - expected
 
@@ -193,9 +191,7 @@ class TestLogIngestion:
         emitted = ["a", "a", "e", "p", "l"]
         log = inspect_eval(
             tasks=hangman(difficulty="v_easy", max_guesses=6, shuffle=False),
-            model=get_model(
-                "mockllm/model", custom_outputs=[guess(x) for x in emitted]
-            ),
+            model=get_model("mockllm/model", custom_outputs=[guess(x) for x in emitted]),
             limit=1,
         )[0]
 
@@ -280,9 +276,7 @@ class TestOracleScorer:
             for letter in letters
         ]
         return inspect_eval(
-            tasks=hangman(
-                difficulty="v_easy", max_guesses=6, shuffle=False, **task_kwargs
-            ),
+            tasks=hangman(difficulty="v_easy", max_guesses=6, shuffle=False, **task_kwargs),
             model=get_model("mockllm/model", custom_outputs=outputs),
             limit=1,
         )[0]

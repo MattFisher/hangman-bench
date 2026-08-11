@@ -59,12 +59,8 @@ def write_unique(words: List[str], output_path: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Extract wordlist from TSV first column"
-    )
-    parser.add_argument(
-        "--input", required=True, help="Path to TSV file (expects a 'word' header)"
-    )
+    parser = argparse.ArgumentParser(description="Extract wordlist from TSV first column")
+    parser.add_argument("--input", required=True, help="Path to TSV file (expects a 'word' header)")
     parser.add_argument(
         "--output", required=True, help="Path to write word list (one word per line)"
     )

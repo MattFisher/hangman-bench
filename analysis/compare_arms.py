@@ -72,9 +72,7 @@ def binom_two_sided(k: int, n: int) -> float:
     p_k = comb(n, k) / 2**n
     return min(
         1.0,
-        sum(
-            comb(n, i) / 2**n for i in range(n + 1) if comb(n, i) / 2**n <= p_k + 1e-12
-        ),
+        sum(comb(n, i) / 2**n for i in range(n + 1) if comb(n, i) / 2**n <= p_k + 1e-12),
     )
 
 
@@ -87,9 +85,7 @@ def arm_row(arm: str, model: str, reports) -> dict:
         "model": model,
         "games": len(reports),
         "win_rate": mean(1.0 if r.final_won else 0.0 for r in reports),
-        "dominated_rate": sum(r.n_dominated for r in reports) / scored
-        if scored
-        else 0.0,
+        "dominated_rate": sum(r.n_dominated for r in reports) / scored if scored else 0.0,
         "hit_prob_regret": mean(r.mean_hit_prob_regret for r in reports),
         "excess_wrong": mean(r.excess_wrong_guesses for r in reports),
         "repeats": sum(r.n_repeat for r in reports),
@@ -161,22 +157,13 @@ def main() -> int:
                     print(
                         f"  note: {len(unpaired)} unpaired words dropped from "
                         f"{args.baseline} vs {arm_name} for {model}: "
-                        f"{', '.join(sorted(unpaired)[:5])}"
-                        + ("…" if len(unpaired) > 5 else "")
+                        f"{', '.join(sorted(unpaired)[:5])}" + ("…" if len(unpaired) > 5 else "")
                     )
-                b_only = sum(
-                    1 for w in words if base[w].final_won and not comp[w].final_won
-                )
-                c_only = sum(
-                    1 for w in words if comp[w].final_won and not base[w].final_won
-                )
+                b_only = sum(1 for w in words if base[w].final_won and not comp[w].final_won)
+                c_only = sum(1 for w in words if comp[w].final_won and not base[w].final_won)
                 p_win = binom_two_sided(min(b_only, c_only), b_only + c_only)
-                b_more = sum(
-                    1 for w in words if base[w].n_dominated > comp[w].n_dominated
-                )
-                c_more = sum(
-                    1 for w in words if comp[w].n_dominated > base[w].n_dominated
-                )
+                b_more = sum(1 for w in words if base[w].n_dominated > comp[w].n_dominated)
+                c_more = sum(1 for w in words if comp[w].n_dominated > base[w].n_dominated)
                 p_dom = binom_two_sided(min(b_more, c_more), b_more + c_more)
                 delta = mean(comp[w].n_dominated - base[w].n_dominated for w in words)
                 print(
@@ -201,10 +188,7 @@ def main() -> int:
             writer.writeheader()
             for row in rows:
                 writer.writerow(
-                    {
-                        k: (f"{v:.4f}" if isinstance(v, float) else v)
-                        for k, v in row.items()
-                    }
+                    {k: (f"{v:.4f}" if isinstance(v, float) else v) for k, v in row.items()}
                 )
         print(f"\nWrote {path}")
     return 0

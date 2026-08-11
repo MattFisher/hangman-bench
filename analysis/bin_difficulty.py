@@ -101,9 +101,7 @@ def classify(value: float, thresholds: List[float], labels: List[str]) -> str:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Bin words into difficulty tiers using quantiles"
-    )
+    parser = argparse.ArgumentParser(description="Bin words into difficulty tiers using quantiles")
     parser.add_argument(
         "--input",
         default="analysis/difficulty_report.tsv",
@@ -119,9 +117,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         default="wrong_freq_raw",
         help="Fallback metric column if primary is missing",
     )
-    parser.add_argument(
-        "--bins", type=int, default=5, help="Number of bins (default: 5)"
-    )
+    parser.add_argument("--bins", type=int, default=5, help="Number of bins (default: 5)")
     parser.add_argument(
         "--output",
         default="analysis/difficulty_binned.tsv",
@@ -157,9 +153,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             writer.writerow(r)
 
     print(f"Wrote {len(rows)} rows to {out_path}")
-    print(
-        "Thresholds used (interior cuts): " + ", ".join(f"{t:.3f}" for t in thresholds)
-    )
+    print("Thresholds used (interior cuts): " + ", ".join(f"{t:.3f}" for t in thresholds))
 
     if args.emit_snippet:
         snippet_path = pathlib.Path(args.emit_snippet)

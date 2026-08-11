@@ -298,9 +298,7 @@ class TestHangmanE2E:
 
     def test_hangman_invalid_language(self) -> None:
         """Test that invalid language raises ValueError."""
-        with pytest.raises(
-            ValueError, match="Language 'invalid_language' not supported"
-        ):
+        with pytest.raises(ValueError, match="Language 'invalid_language' not supported"):
             hangman(language="invalid_language")
 
     def test_hangman_task_parameters(self) -> None:
@@ -369,8 +367,7 @@ class TestHangmanE2E:
         difficulty_metrics = [
             name
             for name in all_metrics.keys()
-            if name.startswith("game_scorer.")
-            and name.split(".")[1] not in ("all", "stderr")
+            if name.startswith("game_scorer.") and name.split(".")[1] not in ("all", "stderr")
         ]
         assert len(difficulty_metrics) > 0
 

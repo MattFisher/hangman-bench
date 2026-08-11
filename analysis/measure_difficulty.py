@@ -44,9 +44,7 @@ class SolverResult:
 
 def load_dataset_words(datasets_path: pathlib.Path) -> List[str]:
     """Load ENGLISH_WORDS from datasets.py via file path to avoid package imports."""
-    spec = importlib.util.spec_from_file_location(
-        "hangman_datasets", str(datasets_path)
-    )
+    spec = importlib.util.spec_from_file_location("hangman_datasets", str(datasets_path))
     if spec is None or spec.loader is None:
         raise ImportError(f"Could not load module from {datasets_path}")
     module = importlib.util.module_from_spec(spec)
@@ -74,9 +72,7 @@ def build_length_index(words: List[str]) -> Dict[int, List[str]]:
     return idx
 
 
-def filter_candidates(
-    board: str, wrong_guesses: List[str], dictionary: List[str]
-) -> List[str]:
+def filter_candidates(board: str, wrong_guesses: List[str], dictionary: List[str]) -> List[str]:
     """Words consistent with the board and the letters known to be absent.
 
     Guessing a letter reveals *every* occurrence of it at once, so a guessed
@@ -203,9 +199,7 @@ def make_move(
     return ("".join(board_list), wrong_guesses)
 
 
-def solve_with_strategy(
-    target_word: str, dictionary_all: List[str], chooser
-) -> SolverResult:
+def solve_with_strategy(target_word: str, dictionary_all: List[str], chooser) -> SolverResult:
     board = "." * len(target_word)
     wrong_guesses: List[str] = []
     total_guesses = 0
@@ -262,9 +256,7 @@ def structural_scores(
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Objective difficulty metrics for Hangman words"
-    )
+    parser = argparse.ArgumentParser(description="Objective difficulty metrics for Hangman words")
     parser.add_argument(
         "--datasets",
         default=str(REPO_ROOT / "src/hangman_bench/datasets.py"),

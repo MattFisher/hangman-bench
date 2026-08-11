@@ -214,9 +214,7 @@ class TestGuessRecording:
         from hangman_bench.oracle import DEFAULT_WORDLIST, load_wordlist
 
         alphabet = set(get_alphabet(Language.ENGLISH))
-        stray = {
-            ch for word in load_wordlist(DEFAULT_WORDLIST) for ch in word
-        } - alphabet
+        stray = {ch for word in load_wordlist(DEFAULT_WORDLIST) for ch in word} - alphabet
         assert not stray
 
     def test_guess_ignores_repeats_without_costing_a_life(self):

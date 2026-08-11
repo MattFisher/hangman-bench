@@ -96,9 +96,7 @@ def consistent_candidates(
     return out
 
 
-def hit_probabilities(
-    candidates: Sequence[str], guessed: frozenset
-) -> Dict[str, float]:
+def hit_probabilities(candidates: Sequence[str], guessed: frozenset) -> Dict[str, float]:
     """P(letter occurs in the hidden word) under a uniform posterior.
 
     Only letters not yet guessed are scored; guessing a letter already guessed
@@ -120,9 +118,7 @@ def hit_probabilities(
 # --------------------------------------------------------------------------
 
 
-def choose_max_hit_probability(
-    candidates: Sequence[str], guessed: frozenset
-) -> Optional[str]:
+def choose_max_hit_probability(candidates: Sequence[str], guessed: frozenset) -> Optional[str]:
     """Greedy: the letter most likely to appear. Ties break alphabetically."""
     probs = hit_probabilities(candidates, guessed)
     if not probs:
@@ -131,9 +127,7 @@ def choose_max_hit_probability(
     return min(letter for letter, p in probs.items() if p == best)
 
 
-def choose_min_expected_candidates(
-    candidates: Sequence[str], guessed: frozenset
-) -> Optional[str]:
+def choose_min_expected_candidates(candidates: Sequence[str], guessed: frozenset) -> Optional[str]:
     """Information-gain: minimise expected size of the surviving candidate set.
 
     Guessing a letter partitions the candidates by the mask of positions where
@@ -350,9 +344,7 @@ def replay_trajectory(
 
         # A fresh letter in zero candidate words is a guaranteed miss for zero
         # information: provably the wrong move, given this dictionary.
-        dominated_miss = (
-            not invalid and not repeat and len(candidates) > 0 and hit_prob == 0.0
-        )
+        dominated_miss = not invalid and not repeat and len(candidates) > 0 and hit_prob == 0.0
 
         hit = (not invalid) and (not repeat) and letter in word
 

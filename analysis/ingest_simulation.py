@@ -34,7 +34,9 @@ from typing import Iterable, List, Tuple
 ENTRY_REGEX = re.compile(r"\{\s*\"([^\"]+)\"\s*,\s*\{([^}]*)\}\s*\}", re.DOTALL)
 
 # Source ZIP containing SimulationData.txt
-SIMULATION_ZIP_URL = "https://library.wolfram.com/infocenter/MathSource/7635/SimulationData.zip?file_id=7257"
+SIMULATION_ZIP_URL = (
+    "https://library.wolfram.com/infocenter/MathSource/7635/SimulationData.zip?file_id=7257"
+)
 
 
 def download_and_extract_simulation_data(dest_path: str) -> str:
@@ -66,9 +68,7 @@ def download_and_extract_simulation_data(dest_path: str) -> str:
                 break
 
         if candidate is None:
-            raise FileNotFoundError(
-                "SimulationData.txt not found inside downloaded ZIP archive"
-            )
+            raise FileNotFoundError("SimulationData.txt not found inside downloaded ZIP archive")
 
         shutil.copyfile(candidate, dest_path)
         return dest_path
@@ -109,9 +109,7 @@ def write_tsv(rows: Iterable[Tuple[str, List[int]]], out_path: str) -> None:
     Columns: word, wrong_guesses, mean_wrong_guesses
     wrong_guesses is a comma-separated list inside square brackets.
     """
-    os.makedirs(os.path.dirname(out_path), exist_ok=True) if os.path.dirname(
-        out_path
-    ) else None
+    os.makedirs(os.path.dirname(out_path), exist_ok=True) if os.path.dirname(out_path) else None
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter="\t")
         writer.writerow(["word", "wrong_guesses", "mean_wrong_guesses"])

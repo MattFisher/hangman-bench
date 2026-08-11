@@ -61,9 +61,7 @@ def load_words(path: str, num_letters: int) -> List[str]:
     return unique_words
 
 
-def best_move_for(
-    board: str, wrong_guesses: List[str], dictionary: List[str]
-) -> str | None:
+def best_move_for(board: str, wrong_guesses: List[str], dictionary: List[str]) -> str | None:
     letters_already_found = {c for c in board if c != "."}
     excluded = letters_already_found.union(wrong_guesses)
     counts = {c: 0 for c in ALPHABET if c not in excluded}
@@ -114,9 +112,7 @@ def result_for(
             pattern = re.compile("^" + re.escape(board).replace("\.", ".") + "$")
             wrong_set = set(wrong_guesses)
             dictionary = [
-                w
-                for w in dictionary
-                if pattern.fullmatch(w) and not (set(w) & wrong_set)
+                w for w in dictionary if pattern.fullmatch(w) and not (set(w) & wrong_set)
             ]
 
         if debug:
@@ -140,24 +136,16 @@ def result_for(
         board, wrong_guesses = make_move(target_word, board_list, guess, wrong_guesses)
         num_guesses += 1
 
-    return GameResult(
-        word=target_word, num_guesses=num_guesses, wrong_guesses=len(wrong_guesses)
-    )
+    return GameResult(word=target_word, num_guesses=num_guesses, wrong_guesses=len(wrong_guesses))
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Zen Hangman (Python) with pruning by wrong guesses"
     )
-    parser.add_argument(
-        "--wordlist", default="wordlist.txt", help="Path to word list file"
-    )
-    parser.add_argument(
-        "--num-letters", type=int, required=True, help="Word length to consider"
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Enable verbose debug output"
-    )
+    parser.add_argument("--wordlist", default="wordlist.txt", help="Path to word list file")
+    parser.add_argument("--num-letters", type=int, required=True, help="Word length to consider")
+    parser.add_argument("--debug", action="store_true", help="Enable verbose debug output")
     args = parser.parse_args()
 
     words = load_words(args.wordlist, args.num_letters)

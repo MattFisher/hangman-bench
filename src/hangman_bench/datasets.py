@@ -186,9 +186,7 @@ def get_words_by_language(language: Language) -> List[WordEntry]:
     return LANGUAGE_WORDS[language].copy()
 
 
-def get_words_by_difficulty(
-    language: Language, difficulty: Difficulty
-) -> List[WordEntry]:
+def get_words_by_difficulty(language: Language, difficulty: Difficulty) -> List[WordEntry]:
     """Get words of a specific difficulty level for a language.
 
     Args:
