@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pathlib
 import sys
+from typing import Any
 
 import pytest
 
@@ -261,7 +262,7 @@ class TestOracleScorer:
     """
 
     @staticmethod
-    def _run(letters: list[str], **task_kwargs: object):
+    def _run(letters: list[str], **task_kwargs: Any):
         from inspect_ai import eval as inspect_eval
         from inspect_ai.model import ModelOutput, get_model
 
@@ -287,6 +288,7 @@ class TestOracleScorer:
         assert log.samples is not None
 
         scores = log.samples[0].scores
+        assert scores is not None
         assert "game_scorer" in scores
         assert "oracle_scorer" in scores
 
@@ -305,7 +307,10 @@ class TestOracleScorer:
     def test_scorer_counts_repeats_and_invalid_guesses(self) -> None:
         log = self._run(["a", "a", "zz", "e", "p", "l"])
         assert log.samples is not None
-        metadata = log.samples[0].scores["oracle_scorer"].metadata
+        scores = log.samples[0].scores
+        assert scores is not None
+        metadata = scores["oracle_scorer"].metadata
+        assert metadata is not None
 
         assert metadata["num_repeat"] == 1
         assert metadata["num_invalid"] == 1
@@ -315,7 +320,9 @@ class TestOracleScorer:
     def test_oracle_can_be_disabled(self) -> None:
         log = self._run(["a", "e", "p", "l"], oracle=False)
         assert log.samples is not None
-        assert "oracle_scorer" not in log.samples[0].scores
+        scores = log.samples[0].scores
+        assert scores is not None
+        assert "oracle_scorer" not in scores
 
     def test_scorer_can_be_applied_to_an_existing_log(self) -> None:
         """A log scored without the oracle can have it added afterwards."""
@@ -327,11 +334,14 @@ class TestOracleScorer:
         log = self._run(["e", "t", "a", "o", "p", "l"], oracle=False)
         assert log.location is not None
         original = read_eval_log(log.location)
-        assert "oracle_scorer" not in (original.samples or [])[0].scores
+        original_scores = (original.samples or [])[0].scores
+        assert original_scores is not None
+        assert "oracle_scorer" not in original_scores
 
         rescored = score(original, oracle_scorer(), action="append", display="none")
         assert rescored.samples is not None
         scores = rescored.samples[0].scores
+        assert scores is not None
         # The original score is preserved and the oracle metrics are added.
         assert "game_scorer" in scores
         assert isinstance(scores["oracle_scorer"].value, dict)
@@ -405,7 +415,7 @@ class TestLogMetadataIsHonoured:
     """The replay must use the limit and outcome the game was actually played under."""
 
     @staticmethod
-    def _run(letters, **kwargs):
+    def _run(letters: list[str], **kwargs: Any):
         from inspect_ai import eval as inspect_eval
         from inspect_ai.model import ModelOutput, get_model
 
@@ -496,9 +506,12 @@ class TestLogMetadataIsHonoured:
 
         assert log.samples is not None
         sample = log.samples[0]
+        assert sample.scores is not None
         assert sample.scores["game_scorer"].value == "C"
         # The scorer's own view must agree with the eval.
-        assert sample.scores["oracle_scorer"].metadata["won"] is True
+        oracle_metadata = sample.scores["oracle_scorer"].metadata
+        assert oracle_metadata is not None
+        assert oracle_metadata["won"] is True
 
         # And so must the batch reader, which only sees the letter guesses.
         assert log.location is not None

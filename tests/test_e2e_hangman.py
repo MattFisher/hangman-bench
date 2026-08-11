@@ -408,7 +408,9 @@ class TestMalformedGuessHandling:
         sample = log.samples[0]
         assert sample.error is None
 
+        assert sample.scores is not None
         metadata = sample.scores["game_scorer"].metadata
+        assert metadata is not None
         assert metadata["num_invalid_guesses"] == 1
         assert "ab" in metadata["attempts"]
         # The malformed guess must not have cost a life or entered the game.
@@ -436,7 +438,10 @@ class TestMalformedGuessHandling:
 
         assert log.status == "success"
         assert log.samples is not None
-        metadata = log.samples[0].scores["game_scorer"].metadata
+        scores = log.samples[0].scores
+        assert scores is not None
+        metadata = scores["game_scorer"].metadata
+        assert metadata is not None
 
         assert metadata["num_repeated_guesses"] == 1
         assert metadata["attempts"].count("a") == 2

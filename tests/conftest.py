@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import os
 import tempfile
-from collections.abc import Generator
 from pathlib import Path
 from typing import Any
 
@@ -35,10 +34,11 @@ def pytest_configure(config: Any) -> None:  # runs before tests are collected
 
 
 @pytest.fixture(scope="session", autouse=True)
-def _report_log_dir() -> Generator[None, None, None]:
-    # Optional: print the temporary log dir at start for debugging.
-    # Pytest may capture this; it's harmless and helps diagnose if needed.
+def report_log_dir() -> None:
+    """Print the temporary log dir at start for debugging.
+
+    Pytest may capture this; it's harmless and helps diagnose if needed.
+    """
     log_dir = os.environ.get("INSPECT_LOG_DIR")
     if log_dir:
         print(f"[tests] INSPECT_LOG_DIR={log_dir}")
-    return

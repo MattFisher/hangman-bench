@@ -50,9 +50,9 @@ def test_hangman_invalid_language():
 
 def test_hangman_invalid_difficulty():
     with pytest.raises(ValueError, match="Difficulty must be one of"):
-        hangman(difficulty=6)  # Invalid difficulty
+        hangman(difficulty=6)  # pyright: ignore[reportArgumentType]  # invalid on purpose
     with pytest.raises(ValueError, match="Difficulty must be one of"):
-        hangman(difficulty="shmedium")  # Invalid difficulty
+        hangman(difficulty="shmedium")  # pyright: ignore[reportArgumentType]  # invalid on purpose
 
 
 def test_strategy_hint_frequency_reproduces_original_prompt():

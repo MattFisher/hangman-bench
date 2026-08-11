@@ -107,6 +107,20 @@ reportMissingTypeStubs = false # third-party libs are often untyped
 # follow-up rather than blocking template adoption on it.
 include = ["src", "tests"]
 
+# Tests exercise untyped surfaces on purpose — pytest.approx, eval-log
+# objects, private helpers, deliberately invalid arguments — so the
+# unknown-type family is relaxed there. The safety rules (Optional access,
+# argument types, operators) stay on.
+[[tool.basedpyright.executionEnvironments]]
+root = "tests"
+extraPaths = ["analysis"]
+reportPrivateUsage = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownParameterType = false
+reportMissingTypeArgument = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-rA --durations=10 --color=yes --cov=src --cov-report=term-missing"

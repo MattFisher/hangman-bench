@@ -126,7 +126,9 @@ def choose_max_hit_probability(candidates: Sequence[str], guessed: frozenset[str
     return min(letter for letter, p in probs.items() if p == best)
 
 
-def choose_min_expected_candidates(candidates: Sequence[str], guessed: frozenset[str]) -> str | None:
+def choose_min_expected_candidates(
+    candidates: Sequence[str], guessed: frozenset[str]
+) -> str | None:
     """Information-gain: minimise expected size of the surviving candidate set.
 
     Guessing a letter partitions the candidates by the mask of positions where
