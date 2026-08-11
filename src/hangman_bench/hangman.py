@@ -1,8 +1,9 @@
 import json
 from dataclasses import dataclass, field
-from typing import Any, List
+from typing import Any
 
 from inspect_ai import Task, task
+from inspect_ai.agent import AgentState, AgentSubmit, as_solver, react
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.scorer import (
     CORRECT,
@@ -11,10 +12,10 @@ from inspect_ai.scorer import (
     Scorer,
     Target,
     accuracy,
+    grouped,
     mean,
     scorer,
     stderr,
-    grouped,
 )
 from inspect_ai.solver import (
     Generate,
@@ -22,23 +23,22 @@ from inspect_ai.solver import (
     TaskState,
     solver,
 )
-from inspect_ai.agent import react, as_solver, AgentSubmit, AgentState
 from inspect_ai.tool import Tool, ToolError, tool
 from inspect_ai.util import StoreModel, store_as
 from pydantic import Field
 
+from hangman_bench.datasets import (
+    Difficulty,
+    Language,
+    get_alphabet,
+    get_words_by_difficulty,
+    get_words_by_language,
+)
 from hangman_bench.oracle import (
     CHOOSERS,
     load_dictionary_index,
     replay_trajectory,
     resolve_wordlist,
-)
-from hangman_bench.datasets import (
-    Language,
-    get_alphabet,
-    get_words_by_difficulty,
-    get_words_by_language,
-    Difficulty,
 )
 
 DEFAULT_MAX_GUESSES = 10
@@ -181,7 +181,7 @@ class GameState:
         )
 
     @property
-    def invalid_attempts(self) -> List[str]:
+    def invalid_attempts(self) -> list[str]:
         """Submissions that were not a single letter of the alphabet."""
         return [
             a
@@ -190,10 +190,10 @@ class GameState:
         ]
 
     @property
-    def repeated_attempts(self) -> List[str]:
+    def repeated_attempts(self) -> list[str]:
         """Valid letters submitted more than once, in the order repeated."""
         seen: set[str] = set()
-        repeats: List[str] = []
+        repeats: list[str] = []
         for raw in self.attempts:
             letter = _normalise(raw)
             if not _is_valid_letter(letter, self.alphabet):
@@ -212,7 +212,7 @@ class GameState:
         )
 
     @property
-    def incorrect_guesses(self) -> List[str]:
+    def incorrect_guesses(self) -> list[str]:
         """Returns list of incorrect guesses"""
         return sorted(list(set(self.guessed_letters) - set(self.word)))
 
@@ -466,13 +466,13 @@ def game_initialiser() -> Solver:
     return solve
 
 
-def _guesses_from_messages(messages: list[Any]) -> List[str]:
+def _guesses_from_messages(messages: list[Any]) -> list[str]:
     """Raw letters submitted to hangman_guess, in order.
 
     Tool calls record what the agent actually sent, including repeats and
     malformed input that never reach guessed_letters.
     """
-    guesses: List[str] = []
+    guesses: list[str] = []
     for message in messages:
         for tool_call in getattr(message, "tool_calls", None) or []:
             if getattr(tool_call, "function", None) != "hangman_guess":
