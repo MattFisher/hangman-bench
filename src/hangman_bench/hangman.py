@@ -1,10 +1,10 @@
-import json
 from dataclasses import dataclass, field
 from typing import Any
 
 from inspect_ai import Task, task
 from inspect_ai.agent import AgentState, AgentSubmit, as_solver, react
 from inspect_ai.dataset import MemoryDataset, Sample
+from inspect_ai.model import ChatMessage, ChatMessageAssistant
 from inspect_ai.scorer import (
     CORRECT,
     INCORRECT,
@@ -93,7 +93,7 @@ def hangman(
     longest_word_length = max(len(entry.word) for entry in word_entries)
 
     # Create samples
-    samples = []
+    samples: list[Sample] = []
     for entry in word_entries:
         samples.append(
             Sample(
@@ -295,7 +295,7 @@ def hangman_guess() -> Tool:
             game_state.guess(normalised)  # Updates the game state
 
         # Format the result as a readable string
-        result_lines = []
+        result_lines: list[str] = []
         if already_guessed:
             result_lines.append(
                 f"You already guessed '{normalised}'. Guessing it again has no effect."
@@ -452,7 +452,7 @@ def game_initialiser() -> Solver:
     return solve
 
 
-def _guesses_from_messages(messages: list[Any]) -> list[str]:
+def _guesses_from_messages(messages: list[ChatMessage]) -> list[str]:
     """Raw letters submitted to hangman_guess, in order.
 
     Tool calls record what the agent actually sent, including repeats and
@@ -460,16 +460,12 @@ def _guesses_from_messages(messages: list[Any]) -> list[str]:
     """
     guesses: list[str] = []
     for message in messages:
-        for tool_call in getattr(message, "tool_calls", None) or []:
-            if getattr(tool_call, "function", None) != "hangman_guess":
+        if not isinstance(message, ChatMessageAssistant):
+            continue
+        for tool_call in message.tool_calls or []:
+            if tool_call.function != "hangman_guess":
                 continue
-            arguments = getattr(tool_call, "arguments", None) or {}
-            if isinstance(arguments, str):
-                try:
-                    arguments = json.loads(arguments)
-                except json.JSONDecodeError:
-                    continue
-            letter = arguments.get("letter")
+            letter = tool_call.arguments.get("letter")
             if letter is not None:
                 guesses.append(str(letter))
     return guesses

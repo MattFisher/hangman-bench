@@ -43,7 +43,7 @@ from dataclasses import dataclass, field
 ALPHABET = [chr(c) for c in range(ord("a"), ord("z") + 1)]
 
 # A chooser takes (candidates, already_guessed) and returns the next letter.
-Chooser = Callable[[Sequence[str], frozenset], str | None]
+Chooser = Callable[[Sequence[str], frozenset[str]], str | None]
 
 
 # --------------------------------------------------------------------------
@@ -77,7 +77,7 @@ def consistent_candidates(
     guessed_set = set(guessed)
     length = len(board)
 
-    revealed_positions: dict[str, set] = {letter: set() for letter in guessed_set}
+    revealed_positions: dict[str, set[int]] = {letter: set() for letter in guessed_set}
     for i, ch in enumerate(board):
         if ch != ".":
             revealed_positions.setdefault(ch, set()).add(i)
@@ -95,7 +95,7 @@ def consistent_candidates(
     return out
 
 
-def hit_probabilities(candidates: Sequence[str], guessed: frozenset) -> dict[str, float]:
+def hit_probabilities(candidates: Sequence[str], guessed: frozenset[str]) -> dict[str, float]:
     """P(letter occurs in the hidden word) under a uniform posterior.
 
     Only letters not yet guessed are scored; guessing a letter already guessed
@@ -117,7 +117,7 @@ def hit_probabilities(candidates: Sequence[str], guessed: frozenset) -> dict[str
 # --------------------------------------------------------------------------
 
 
-def choose_max_hit_probability(candidates: Sequence[str], guessed: frozenset) -> str | None:
+def choose_max_hit_probability(candidates: Sequence[str], guessed: frozenset[str]) -> str | None:
     """Greedy: the letter most likely to appear. Ties break alphabetically."""
     probs = hit_probabilities(candidates, guessed)
     if not probs:
@@ -126,7 +126,7 @@ def choose_max_hit_probability(candidates: Sequence[str], guessed: frozenset) ->
     return min(letter for letter, p in probs.items() if p == best)
 
 
-def choose_min_expected_candidates(candidates: Sequence[str], guessed: frozenset) -> str | None:
+def choose_min_expected_candidates(candidates: Sequence[str], guessed: frozenset[str]) -> str | None:
     """Information-gain: minimise expected size of the surviving candidate set.
 
     Guessing a letter partitions the candidates by the mask of positions where
@@ -266,7 +266,7 @@ def oracle_play(
     max_wrong: int,
 ) -> int:
     """Wrong guesses an oracle solver needs for ``word``. Reference point."""
-    guessed: set = set()
+    guessed: set[str] = set()
     wrong = 0
     while wrong < max_wrong and not set(word) <= guessed:
         board = reveal(word, guessed)
