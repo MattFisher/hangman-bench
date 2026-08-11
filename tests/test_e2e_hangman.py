@@ -5,7 +5,7 @@ from inspect_ai import eval
 from inspect_ai.model import ModelOutput, get_model
 
 from hangman_bench.datasets import ENGLISH_WORDS
-from hangman_bench.hangman import hangman, _calculate_message_limit
+from hangman_bench.hangman import _calculate_message_limit, hangman
 
 
 def create_letter_guess(letter: str) -> ModelOutput:
@@ -366,7 +366,7 @@ class TestHangmanE2E:
         # Should have difficulty-specific metrics
         difficulty_metrics = [
             name
-            for name in all_metrics.keys()
+            for name in all_metrics
             if name.startswith("game_scorer.") and name.split(".")[1] not in ("all", "stderr")
         ]
         assert len(difficulty_metrics) > 0

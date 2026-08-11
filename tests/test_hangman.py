@@ -1,6 +1,6 @@
 import pytest
+
 from hangman_bench import hangman
-from hangman_bench.hangman import GameState, _build_system_message
 from hangman_bench.datasets import (
     Language,
     WordEntry,
@@ -8,6 +8,7 @@ from hangman_bench.datasets import (
     get_words_by_difficulty,
     get_words_by_language,
 )
+from hangman_bench.hangman import GameState, _build_system_message
 
 
 def test_get_words_by_language():
@@ -78,7 +79,7 @@ def test_strategy_hint_frequency_reproduces_original_prompt():
 
     Adapt your strategy based on the language.
     """
-        + """
+        """
     You must guess all the letters in the word to win the game.
     You can ONLY win by guessing all the letters in the word, one at a time.
     The game will end automatically when it is over.

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Extract a unique, lowercase wordlist (one word per line) from the first column
+"""Extract a unique, lowercase wordlist (one word per line) from the first column
 of a TSV file like analysis/SimulationData_parsed.tsv.
 
 It prefers the header column named "word" if available; otherwise it falls
@@ -16,12 +15,11 @@ from __future__ import annotations
 
 import argparse
 import csv
-from typing import List
 
 
-def read_words(input_path: str) -> List[str]:
-    words: List[str] = []
-    with open(input_path, "r", encoding="utf-8", newline="") as f:
+def read_words(input_path: str) -> list[str]:
+    words: list[str] = []
+    with open(input_path, encoding="utf-8", newline="") as f:
         # Try DictReader first to honor header names.
         # We know it's TSV, but DictReader needs fieldnames; we manually set delimiter
         reader = csv.DictReader(f, delimiter="\t")
@@ -33,7 +31,7 @@ def read_words(input_path: str) -> List[str]:
             return words
 
     # Fallback: standard reader, first column only
-    with open(input_path, "r", encoding="utf-8", newline="") as f2:
+    with open(input_path, encoding="utf-8", newline="") as f2:
         reader2 = csv.reader(f2, delimiter="\t")
         first = True
         for row in reader2:
@@ -49,7 +47,7 @@ def read_words(input_path: str) -> List[str]:
     return words
 
 
-def write_unique(words: List[str], output_path: str) -> None:
+def write_unique(words: list[str], output_path: str) -> None:
     seen = set()
     with open(output_path, "w", encoding="utf-8") as out:
         for w in words:

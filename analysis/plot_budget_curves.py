@@ -20,12 +20,16 @@ from figstyle import (
     GRID,
     INK_MUTED,
     INK_SECONDARY,
-    MODEL_COLORS as SERIES,
-    REFERENCE_STYLES as REFERENCES,
     SURFACE,
     finish,
     new_axes,
     save,
+)
+from figstyle import (
+    MODEL_COLORS as SERIES,
+)
+from figstyle import (
+    REFERENCE_STYLES as REFERENCES,
 )
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]

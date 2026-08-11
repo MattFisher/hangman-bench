@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Objective difficulty measurement for Hangman words independent of the
+"""Objective difficulty measurement for Hangman words independent of the
 original simulation. Produces a TSV report with multiple metrics per word.
 
 Metrics per word:
@@ -29,8 +28,8 @@ import argparse
 import importlib.util
 import math
 import pathlib
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Tuple
 
 ALPHABET = [chr(c) for c in range(ord("a"), ord("z") + 1)]
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -42,7 +41,7 @@ class SolverResult:
     total_guesses: int
 
 
-def load_dataset_words(datasets_path: pathlib.Path) -> List[str]:
+def load_dataset_words(datasets_path: pathlib.Path) -> list[str]:
     """Load ENGLISH_WORDS from datasets.py via file path to avoid package imports."""
     spec = importlib.util.spec_from_file_location("hangman_datasets", str(datasets_path))
     if spec is None or spec.loader is None:
@@ -52,7 +51,7 @@ def load_dataset_words(datasets_path: pathlib.Path) -> List[str]:
     english_words = getattr(module, "ENGLISH_WORDS", None)
     if english_words is None:
         raise AttributeError("ENGLISH_WORDS not found in datasets module")
-    words: List[str] = []
+    words: list[str] = []
     for we in english_words:
         w = getattr(we, "word", None)
         if isinstance(w, str):
@@ -60,19 +59,19 @@ def load_dataset_words(datasets_path: pathlib.Path) -> List[str]:
     return words
 
 
-def load_wordlist(path: pathlib.Path) -> List[str]:
+def load_wordlist(path: pathlib.Path) -> list[str]:
     with path.open("r", encoding="utf-8", errors="ignore") as f:
         return [line.strip().lower() for line in f if line.strip()]
 
 
-def build_length_index(words: List[str]) -> Dict[int, List[str]]:
-    idx: Dict[int, List[str]] = {}
+def build_length_index(words: list[str]) -> dict[int, list[str]]:
+    idx: dict[int, list[str]] = {}
     for w in words:
         idx.setdefault(len(w), []).append(w)
     return idx
 
 
-def filter_candidates(board: str, wrong_guesses: List[str], dictionary: List[str]) -> List[str]:
+def filter_candidates(board: str, wrong_guesses: list[str], dictionary: list[str]) -> list[str]:
     """Words consistent with the board and the letters known to be absent.
 
     Guessing a letter reveals *every* occurrence of it at once, so a guessed
@@ -81,7 +80,7 @@ def filter_candidates(board: str, wrong_guesses: List[str], dictionary: List[str
     the board '.a.a.a' would admit 'aaaaaa', a state that cannot occur. Each
     revealed letter must therefore match on position set, not just on pattern.
     """
-    revealed_positions: Dict[str, set] = {}
+    revealed_positions: dict[str, set] = {}
     for i, ch in enumerate(board):
         if ch != ".":
             revealed_positions.setdefault(ch, set()).add(i)
@@ -89,7 +88,7 @@ def filter_candidates(board: str, wrong_guesses: List[str], dictionary: List[str
     wrong_set = set(wrong_guesses)
     length = len(board)
 
-    out: List[str] = []
+    out: list[str] = []
     for w in dictionary:
         if len(w) != length or (set(w) & wrong_set):
             continue
@@ -101,12 +100,10 @@ def filter_candidates(board: str, wrong_guesses: List[str], dictionary: List[str
     return out
 
 
-def best_move_freq_raw(
-    board: str, wrong_guesses: List[str], dictionary: List[str]
-) -> Optional[str]:
+def best_move_freq_raw(board: str, wrong_guesses: list[str], dictionary: list[str]) -> str | None:
     letters_already_found = {c for c in board if c != "."}
     excluded = letters_already_found.union(wrong_guesses)
-    counts: Dict[str, int] = {c: 0 for c in ALPHABET if c not in excluded}
+    counts: dict[str, int] = {c: 0 for c in ALPHABET if c not in excluded}
     if not counts:
         return None
     for word in dictionary:
@@ -120,12 +117,10 @@ def best_move_freq_raw(
     return min([ch for ch, cnt in counts.items() if cnt == max_count])
 
 
-def best_move_coverage(
-    board: str, wrong_guesses: List[str], dictionary: List[str]
-) -> Optional[str]:
+def best_move_coverage(board: str, wrong_guesses: list[str], dictionary: list[str]) -> str | None:
     letters_already_found = {c for c in board if c != "."}
     excluded = letters_already_found.union(wrong_guesses)
-    counts: Dict[str, int] = {c: 0 for c in ALPHABET if c not in excluded}
+    counts: dict[str, int] = {c: 0 for c in ALPHABET if c not in excluded}
     if not counts:
         return None
     for word in dictionary:
@@ -140,9 +135,7 @@ def best_move_coverage(
     return min([ch for ch, cnt in counts.items() if cnt == max_count])
 
 
-def best_move_info_gain(
-    board: str, wrong_guesses: List[str], dictionary: List[str]
-) -> Optional[str]:
+def best_move_info_gain(board: str, wrong_guesses: list[str], dictionary: list[str]) -> str | None:
     """Choose the letter that minimizes expected remaining candidate size.
 
     For each letter l not yet used, partition the dictionary by the mask of
@@ -159,8 +152,8 @@ def best_move_info_gain(
         return None
 
     # Precompute masks per word for speed? Compute per letter to keep memory small.
-    best_letter: Optional[str] = None
-    best_score: Optional[int] = None
+    best_letter: str | None = None
+    best_score: int | None = None
 
     for letter in candidates:
         # Partition counts by mask (tuple of indices where the letter occurs)
@@ -187,8 +180,8 @@ def best_move_info_gain(
 
 
 def make_move(
-    target_word: str, board_list: List[str], guess: str, wrong_guesses: List[str]
-) -> Tuple[str, List[str]]:
+    target_word: str, board_list: list[str], guess: str, wrong_guesses: list[str]
+) -> tuple[str, list[str]]:
     correct = False
     for i, ch in enumerate(target_word):
         if ch == guess:
@@ -199,9 +192,9 @@ def make_move(
     return ("".join(board_list), wrong_guesses)
 
 
-def solve_with_strategy(target_word: str, dictionary_all: List[str], chooser) -> SolverResult:
+def solve_with_strategy(target_word: str, dictionary_all: list[str], chooser) -> SolverResult:
     board = "." * len(target_word)
-    wrong_guesses: List[str] = []
+    wrong_guesses: list[str] = []
     total_guesses = 0
     dictionary = [w for w in dictionary_all if len(w) == len(target_word)]
 
@@ -224,12 +217,12 @@ def solve_with_strategy(target_word: str, dictionary_all: List[str], chooser) ->
 
 
 def precompute_letter_incidence(
-    length_words: Dict[int, List[str]],
-) -> Dict[int, Dict[str, float]]:
-    out: Dict[int, Dict[str, float]] = {}
+    length_words: dict[int, list[str]],
+) -> dict[int, dict[str, float]]:
+    out: dict[int, dict[str, float]] = {}
     for L, words in length_words.items():
         denom = max(1, len(words))
-        counts = {c: 0 for c in ALPHABET}
+        counts = dict.fromkeys(ALPHABET, 0)
         for w in words:
             s = set(w)
             for c in s:
@@ -240,8 +233,8 @@ def precompute_letter_incidence(
 
 
 def structural_scores(
-    word: str, p_by_len: Dict[int, Dict[str, float]]
-) -> Tuple[float, float, float]:
+    word: str, p_by_len: dict[int, dict[str, float]]
+) -> tuple[float, float, float]:
     L = len(word)
     uniq = set(word)
     pmap = p_by_len.get(L, {})
@@ -255,7 +248,7 @@ def structural_scores(
     return rare, dup_factor, structural
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Objective difficulty metrics for Hangman words")
     parser.add_argument(
         "--datasets",
@@ -297,7 +290,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     p_letter_len = precompute_letter_incidence(length_index)
 
     # Compute metrics per word
-    rows: List[List[str]] = []
+    rows: list[list[str]] = []
     for w in dataset_words:
         L = len(w)
         # Skip words not present in dictionary length index; still compute structural using length bin

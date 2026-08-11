@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Python port of [zen-hangman.rb](https://gist.github.com/Dan-Q/7910309) by Dan Q,
+"""Python port of [zen-hangman.rb](https://gist.github.com/Dan-Q/7910309) by Dan Q,
 from blog post [The Hardest Hangman](https://danq.me/2013/12/15/hangman/)
 
 Original dictionary was downloaded from https://www.curlewcommunications.uk/wordlist.html
@@ -31,7 +30,6 @@ This script uses only the Python standard library.
 import argparse
 import re
 from dataclasses import dataclass
-from typing import List, Tuple
 
 ALPHABET = [chr(c) for c in range(ord("a"), ord("z") + 1)]
 
@@ -43,17 +41,17 @@ class GameResult:
     wrong_guesses: int
 
 
-def load_words(path: str, num_letters: int) -> List[str]:
-    with open(path, "r", encoding="utf-8", errors="ignore") as f:
+def load_words(path: str, num_letters: int) -> list[str]:
+    with open(path, encoding="utf-8", errors="ignore") as f:
         tokens = f.read().split()
-    words: List[str] = []
+    words: list[str] = []
     for token in tokens:
         w = token.strip().lower()
         if len(w) == num_letters and re.fullmatch(r"[a-z]+", w):
             words.append(w)
     # Deduplicate while preserving order
     seen = set()
-    unique_words: List[str] = []
+    unique_words: list[str] = []
     for w in words:
         if w not in seen:
             seen.add(w)
@@ -61,7 +59,7 @@ def load_words(path: str, num_letters: int) -> List[str]:
     return unique_words
 
 
-def best_move_for(board: str, wrong_guesses: List[str], dictionary: List[str]) -> str | None:
+def best_move_for(board: str, wrong_guesses: list[str], dictionary: list[str]) -> str | None:
     letters_already_found = {c for c in board if c != "."}
     excluded = letters_already_found.union(wrong_guesses)
     counts = {c: 0 for c in ALPHABET if c not in excluded}
@@ -84,8 +82,8 @@ def best_move_for(board: str, wrong_guesses: List[str], dictionary: List[str]) -
 
 
 def make_move(
-    target_word: str, board: List[str], guess: str, wrong_guesses: List[str]
-) -> Tuple[str, List[str]]:
+    target_word: str, board: list[str], guess: str, wrong_guesses: list[str]
+) -> tuple[str, list[str]]:
     correct = False
     for i, ch in enumerate(target_word):
         if ch == guess:
@@ -97,9 +95,9 @@ def make_move(
 
 
 def result_for(
-    target_word: str, board: str, dictionary_all: List[str], debug: bool = False
+    target_word: str, board: str, dictionary_all: list[str], debug: bool = False
 ) -> GameResult:
-    wrong_guesses: List[str] = []
+    wrong_guesses: list[str] = []
     num_guesses = 0
     dictionary = list(dictionary_all)  # clone per original ruby behavior
 
@@ -109,7 +107,7 @@ def result_for(
         if num_guesses != 0:
             # Build regex from board where '.' matches any letter
             # e.g., board 'c.t..' => r'^c.t..$'
-            pattern = re.compile("^" + re.escape(board).replace("\.", ".") + "$")
+            pattern = re.compile("^" + re.escape(board).replace(r"\.", ".") + "$")
             wrong_set = set(wrong_guesses)
             dictionary = [
                 w for w in dictionary if pattern.fullmatch(w) and not (set(w) & wrong_set)
@@ -151,7 +149,7 @@ def main() -> int:
     words = load_words(args.wordlist, args.num_letters)
     print(f"There are {len(words)} words to play.")
 
-    results: List[GameResult] = []
+    results: list[GameResult] = []
     for target in words:
         if args.debug:
             print(f"Target word is {target}")

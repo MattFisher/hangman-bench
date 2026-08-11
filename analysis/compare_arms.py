@@ -23,25 +23,24 @@ import sys
 from collections import Counter
 from math import comb
 from statistics import mean
-from typing import Dict
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
-from pilot_oracle import extract_trajectories, find_logs  # noqa: E402
+from pilot_oracle import extract_trajectories, find_logs
 
-from hangman_bench.oracle import (  # noqa: E402
+from hangman_bench.oracle import (
     TrajectoryReport,
     load_dictionary_index,
     replay_trajectory,
     resolve_wordlist,
 )
 
-ArmGames = Dict[str, Dict[str, TrajectoryReport]]  # model -> word -> report
+ArmGames = dict[str, dict[str, TrajectoryReport]]  # model -> word -> report
 
 
 def load_arm(path: pathlib.Path, index) -> ArmGames:
     out: ArmGames = {}
-    sources: Dict[tuple, pathlib.Path] = {}
+    sources: dict[tuple, pathlib.Path] = {}
     for log_path in find_logs(path):
         for game in extract_trajectories(log_path):
             key = (game.model, game.word)
@@ -103,7 +102,7 @@ def main() -> int:
     args = parser.parse_args()
 
     index = load_dictionary_index(str(resolve_wordlist(args.wordlist)))
-    arms: Dict[str, ArmGames] = {}
+    arms: dict[str, ArmGames] = {}
     for pair in args.arms:
         name, _, path = pair.partition("=")
         if not path:

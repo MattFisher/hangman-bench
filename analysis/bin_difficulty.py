@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Bin words into difficulty tiers based on a chosen metric column from
+"""Bin words into difficulty tiers based on a chosen metric column from
 analysis/difficulty_report.tsv (default: wrong_coverage).
 
 - Computes (bins-1) quantile thresholds over available numeric metric values
@@ -23,16 +22,16 @@ import argparse
 import csv
 import math
 import pathlib
-from typing import Dict, List, Optional, Sequence
+from collections.abc import Sequence
 
 LABELS = ["v_easy", "easy", "medium", "hard", "v_hard"]
 
 
 def read_metric(
-    input_path: pathlib.Path, metric: str, fallback_metric: Optional[str]
-) -> Dict[str, float]:
+    input_path: pathlib.Path, metric: str, fallback_metric: str | None
+) -> dict[str, float]:
     """Read word -> metric value. If metric empty and fallback provided, try fallback."""
-    out: Dict[str, float] = {}
+    out: dict[str, float] = {}
     with input_path.open("r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f, delimiter="\t")
         if reader.fieldnames is None or "word" not in reader.fieldnames:
@@ -42,7 +41,7 @@ def read_metric(
             if not w:
                 continue
             val_str = (row.get(metric) or "").strip()
-            v: Optional[float] = None
+            v: float | None = None
             if val_str:
                 try:
                     v = float(val_str)
@@ -62,7 +61,7 @@ def read_metric(
     return out
 
 
-def compute_quantile_thresholds(values: List[float], bins: int) -> List[float]:
+def compute_quantile_thresholds(values: list[float], bins: int) -> list[float]:
     if bins < 2:
         raise ValueError("bins must be >= 2")
     s = sorted(values)
@@ -91,7 +90,7 @@ def compute_quantile_thresholds(values: List[float], bins: int) -> List[float]:
     return cuts
 
 
-def classify(value: float, thresholds: List[float], labels: List[str]) -> str:
+def classify(value: float, thresholds: list[float], labels: list[str]) -> str:
     # Use left-bisect so equality stays in the lower bin
     import bisect
 
@@ -100,7 +99,7 @@ def classify(value: float, thresholds: List[float], labels: List[str]) -> str:
     return labels[idx]
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Bin words into difficulty tiers using quantiles")
     parser.add_argument(
         "--input",
@@ -138,8 +137,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     thresholds = compute_quantile_thresholds(values, bins=args.bins)
 
     # Build labeled rows
-    rows: List[List[str]] = []
-    labeled: List[tuple[str, str, float]] = []
+    rows: list[list[str]] = []
+    labeled: list[tuple[str, str, float]] = []
     for w, v in sorted(metric_map.items()):
         label = classify(v, thresholds, LABELS)
         rows.append([w, f"{v:.3f}", label])

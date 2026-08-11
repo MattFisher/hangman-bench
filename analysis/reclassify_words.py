@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Reclassify words in src/hangman_bench/datasets.py based on
+"""Reclassify words in src/hangman_bench/datasets.py based on
 mean_wrong_guesses from SimulationData_parsed.tsv.
 
 By default, words are divided into 5 quantile-based bins and assigned to
@@ -27,25 +26,25 @@ from __future__ import annotations
 
 import argparse
 import csv
+import importlib.util
 import math
 import pathlib
 import sys
-import importlib.util
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence
 
 # Repository paths (used by CLI defaults and import fallback inside main())
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 SRC_DIR = REPO_ROOT / "src"
 
-DIFFICULTY_ORDER: List[str] = ["v_easy", "easy", "medium", "hard", "v_hard"]
+DIFFICULTY_ORDER: list[str] = ["v_easy", "easy", "medium", "hard", "v_hard"]
 
 
 @dataclass
 class ReclassResult:
     word: str
     mean_wrong_guesses: float
-    old_difficulty: Optional[str]
+    old_difficulty: str | None
     new_difficulty: str
 
     @property
@@ -55,12 +54,12 @@ class ReclassResult:
         return "same" if self.old_difficulty == self.new_difficulty else "changed"
 
 
-def read_means_from_tsv(tsv_path: pathlib.Path) -> Dict[str, float]:
+def read_means_from_tsv(tsv_path: pathlib.Path) -> dict[str, float]:
     """Read word -> mean_wrong_guesses from a TSV file.
 
     Expects header with columns: word, wrong_guesses, mean_wrong_guesses
     """
-    means: Dict[str, float] = {}
+    means: dict[str, float] = {}
     with tsv_path.open("r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f, delimiter="\t")
         # Basic validation of expected columns
@@ -85,7 +84,7 @@ def read_means_from_tsv(tsv_path: pathlib.Path) -> Dict[str, float]:
     return means
 
 
-def load_current_words(datasets_path: pathlib.Path) -> Dict[str, str]:
+def load_current_words(datasets_path: pathlib.Path) -> dict[str, str]:
     """Load ENGLISH_WORDS from datasets.py directly via file path.
 
     Returns a mapping word(lowercased) -> difficulty.
@@ -98,7 +97,7 @@ def load_current_words(datasets_path: pathlib.Path) -> Dict[str, str]:
     english_words = getattr(module, "ENGLISH_WORDS", None)
     if english_words is None:
         raise AttributeError("ENGLISH_WORDS not found in datasets module")
-    words: Dict[str, str] = {}
+    words: dict[str, str] = {}
     for we in english_words:
         word = getattr(we, "word", None)
         difficulty = getattr(we, "difficulty", None)
@@ -107,7 +106,7 @@ def load_current_words(datasets_path: pathlib.Path) -> Dict[str, str]:
     return words
 
 
-def compute_quantile_thresholds(values: Sequence[float], bins: int = 5) -> List[float]:
+def compute_quantile_thresholds(values: Sequence[float], bins: int = 5) -> list[float]:
     """Compute (bins-1) quantile thresholds for the provided values.
 
     Returns a sorted list of length (bins-1) containing interior thresholds.
@@ -162,7 +161,7 @@ def classify_by_thresholds(value: float, thresholds: Sequence[float], labels: Se
     return labels[idx]
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Reclassify words by mean_wrong_guesses")
     parser.add_argument(
         "--tsv",
@@ -207,12 +206,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if not datasets_py.exists():
         print(f"datasets.py not found at {datasets_py}", file=sys.stderr)
         return 2
-    current_words: Dict[str, str] = load_current_words(datasets_py)
+    current_words: dict[str, str] = load_current_words(datasets_py)
 
     # Read means and filter to words in datasets
     means_map_all = read_means_from_tsv(tsv_path)
-    missing: List[str] = []
-    present_means: Dict[str, float] = {}
+    missing: list[str] = []
+    present_means: dict[str, float] = {}
     for w in current_words:
         if w in means_map_all:
             present_means[w] = means_map_all[w]
@@ -244,7 +243,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         thresholds = compute_quantile_thresholds(list(present_means.values()), bins=args.bins)
 
     # Build results
-    results: List[ReclassResult] = []
+    results: list[ReclassResult] = []
     for w, m in sorted(present_means.items()):
         new_diff = classify_by_thresholds(m, thresholds, DIFFICULTY_ORDER)
         old_diff = current_words.get(w)

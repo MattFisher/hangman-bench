@@ -176,9 +176,9 @@ class TestLogIngestion:
     def test_repeats_are_recovered_from_tool_calls(self) -> None:
         from inspect_ai import eval as inspect_eval
         from inspect_ai.model import ModelOutput, get_model
+        from pilot_oracle import extract_trajectories
 
         from hangman_bench.hangman import hangman
-        from pilot_oracle import extract_trajectories
 
         def guess(letter: str) -> ModelOutput:
             return ModelOutput.for_tool_call(
@@ -461,9 +461,9 @@ class TestLogMetadataIsHonoured:
         """A win by submitting the full word must not be replayed as a loss."""
         from inspect_ai import eval as inspect_eval
         from inspect_ai.model import ModelOutput, get_model
+        from pilot_oracle import extract_trajectories
 
         from hangman_bench.hangman import hangman
-        from pilot_oracle import extract_trajectories
 
         def guess(letter: str) -> ModelOutput:
             return ModelOutput.for_tool_call(

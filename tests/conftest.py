@@ -13,8 +13,9 @@ from __future__ import annotations
 
 import os
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 import pytest
 
@@ -40,4 +41,4 @@ def _report_log_dir() -> Generator[None, None, None]:
     log_dir = os.environ.get("INSPECT_LOG_DIR")
     if log_dir:
         print(f"[tests] INSPECT_LOG_DIR={log_dir}")
-    yield
+    return

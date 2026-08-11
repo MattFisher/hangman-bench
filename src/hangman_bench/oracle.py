@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Oracle replay for Hangman trajectories.
+"""Oracle replay for Hangman trajectories.
 
 Hangman is one of the few agentic tasks where, at every step, both the exact
 posterior over the hidden word and the optimal next action are computable from
@@ -38,13 +37,13 @@ from __future__ import annotations
 
 import functools
 import pathlib
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
 ALPHABET = [chr(c) for c in range(ord("a"), ord("z") + 1)]
 
 # A chooser takes (candidates, already_guessed) and returns the next letter.
-Chooser = Callable[[Sequence[str], frozenset], Optional[str]]
+Chooser = Callable[[Sequence[str], frozenset], str | None]
 
 
 # --------------------------------------------------------------------------
@@ -60,7 +59,7 @@ def reveal(word: str, guessed: Iterable[str]) -> str:
 
 def consistent_candidates(
     board: str, guessed: Iterable[str], dictionary: Sequence[str]
-) -> List[str]:
+) -> list[str]:
     """Words consistent with everything the player has been told.
 
     A word is consistent iff, for every letter the player has guessed, the set
@@ -78,12 +77,12 @@ def consistent_candidates(
     guessed_set = set(guessed)
     length = len(board)
 
-    revealed_positions: Dict[str, set] = {letter: set() for letter in guessed_set}
+    revealed_positions: dict[str, set] = {letter: set() for letter in guessed_set}
     for i, ch in enumerate(board):
         if ch != ".":
             revealed_positions.setdefault(ch, set()).add(i)
 
-    out: List[str] = []
+    out: list[str] = []
     for word in dictionary:
         if len(word) != length:
             continue
@@ -96,7 +95,7 @@ def consistent_candidates(
     return out
 
 
-def hit_probabilities(candidates: Sequence[str], guessed: frozenset) -> Dict[str, float]:
+def hit_probabilities(candidates: Sequence[str], guessed: frozenset) -> dict[str, float]:
     """P(letter occurs in the hidden word) under a uniform posterior.
 
     Only letters not yet guessed are scored; guessing a letter already guessed
@@ -105,7 +104,7 @@ def hit_probabilities(candidates: Sequence[str], guessed: frozenset) -> Dict[str
     total = len(candidates)
     if total == 0:
         return {}
-    counts: Dict[str, int] = {}
+    counts: dict[str, int] = {}
     for word in candidates:
         for letter in set(word):
             if letter not in guessed:
@@ -118,7 +117,7 @@ def hit_probabilities(candidates: Sequence[str], guessed: frozenset) -> Dict[str
 # --------------------------------------------------------------------------
 
 
-def choose_max_hit_probability(candidates: Sequence[str], guessed: frozenset) -> Optional[str]:
+def choose_max_hit_probability(candidates: Sequence[str], guessed: frozenset) -> str | None:
     """Greedy: the letter most likely to appear. Ties break alphabetically."""
     probs = hit_probabilities(candidates, guessed)
     if not probs:
@@ -127,7 +126,7 @@ def choose_max_hit_probability(candidates: Sequence[str], guessed: frozenset) ->
     return min(letter for letter, p in probs.items() if p == best)
 
 
-def choose_min_expected_candidates(candidates: Sequence[str], guessed: frozenset) -> Optional[str]:
+def choose_min_expected_candidates(candidates: Sequence[str], guessed: frozenset) -> str | None:
     """Information-gain: minimise expected size of the surviving candidate set.
 
     Guessing a letter partitions the candidates by the mask of positions where
@@ -144,10 +143,10 @@ def choose_min_expected_candidates(candidates: Sequence[str], guessed: frozenset
     if not available:
         return None
 
-    best_letter: Optional[str] = None
-    best_score: Optional[int] = None
+    best_letter: str | None = None
+    best_score: int | None = None
     for letter in available:
-        partitions: Dict[Tuple[int, ...], int] = {}
+        partitions: dict[tuple[int, ...], int] = {}
         for word in candidates:
             mask = tuple(i for i, ch in enumerate(word) if ch == letter)
             partitions[mask] = partitions.get(mask, 0) + 1
@@ -157,7 +156,7 @@ def choose_min_expected_candidates(candidates: Sequence[str], guessed: frozenset
     return best_letter
 
 
-CHOOSERS: Dict[str, Chooser] = {
+CHOOSERS: dict[str, Chooser] = {
     "max_hit_prob": choose_max_hit_probability,
     "info_gain": choose_min_expected_candidates,
 }
@@ -188,7 +187,7 @@ class GuessRecord:
     # move in some absolute sense. Under max_hit_prob they coincide; under
     # info_gain the reference deliberately gives up hit probability.
     best_hit_prob: float
-    optimal_letter: Optional[str]
+    optimal_letter: str | None
 
     @property
     def counted(self) -> bool:
@@ -213,7 +212,7 @@ class TrajectoryReport:
     word: str
     sample_id: str
     model: str
-    steps: List[GuessRecord] = field(default_factory=list)
+    steps: list[GuessRecord] = field(default_factory=list)
     won: bool = False
     wrong_guesses: int = 0
     oracle_wrong_guesses: int = 0
@@ -221,7 +220,7 @@ class TrajectoryReport:
     # The recorded outcome, when the replay cannot infer it from letters alone.
     # A game won by submitting the full word ends before every letter is
     # revealed, so replaying only the letter guesses would score it as a loss.
-    recorded_won: Optional[bool] = None
+    recorded_won: bool | None = None
 
     @property
     def final_won(self) -> bool:
@@ -292,7 +291,7 @@ def replay_trajectory(
     max_wrong: int = 10,
     sample_id: str = "",
     model: str = "",
-    alphabet: Optional[str] = None,
+    alphabet: str | None = None,
 ) -> TrajectoryReport:
     """Score every guess in ``raw_guesses`` against the belief state.
 
@@ -321,7 +320,7 @@ def replay_trajectory(
         oracle_wrong_guesses=oracle_play(word, working_dictionary, chooser, max_wrong),
     )
 
-    guessed: List[str] = []
+    guessed: list[str] = []
     wrong = 0
 
     for step, raw in enumerate(raw_guesses):
@@ -395,7 +394,7 @@ DEFAULT_DIALECT = "en_GB"
 DEFAULT_WORDLIST = DATA_DIR / f"wordlist_{DEFAULT_DIALECT}.txt"
 
 
-def load_wordlist(path: pathlib.Path) -> List[str]:
+def load_wordlist(path: pathlib.Path) -> list[str]:
     with path.open("r", encoding="utf-8", errors="ignore") as handle:
         return [line.strip().lower() for line in handle if line.strip().isalpha()]
 
@@ -412,13 +411,13 @@ def resolve_wordlist(path: str | pathlib.Path | None) -> pathlib.Path:
 
 
 @functools.lru_cache(maxsize=4)
-def load_dictionary_index(path: str) -> Dict[int, List[str]]:
+def load_dictionary_index(path: str) -> dict[int, list[str]]:
     """Length-indexed dictionary, cached so each scorer loads it once."""
     return by_length(load_wordlist(pathlib.Path(path)))
 
 
-def by_length(dictionary: Sequence[str]) -> Dict[int, List[str]]:
-    index: Dict[int, List[str]] = {}
+def by_length(dictionary: Sequence[str]) -> dict[int, list[str]]:
+    index: dict[int, list[str]] = {}
     for word in dictionary:
         index.setdefault(len(word), []).append(word)
     return index
