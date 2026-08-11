@@ -1,10 +1,10 @@
-import json
 from dataclasses import dataclass, field
 from typing import Any
 
 from inspect_ai import Task, task
 from inspect_ai.agent import AgentState, AgentSubmit, as_solver, react
 from inspect_ai.dataset import MemoryDataset, Sample
+from inspect_ai.model import ChatMessage, ChatMessageAssistant
 from inspect_ai.scorer import (
     CORRECT,
     INCORRECT,
@@ -82,7 +82,7 @@ def hangman(
         supported = ", ".join([lang.value for lang in Language])
         raise ValueError(
             f"Language '{language}' not supported. Supported languages: {supported}"
-        )
+        ) from None
 
     # Get words based on language and optional difficulty
     if difficulty is not None:
@@ -93,7 +93,7 @@ def hangman(
     longest_word_length = max(len(entry.word) for entry in word_entries)
 
     # Create samples
-    samples = []
+    samples: list[Sample] = []
     for entry in word_entries:
         samples.append(
             Sample(
@@ -126,9 +126,7 @@ def hangman(
 
     return Task(
         dataset=dataset,
-        solver=hangman_player(
-            allow_word_guesses=allow_word_guesses, strategy_hint=strategy_hint
-        ),
+        solver=hangman_player(allow_word_guesses=allow_word_guesses, strategy_hint=strategy_hint),
         setup=game_initialiser(),
         scorer=scorers,
         message_limit=_calculate_message_limit(longest_word_length, max_guesses),
@@ -183,11 +181,7 @@ class GameState:
     @property
     def invalid_attempts(self) -> list[str]:
         """Submissions that were not a single letter of the alphabet."""
-        return [
-            a
-            for a in self.attempts
-            if not _is_valid_letter(_normalise(a), self.alphabet)
-        ]
+        return [a for a in self.attempts if not _is_valid_letter(_normalise(a), self.alphabet)]
 
     @property
     def repeated_attempts(self) -> list[str]:
@@ -207,14 +201,12 @@ class GameState:
     @property
     def current_state(self) -> str:
         """Returns the current state of the word with unguessed letters as '_'"""
-        return " ".join(
-            letter if letter in self.guessed_letters else "_" for letter in self.word
-        )
+        return " ".join(letter if letter in self.guessed_letters else "_" for letter in self.word)
 
     @property
     def incorrect_guesses(self) -> list[str]:
         """Returns list of incorrect guesses"""
-        return sorted(list(set(self.guessed_letters) - set(self.word)))
+        return sorted(set(self.guessed_letters) - set(self.word))
 
     def guess(self, letter: str) -> "GameState":
         """Process a letter guess and return the new game state"""
@@ -303,7 +295,7 @@ def hangman_guess() -> Tool:
             game_state.guess(normalised)  # Updates the game state
 
         # Format the result as a readable string
-        result_lines = []
+        result_lines: list[str] = []
         if already_guessed:
             result_lines.append(
                 f"You already guessed '{normalised}'. Guessing it again has no effect."
@@ -322,9 +314,7 @@ def hangman_guess() -> Tool:
         else:
             result_lines.append("Status: Game continues")
 
-        result_lines.append(
-            f"Language: {metadata.get('language', DEFAULT_LANGUAGE.value)}"
-        )
+        result_lines.append(f"Language: {metadata.get('language', DEFAULT_LANGUAGE.value)}")
 
         return "\n".join(result_lines)
 
@@ -393,9 +383,7 @@ def _build_system_message(allow_word_guesses: bool, strategy_hint: str) -> str:
 
 
 @solver
-def hangman_player(
-    allow_word_guesses: bool = False, strategy_hint: str = "frequency"
-) -> Solver:
+def hangman_player(allow_word_guesses: bool = False, strategy_hint: str = "frequency") -> Solver:
     """Solver that uses the hangman_guess tool to play hangman"""
     final_system_message = _build_system_message(allow_word_guesses, strategy_hint)
 
@@ -410,9 +398,7 @@ def hangman_player(
             return True
         # No concrete example letter here: models follow one literally,
         # guessing 'a' every turn (see RESEARCH_NOTES.md, pilot 2026-08-07).
-        guidance = (
-            "Continue the game by calling the hangman_guess tool with your next letter."
-        )
+        guidance = "Continue the game by calling the hangman_guess tool with your next letter."
         if allow_word_guesses:
             guidance += " If you know the full word, submit it with the submit tool."
         return guidance
@@ -466,7 +452,7 @@ def game_initialiser() -> Solver:
     return solve
 
 
-def _guesses_from_messages(messages: list[Any]) -> list[str]:
+def _guesses_from_messages(messages: list[ChatMessage]) -> list[str]:
     """Raw letters submitted to hangman_guess, in order.
 
     Tool calls record what the agent actually sent, including repeats and
@@ -474,16 +460,12 @@ def _guesses_from_messages(messages: list[Any]) -> list[str]:
     """
     guesses: list[str] = []
     for message in messages:
-        for tool_call in getattr(message, "tool_calls", None) or []:
-            if getattr(tool_call, "function", None) != "hangman_guess":
+        if not isinstance(message, ChatMessageAssistant):
+            continue
+        for tool_call in message.tool_calls or []:
+            if tool_call.function != "hangman_guess":
                 continue
-            arguments = getattr(tool_call, "arguments", None) or {}
-            if isinstance(arguments, str):
-                try:
-                    arguments = json.loads(arguments)
-                except json.JSONDecodeError:
-                    continue
-            letter = arguments.get("letter")
+            letter = tool_call.arguments.get("letter")
             if letter is not None:
                 guesses.append(str(letter))
     return guesses
@@ -559,19 +541,13 @@ def oracle_scorer(
             max_wrong=max_guesses,
             sample_id=str(state.sample_id),
             model=str(state.model),
-            alphabet=get_alphabet(
-                Language(metadata.get("language", DEFAULT_LANGUAGE.value))
-            ),
+            alphabet=get_alphabet(Language(metadata.get("language", DEFAULT_LANGUAGE.value))),
         )
 
         # A game won by submitting the full word ends before every letter is
         # revealed, so replaying the letter guesses alone would call it a loss.
         # Recover the real outcome the same way game_scorer does.
-        if (
-            metadata.get("allow_word_guesses")
-            and game_state
-            and not game_state.game_over
-        ):
+        if metadata.get("allow_word_guesses") and game_state and not game_state.game_over:
             submitted = state.output.completion
             report.recorded_won = submitted == word
         elif game_state is not None:
@@ -651,38 +627,37 @@ def game_scorer() -> Scorer:
             raise RuntimeError("No game state found in store")
 
         allow_word_guesses = metadata.get("allow_word_guesses", False)
-        if allow_word_guesses:
-            # If word guesses are allowed and the game is not over, the agent guessed early
-            if not game_state.game_over:
-                guessed_word = state.output.completion
-                explanation = (
-                    f"Early guess. Word: {game_state.word}. Language: {language}. "
-                    f"Difficulty: {difficulty}. "
-                    f"Guessed word: {guessed_word}. "
-                    f"Guessed letters: {game_state.guessed_letters}. "
-                    f"Final word state: {game_state.current_state}. "
-                    f"Remaining guesses: {game_state.remaining_guesses}. "
-                )
-                return Score(
-                    value=CORRECT if guessed_word == game_state.word else INCORRECT,
-                    answer=guessed_word,
-                    explanation=explanation,
-                    metadata={
-                        "won": game_state.won,
-                        "language": language,
-                        "difficulty": difficulty,
-                        "allow_word_guesses": allow_word_guesses,
-                        "guessed_word": guessed_word,
-                        "guessed_letters": game_state.guessed_letters,
-                        "final_word_state": game_state.current_state,
-                        "remaining_guesses": game_state.remaining_guesses,
-                        "incorrect_guesses": game_state.incorrect_guesses,
-                        "num_incorrect_guesses": len(game_state.incorrect_guesses),
-                        "attempts": game_state.attempts,
-                        "num_repeated_guesses": len(game_state.repeated_attempts),
-                        "num_invalid_guesses": len(game_state.invalid_attempts),
-                    },
-                )
+        # If word guesses are allowed and the game is not over, the agent guessed early
+        if allow_word_guesses and not game_state.game_over:
+            guessed_word = state.output.completion
+            explanation = (
+                f"Early guess. Word: {game_state.word}. Language: {language}. "
+                f"Difficulty: {difficulty}. "
+                f"Guessed word: {guessed_word}. "
+                f"Guessed letters: {game_state.guessed_letters}. "
+                f"Final word state: {game_state.current_state}. "
+                f"Remaining guesses: {game_state.remaining_guesses}. "
+            )
+            return Score(
+                value=CORRECT if guessed_word == game_state.word else INCORRECT,
+                answer=guessed_word,
+                explanation=explanation,
+                metadata={
+                    "won": game_state.won,
+                    "language": language,
+                    "difficulty": difficulty,
+                    "allow_word_guesses": allow_word_guesses,
+                    "guessed_word": guessed_word,
+                    "guessed_letters": game_state.guessed_letters,
+                    "final_word_state": game_state.current_state,
+                    "remaining_guesses": game_state.remaining_guesses,
+                    "incorrect_guesses": game_state.incorrect_guesses,
+                    "num_incorrect_guesses": len(game_state.incorrect_guesses),
+                    "attempts": game_state.attempts,
+                    "num_repeated_guesses": len(game_state.repeated_attempts),
+                    "num_invalid_guesses": len(game_state.invalid_attempts),
+                },
+            )
 
         if not game_state.game_over:
             return Score(

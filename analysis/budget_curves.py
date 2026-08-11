@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Win-vs-budget curves from a single high-budget run, with validation.
+r"""Win-vs-budget curves from a single high-budget run, with validation.
 
 A game won with w wrong guesses would have been won at any budget > w, so one
 run at a high budget yields the whole win-vs-budget curve below its cap by
@@ -31,14 +31,13 @@ import argparse
 import csv
 import pathlib
 import sys
-from typing import Dict
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
-from compare_arms import binom_two_sided, load_arm  # noqa: E402
-from pilot_oracle import agent_frequency  # noqa: E402
+from compare_arms import binom_two_sided, load_arm
+from pilot_oracle import agent_frequency
 
-from hangman_bench.oracle import (  # noqa: E402
+from hangman_bench.oracle import (
     ALPHABET,
     load_dictionary_index,
     replay_trajectory,
@@ -51,12 +50,12 @@ from hangman_bench.oracle import (  # noqa: E402
 MAX_BUDGET = len(ALPHABET)
 
 
-def wrong_needed(games) -> Dict[str, int | None]:
+def wrong_needed(games) -> dict[str, int | None]:
     """Per word: wrong guesses needed to win, or None if never finished."""
     return {w: (r.wrong_guesses if r.final_won else None) for w, r in games.items()}
 
 
-def win_at(needed: Dict[str, int | None], budget: int) -> float:
+def win_at(needed: dict[str, int | None], budget: int) -> float:
     return sum(1 for v in needed.values() if v is not None and v < budget) / len(needed)
 
 
@@ -88,11 +87,11 @@ def main() -> int:
             f"note: word sets differ across models; using the {len(words)} words "
             f"common to all models (dropping {len(words_union) - len(words)})."
         )
-    oracle_needed: Dict[str, int | None] = {}
-    frequency_needed: Dict[str, int | None] = {}
+    oracle_needed: dict[str, int | None] = {}
+    frequency_needed: dict[str, int | None] = {}
     for word in words:
         pool = index.get(len(word), [])
-        playable = pool if word in pool else pool + [word]
+        playable = pool if word in pool else [*pool, word]
         report = replay_trajectory(
             word=word,
             raw_guesses=agent_frequency(word, playable, MAX_BUDGET),
@@ -104,7 +103,7 @@ def main() -> int:
         # replay_trajectory computes the greedy oracle's count as a side effect
         oracle_needed[word] = report.oracle_wrong_guesses
 
-    curves: Dict[str, Dict[str, int | None]] = {
+    curves: dict[str, dict[str, int | None]] = {
         "oracle(greedy)": oracle_needed,
         "frequency(etaoin)": frequency_needed,
     }
@@ -114,10 +113,7 @@ def main() -> int:
 
     budgets = list(range(1, MAX_BUDGET + 1))
     print("win rate at wrong-guess budget b (derived from the unlimited run):")
-    print(
-        f"{'agent':<28}"
-        + "".join(f"b={b:<5}" for b in [1, 2, 3, 4, 6, 8, 10, 13, 16, 20, 26])
-    )
+    print(f"{'agent':<28}" + "".join(f"b={b:<5}" for b in [1, 2, 3, 4, 6, 8, 10, 13, 16, 20, 26]))
     shown = [1, 2, 3, 4, 6, 8, 10, 13, 16, 20, 26]
     for agent, needed in curves.items():
         row = "".join(f"{win_at(needed, b):<7.2f}" for b in shown)
@@ -152,9 +148,7 @@ def main() -> int:
                 continue
             needed = curves[model]
             words_both = sorted(set(needed) & set(actual))
-            predicted = {
-                w: needed[w] is not None and needed[w] < budget for w in words_both
-            }
+            predicted = {w: needed[w] is not None and needed[w] < budget for w in words_both}
             real = {w: actual[w].final_won for w in words_both}
             pred_only = sum(1 for w in words_both if predicted[w] and not real[w])
             real_only = sum(1 for w in words_both if real[w] and not predicted[w])

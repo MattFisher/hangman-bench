@@ -1,5 +1,4 @@
-"""
-Word datasets for the hangman game evaluation.
+"""Word datasets for the hangman game evaluation.
 
 Each dataset contains words with their difficulty ratings specifically for hangman gameplay.
 Difficulty is rated on a scale from 1-5:
@@ -12,7 +11,7 @@ Difficulty is rated on a scale from 1-5:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Literal
+from typing import Literal
 
 
 class Language(str, Enum):
@@ -167,7 +166,7 @@ LANGUAGE_WORDS = {
 }
 
 
-def get_words_by_language(language: Language) -> List[WordEntry]:
+def get_words_by_language(language: Language) -> list[WordEntry]:
     """Get the word dataset for a specific language.
 
     Args:
@@ -181,14 +180,12 @@ def get_words_by_language(language: Language) -> List[WordEntry]:
     """
     if language not in LANGUAGE_WORDS:
         raise ValueError(
-            f"Unsupported language: {language}. Supported languages: {', '.join([lang.value for lang in LANGUAGE_WORDS.keys()])}"
+            f"Unsupported language: {language}. Supported languages: {', '.join([lang.value for lang in LANGUAGE_WORDS])}"
         )
     return LANGUAGE_WORDS[language].copy()
 
 
-def get_words_by_difficulty(
-    language: Language, difficulty: Difficulty
-) -> List[WordEntry]:
+def get_words_by_difficulty(language: Language, difficulty: Difficulty) -> list[WordEntry]:
     """Get words of a specific difficulty level for a language.
 
     Args:

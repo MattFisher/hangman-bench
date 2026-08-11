@@ -32,9 +32,7 @@ ARMS = ["frequency", "neutral", "belief"]
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--summary", default=str(REPO_ROOT / "analysis" / "ablation_summary.tsv")
-    )
+    parser.add_argument("--summary", default=str(REPO_ROOT / "analysis" / "ablation_summary.tsv"))
     parser.add_argument("--out", default=str(FIGURES_DIR / "ablation_dominated.png"))
     args = parser.parse_args()
 
@@ -42,18 +40,14 @@ def main() -> int:
     with open(args.summary) as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
             if row["arm"] in ARMS:
-                rates.setdefault(row["model"], {})[row["arm"]] = float(
-                    row["dominated_rate"]
-                )
+                rates.setdefault(row["model"], {})[row["arm"]] = float(row["dominated_rate"])
 
     fig, ax = new_axes(figsize=(7.2, 4.8))
     xs = range(len(ARMS))
     for model, (label, color) in MODEL_COLORS.items():
         ys = [rates[model][arm] for arm in ARMS]
         ax.plot(xs, ys, color=color, linewidth=2.0, zorder=3, label=label)
-        ax.scatter(
-            xs, ys, s=44, color=color, edgecolors=SURFACE, linewidths=1.5, zorder=4
-        )
+        ax.scatter(xs, ys, s=44, color=color, edgecolors=SURFACE, linewidths=1.5, zorder=4)
         ax.text(
             len(ARMS) - 1 + 0.08,
             ys[-1],
@@ -73,9 +67,7 @@ def main() -> int:
             "belief\n(reason from candidates)",
         ]
     )
-    ax.set_ylabel(
-        "dominated-guess rate (pooled per guess)", color=INK_MUTED, fontsize=9
-    )
+    ax.set_ylabel("dominated-guess rate (pooled per guess)", color=INK_MUTED, fontsize=9)
     finish(
         ax,
         "The prompt does not drive the dead guesses",

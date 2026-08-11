@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Build the oracle's dictionary from SCOWL.
+"""Build the oracle's dictionary from SCOWL.
 
 The dictionary defines the oracle's belief state, so every per-guess metric
 depends on it. It therefore needs a stated, licensed, reproducible source
@@ -29,7 +28,7 @@ import sys
 import tarfile
 import tempfile
 import urllib.request
-from typing import Dict, List, Sequence
+from collections.abc import Sequence
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 DATA_DIR = REPO_ROOT / "src" / "hangman_bench" / "data"
@@ -45,7 +44,7 @@ SCOWL_URL = f"https://downloads.sourceforge.net/wordlist/scowl-{SCOWL_VERSION}.t
 # complements — merging them would put 228 words in the dictionary under both
 # spellings, and a guesser facing 'reali_e' would have to pick s or z on no
 # information. Pick one.
-DIALECTS: Dict[str, List[str]] = {
+DIALECTS: dict[str, list[str]] = {
     "en_GB": ["english-words", "british-words"],
     "en_GB_oxendict": ["english-words", "british_z-words"],
     "en_US": ["english-words", "american-words"],
@@ -81,7 +80,7 @@ def download_scowl(dest: pathlib.Path) -> pathlib.Path:
 
 def collect_words(
     scowl_dir: pathlib.Path, prefixes: Sequence[str], tier: int, min_length: int
-) -> List[str]:
+) -> list[str]:
     """Words from the given SCOWL lists, up to and including ``tier``.
 
     Only the ``*-words.*`` files are read. Proper names, abbreviations,
@@ -92,7 +91,7 @@ def collect_words(
         raise FileNotFoundError(f"No final/ directory under {scowl_dir}")
 
     words: set[str] = set()
-    used: List[str] = []
+    used: list[str] = []
     for prefix in prefixes:
         for size in (t for t in TIERS if t <= tier):
             path = final / f"{prefix}.{size}"
@@ -128,9 +127,8 @@ def write_frequencies(words: Sequence[str], path: pathlib.Path) -> None:
         from wordfreq import word_frequency
     except ImportError:
         raise SystemExit(
-            "wordfreq is required for --with-frequencies. "
-            "Install it with: uv pip install wordfreq"
-        )
+            "wordfreq is required for --with-frequencies. Install it with: uv pip install wordfreq"
+        ) from None
 
     missing = 0
     with path.open("w", encoding="utf-8") as handle:
@@ -140,8 +138,7 @@ def write_frequencies(words: Sequence[str], path: pathlib.Path) -> None:
                 missing += 1
             handle.write(f"{word}\t{freq:.6e}\n")
     print(
-        f"{missing}/{len(words)} words have zero frequency and need smoothing "
-        f"when used as a prior",
+        f"{missing}/{len(words)} words have zero frequency and need smoothing when used as a prior",
         file=sys.stderr,
     )
 
@@ -194,11 +191,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         scowl_dir = download_scowl(REPO_ROOT / ".scowl-cache")
 
     words = collect_words(scowl_dir, DIALECTS[args.dialect], args.tier, args.min_length)
-    output = (
-        pathlib.Path(args.output)
-        if args.output
-        else DATA_DIR / f"wordlist_{args.dialect}.txt"
-    )
+    output = pathlib.Path(args.output) if args.output else DATA_DIR / f"wordlist_{args.dialect}.txt"
     write_wordlist(words, output)
     print(f"Wrote {len(words)} words to {output}")
 

@@ -1,13 +1,16 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "hangman-bench"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Hangman game benchmark for AI models"
-authors = [{ name = "Matt Fisher" }]
 readme = "README.md"
+license = "MIT"
+authors = [{ name = "Matt Fisher", email = "m@ttfisher.com" }]
+# Kept at 3.10 (template default is the pinned 3.12): the eval is registered
+# with inspect_evals and consumers may install it on older interpreters.
 requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -16,13 +19,11 @@ classifiers = [
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Typing :: Typed",
     "Operating System :: OS Independent",
 ]
 dependencies = ["inspect-ai>=0.3.132"]
-license = { text = "MIT" }
 
 [project.entry-points.inspect_ai]
 hangman_bench = "hangman_bench"
@@ -33,20 +34,93 @@ openai = ["openai>=1.108.0"]
 anthropic = ["anthropic>=0.69.0"]
 
 [project.urls]
-"Homepage" = "https://github.com/MattFisher/hangman-bench"
-"Bug Tracker" = "https://github.com/MattFisher/hangman-bench/issues"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-hangman_bench = ["py.typed", "data/*.txt", "data/SCOWL-Copyright"]
+Homepage = "https://github.com/MattFisher/hangman-bench"
+Repository = "https://github.com/MattFisher/hangman-bench"
+Issues = "https://github.com/MattFisher/hangman-bench/issues"
 
 [dependency-groups]
 dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=7.0.0",
+    "basedpyright>=1.39",
+    "pre-commit>=4.0.0",
     "ruff>=0.12.0",
-    "pytest>=7.0",
-    "pytest-cov>=4.0",
     "matplotlib>=3.9",
 ]
 
+[tool.hatch.version]
+path = "src/hangman_bench/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hangman_bench"]
+
+[tool.ruff]
+line-length = 100
+src = ["src"]
+# Matches requires-python, not the pinned dev interpreter, so autofixes never
+# introduce syntax newer than the floor.
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "UP",    # pyupgrade
+    "B",     # flake8-bugbear
+    "SIM",   # flake8-simplify
+    "D",     # pydocstyle
+    "C4",    # flake8-comprehensions
+    "PT",    # flake8-pytest-style
+    "PIE",   # flake8-pie
+    "DTZ",   # flake8-datetimez (timezone-aware datetimes)
+    "ISC",   # implicit-str-concat (catches missing commas)
+    "ASYNC", # flake8-async
+    "N",     # pep8-naming
+    "FURB",  # refurb (modernization)
+    "RUF",   # ruff-specific rules
+    "PLE",   # pylint errors
+    "PLW",   # pylint warnings
+]
+ignore = [
+    "E501",   # line-too-long — the formatter owns line length
+    "D10",    # missing docstrings — don't force them
+    "D415",   # first-line punctuation — the module docstring is the project
+    # description, whose punctuation varies
+    "ISC001", # single-line implicit concat — conflicts with the formatter
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D"] # tests don't need docstring linting
+
+[tool.basedpyright]
+pythonVersion = "3.10"
+# "strict" (pyright's), not basedpyright's stricter default "recommended" —
+# the based-only rules (reportAny etc.) are opt-in per project.
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false # third-party libs are often untyped
+# analysis/ is looser, script-style code; bring it under the checker as a
+# follow-up rather than blocking template adoption on it.
+include = ["src", "tests"]
+
+# Tests exercise untyped surfaces on purpose — pytest.approx, eval-log
+# objects, private helpers, deliberately invalid arguments — so the
+# unknown-type family is relaxed there. The safety rules (Optional access,
+# argument types, operators) stay on.
+[[tool.basedpyright.executionEnvironments]]
+root = "tests"
+extraPaths = ["analysis"]
+reportPrivateUsage = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownParameterType = false
+reportMissingTypeArgument = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-rA --durations=10 --color=yes --cov=src --cov-report=term-missing"

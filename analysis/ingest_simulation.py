@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""
-Ingest SimulationData.txt and export a tab-separated file with one line per word,
-including the list of wrong guesses and the mean number of wrong guesses.
+"""Ingest SimulationData.txt and export a tab-separated file with one line per word.
+
+Each line includes the list of wrong guesses and the mean number of wrong guesses.
 
 Usage:
   python scripts/ingest_simulation.py --input SimulationData.txt --output SimulationData_parsed.tsv
@@ -26,15 +26,17 @@ import shutil
 import tempfile
 import urllib.request
 import zipfile
+from collections.abc import Iterable
 from statistics import mean
-from typing import Iterable, List, Tuple
 
 # Regex to capture entries like {"word", {1, 2, 3}}
 # DOTALL to allow numbers list across multiple lines
 ENTRY_REGEX = re.compile(r"\{\s*\"([^\"]+)\"\s*,\s*\{([^}]*)\}\s*\}", re.DOTALL)
 
 # Source ZIP containing SimulationData.txt
-SIMULATION_ZIP_URL = "https://library.wolfram.com/infocenter/MathSource/7635/SimulationData.zip?file_id=7257"
+SIMULATION_ZIP_URL = (
+    "https://library.wolfram.com/infocenter/MathSource/7635/SimulationData.zip?file_id=7257"
+)
 
 
 def download_and_extract_simulation_data(dest_path: str) -> str:
@@ -66,15 +68,13 @@ def download_and_extract_simulation_data(dest_path: str) -> str:
                 break
 
         if candidate is None:
-            raise FileNotFoundError(
-                "SimulationData.txt not found inside downloaded ZIP archive"
-            )
+            raise FileNotFoundError("SimulationData.txt not found inside downloaded ZIP archive")
 
         shutil.copyfile(candidate, dest_path)
         return dest_path
 
 
-def parse_simulation_data(text: str) -> Iterable[Tuple[str, List[int]]]:
+def parse_simulation_data(text: str) -> Iterable[tuple[str, list[int]]]:
     """Parse the SimulationData.txt content.
 
     Args:
@@ -87,7 +87,7 @@ def parse_simulation_data(text: str) -> Iterable[Tuple[str, List[int]]]:
         word = match.group(1)
         numbers_blob = match.group(2)
         # Split by commas and parse integers, ignoring whitespace and newlines
-        nums: List[int] = []
+        nums: list[int] = []
         for part in numbers_blob.split(","):
             s = part.strip()
             if not s:
@@ -103,15 +103,13 @@ def parse_simulation_data(text: str) -> Iterable[Tuple[str, List[int]]]:
         yield word, nums
 
 
-def write_tsv(rows: Iterable[Tuple[str, List[int]]], out_path: str) -> None:
+def write_tsv(rows: Iterable[tuple[str, list[int]]], out_path: str) -> None:
     """Write parsed rows to a TSV file with mean.
 
     Columns: word, wrong_guesses, mean_wrong_guesses
     wrong_guesses is a comma-separated list inside square brackets.
     """
-    os.makedirs(os.path.dirname(out_path), exist_ok=True) if os.path.dirname(
-        out_path
-    ) else None
+    os.makedirs(os.path.dirname(out_path), exist_ok=True) if os.path.dirname(out_path) else None
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter="\t")
         writer.writerow(["word", "wrong_guesses", "mean_wrong_guesses"])
@@ -140,7 +138,7 @@ def main() -> None:
         download_and_extract_simulation_data(in_path)
 
     # Read entire file (approx 50MB)
-    with open(in_path, "r", encoding="utf-8", errors="ignore") as f:
+    with open(in_path, encoding="utf-8", errors="ignore") as f:
         text = f.read()
 
     rows = list(parse_simulation_data(text))

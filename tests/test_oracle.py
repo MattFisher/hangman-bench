@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pathlib
 import sys
+from typing import Any
 
 import pytest
 
@@ -161,9 +162,7 @@ class TestReplay:
             dictionary=dictionary,
             max_wrong=6,
         )
-        expected = oracle_play(
-            "cat", dictionary, choose_max_hit_probability, max_wrong=6
-        )
+        expected = oracle_play("cat", dictionary, choose_max_hit_probability, max_wrong=6)
         assert report.oracle_wrong_guesses == expected
         assert report.excess_wrong_guesses == report.wrong_guesses - expected
 
@@ -178,9 +177,9 @@ class TestLogIngestion:
     def test_repeats_are_recovered_from_tool_calls(self) -> None:
         from inspect_ai import eval as inspect_eval
         from inspect_ai.model import ModelOutput, get_model
+        from pilot_oracle import extract_trajectories
 
         from hangman_bench.hangman import hangman
-        from pilot_oracle import extract_trajectories
 
         def guess(letter: str) -> ModelOutput:
             return ModelOutput.for_tool_call(
@@ -193,9 +192,7 @@ class TestLogIngestion:
         emitted = ["a", "a", "e", "p", "l"]
         log = inspect_eval(
             tasks=hangman(difficulty="v_easy", max_guesses=6, shuffle=False),
-            model=get_model(
-                "mockllm/model", custom_outputs=[guess(x) for x in emitted]
-            ),
+            model=get_model("mockllm/model", custom_outputs=[guess(x) for x in emitted]),
             limit=1,
         )[0]
 
@@ -265,7 +262,7 @@ class TestOracleScorer:
     """
 
     @staticmethod
-    def _run(letters: list[str], **task_kwargs: object):
+    def _run(letters: list[str], **task_kwargs: Any):
         from inspect_ai import eval as inspect_eval
         from inspect_ai.model import ModelOutput, get_model
 
@@ -280,9 +277,7 @@ class TestOracleScorer:
             for letter in letters
         ]
         return inspect_eval(
-            tasks=hangman(
-                difficulty="v_easy", max_guesses=6, shuffle=False, **task_kwargs
-            ),
+            tasks=hangman(difficulty="v_easy", max_guesses=6, shuffle=False, **task_kwargs),
             model=get_model("mockllm/model", custom_outputs=outputs),
             limit=1,
         )[0]
@@ -293,6 +288,7 @@ class TestOracleScorer:
         assert log.samples is not None
 
         scores = log.samples[0].scores
+        assert scores is not None
         assert "game_scorer" in scores
         assert "oracle_scorer" in scores
 
@@ -311,7 +307,10 @@ class TestOracleScorer:
     def test_scorer_counts_repeats_and_invalid_guesses(self) -> None:
         log = self._run(["a", "a", "zz", "e", "p", "l"])
         assert log.samples is not None
-        metadata = log.samples[0].scores["oracle_scorer"].metadata
+        scores = log.samples[0].scores
+        assert scores is not None
+        metadata = scores["oracle_scorer"].metadata
+        assert metadata is not None
 
         assert metadata["num_repeat"] == 1
         assert metadata["num_invalid"] == 1
@@ -321,7 +320,9 @@ class TestOracleScorer:
     def test_oracle_can_be_disabled(self) -> None:
         log = self._run(["a", "e", "p", "l"], oracle=False)
         assert log.samples is not None
-        assert "oracle_scorer" not in log.samples[0].scores
+        scores = log.samples[0].scores
+        assert scores is not None
+        assert "oracle_scorer" not in scores
 
     def test_scorer_can_be_applied_to_an_existing_log(self) -> None:
         """A log scored without the oracle can have it added afterwards."""
@@ -333,11 +334,14 @@ class TestOracleScorer:
         log = self._run(["e", "t", "a", "o", "p", "l"], oracle=False)
         assert log.location is not None
         original = read_eval_log(log.location)
-        assert "oracle_scorer" not in (original.samples or [])[0].scores
+        original_scores = (original.samples or [])[0].scores
+        assert original_scores is not None
+        assert "oracle_scorer" not in original_scores
 
         rescored = score(original, oracle_scorer(), action="append", display="none")
         assert rescored.samples is not None
         scores = rescored.samples[0].scores
+        assert scores is not None
         # The original score is preserved and the oracle metrics are added.
         assert "game_scorer" in scores
         assert isinstance(scores["oracle_scorer"].value, dict)
@@ -411,7 +415,7 @@ class TestLogMetadataIsHonoured:
     """The replay must use the limit and outcome the game was actually played under."""
 
     @staticmethod
-    def _run(letters, **kwargs):
+    def _run(letters: list[str], **kwargs: Any):
         from inspect_ai import eval as inspect_eval
         from inspect_ai.model import ModelOutput, get_model
 
@@ -436,7 +440,7 @@ class TestLogMetadataIsHonoured:
         from pilot_oracle import extract_trajectories
 
         # 12 wrong guesses then a win: legal only under the logged limit of 15.
-        letters = list("bcdfghijkmnq") + ["a", "p", "l", "e"]
+        letters = [*"bcdfghijkmnq", "a", "p", "l", "e"]
         log = self._run(letters, max_guesses=15)
         assert log.location is not None
 
@@ -467,9 +471,9 @@ class TestLogMetadataIsHonoured:
         """A win by submitting the full word must not be replayed as a loss."""
         from inspect_ai import eval as inspect_eval
         from inspect_ai.model import ModelOutput, get_model
+        from pilot_oracle import extract_trajectories
 
         from hangman_bench.hangman import hangman
-        from pilot_oracle import extract_trajectories
 
         def guess(letter: str) -> ModelOutput:
             return ModelOutput.for_tool_call(
@@ -502,9 +506,12 @@ class TestLogMetadataIsHonoured:
 
         assert log.samples is not None
         sample = log.samples[0]
+        assert sample.scores is not None
         assert sample.scores["game_scorer"].value == "C"
         # The scorer's own view must agree with the eval.
-        assert sample.scores["oracle_scorer"].metadata["won"] is True
+        oracle_metadata = sample.scores["oracle_scorer"].metadata
+        assert oracle_metadata is not None
+        assert oracle_metadata["won"] is True
 
         # And so must the batch reader, which only sees the letter guesses.
         assert log.location is not None

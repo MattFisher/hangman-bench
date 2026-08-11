@@ -1,6 +1,6 @@
 import pytest
+
 from hangman_bench import hangman
-from hangman_bench.hangman import GameState, _build_system_message
 from hangman_bench.datasets import (
     Language,
     WordEntry,
@@ -8,6 +8,7 @@ from hangman_bench.datasets import (
     get_words_by_difficulty,
     get_words_by_language,
 )
+from hangman_bench.hangman import GameState, _build_system_message
 
 
 def test_get_words_by_language():
@@ -43,15 +44,15 @@ def test_hangman_task_creation_with_parameters():
 
 
 def test_hangman_invalid_language():
-    with pytest.raises(ValueError, match="Language .* not supported"):
+    with pytest.raises(ValueError, match=r"Language .* not supported"):
         hangman(language="invalid")
 
 
 def test_hangman_invalid_difficulty():
     with pytest.raises(ValueError, match="Difficulty must be one of"):
-        hangman(difficulty=6)  # Invalid difficulty
+        hangman(difficulty=6)  # pyright: ignore[reportArgumentType]  # invalid on purpose
     with pytest.raises(ValueError, match="Difficulty must be one of"):
-        hangman(difficulty="shmedium")  # Invalid difficulty
+        hangman(difficulty="shmedium")  # pyright: ignore[reportArgumentType]  # invalid on purpose
 
 
 def test_strategy_hint_frequency_reproduces_original_prompt():
@@ -78,7 +79,7 @@ def test_strategy_hint_frequency_reproduces_original_prompt():
 
     Adapt your strategy based on the language.
     """
-        + """
+        """
     You must guess all the letters in the word to win the game.
     You can ONLY win by guessing all the letters in the word, one at a time.
     The game will end automatically when it is over.
@@ -214,9 +215,7 @@ class TestGuessRecording:
         from hangman_bench.oracle import DEFAULT_WORDLIST, load_wordlist
 
         alphabet = set(get_alphabet(Language.ENGLISH))
-        stray = {
-            ch for word in load_wordlist(DEFAULT_WORDLIST) for ch in word
-        } - alphabet
+        stray = {ch for word in load_wordlist(DEFAULT_WORDLIST) for ch in word} - alphabet
         assert not stray
 
     def test_guess_ignores_repeats_without_costing_a_life(self):

@@ -5,7 +5,7 @@ from inspect_ai import eval
 from inspect_ai.model import ModelOutput, get_model
 
 from hangman_bench.datasets import ENGLISH_WORDS
-from hangman_bench.hangman import hangman, _calculate_message_limit
+from hangman_bench.hangman import _calculate_message_limit, hangman
 
 
 def create_letter_guess(letter: str) -> ModelOutput:
@@ -298,9 +298,7 @@ class TestHangmanE2E:
 
     def test_hangman_invalid_language(self) -> None:
         """Test that invalid language raises ValueError."""
-        with pytest.raises(
-            ValueError, match="Language 'invalid_language' not supported"
-        ):
+        with pytest.raises(ValueError, match="Language 'invalid_language' not supported"):
             hangman(language="invalid_language")
 
     def test_hangman_task_parameters(self) -> None:
@@ -368,9 +366,8 @@ class TestHangmanE2E:
         # Should have difficulty-specific metrics
         difficulty_metrics = [
             name
-            for name in all_metrics.keys()
-            if name.startswith("game_scorer.")
-            and name.split(".")[1] not in ("all", "stderr")
+            for name in all_metrics
+            if name.startswith("game_scorer.") and name.split(".")[1] not in ("all", "stderr")
         ]
         assert len(difficulty_metrics) > 0
 
@@ -411,7 +408,9 @@ class TestMalformedGuessHandling:
         sample = log.samples[0]
         assert sample.error is None
 
+        assert sample.scores is not None
         metadata = sample.scores["game_scorer"].metadata
+        assert metadata is not None
         assert metadata["num_invalid_guesses"] == 1
         assert "ab" in metadata["attempts"]
         # The malformed guess must not have cost a life or entered the game.
@@ -439,7 +438,10 @@ class TestMalformedGuessHandling:
 
         assert log.status == "success"
         assert log.samples is not None
-        metadata = log.samples[0].scores["game_scorer"].metadata
+        scores = log.samples[0].scores
+        assert scores is not None
+        metadata = scores["game_scorer"].metadata
+        assert metadata is not None
 
         assert metadata["num_repeated_guesses"] == 1
         assert metadata["attempts"].count("a") == 2

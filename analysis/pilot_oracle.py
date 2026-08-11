@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pilot: score Hangman trajectories against an oracle instead of only win/loss.
+r"""Pilot: score Hangman trajectories against an oracle instead of only win/loss.
 
 The benchmark's headline metric is a win rate, and with a generous wrong-guess
 budget that metric saturates (gpt-5-nano reaches 0.93). This script measures
@@ -37,8 +36,8 @@ import random
 import statistics
 import sys
 import zlib
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from inspect_ai.scorer import CORRECT, INCORRECT
 
@@ -75,19 +74,19 @@ class LoggedGame:
     model: str
     sample_id: str
     word: str
-    guesses: List[str]
+    guesses: list[str]
     # The limit the game was actually played under. Replaying against a
     # different limit rewrites the result: too low truncates a real win into a
     # loss, too high lets the oracle baseline play beyond the recorded rules.
     max_guesses: int
     # The scored outcome. Needed because a game can be won by submitting the
     # full word, which ends it before every letter is revealed.
-    recorded_won: Optional[bool]
+    recorded_won: bool | None
 
 
 def extract_trajectories(
     log_path: pathlib.Path, default_max_guesses: int = DEFAULT_MAX_GUESSES
-) -> List[LoggedGame]:
+) -> list[LoggedGame]:
     """Recover each game from one .eval log.
 
     The guess sequence comes from hangman_guess tool calls, which record what
@@ -106,7 +105,7 @@ def extract_trajectories(
 
     log = read_eval_log(str(log_path))
     model = log.eval.model or "unknown"
-    out: List[LoggedGame] = []
+    out: list[LoggedGame] = []
 
     for sample in log.samples or []:
         metadata = sample.metadata or {}
@@ -116,7 +115,7 @@ def extract_trajectories(
         if not word:
             continue
 
-        guesses: List[str] = []
+        guesses: list[str] = []
         for message in sample.messages or []:
             for tool_call in getattr(message, "tool_calls", None) or []:
                 name = getattr(tool_call, "function", None)
@@ -149,7 +148,7 @@ def extract_trajectories(
     return out
 
 
-def _recorded_outcome(sample: object) -> Optional[bool]:
+def _recorded_outcome(sample: object) -> bool | None:
     """Whether the game was scored as won, from the eval's own game scorer.
 
     Returns None when no such score is present, in which case the replay's own
@@ -160,18 +159,17 @@ def _recorded_outcome(sample: object) -> Optional[bool]:
     if score is None:
         return None
     won = (getattr(score, "metadata", None) or {}).get("won")
-    if isinstance(won, bool):
-        # A game won by submitting the full word never sets game_state.won, so
-        # fall through to the score value rather than trusting this flag alone.
-        if won:
-            return True
+    # A game won by submitting the full word never sets game_state.won, so on
+    # False fall through to the score value rather than trusting this flag.
+    if isinstance(won, bool) and won:
+        return True
     value = getattr(score, "value", None)
     if value in (CORRECT, INCORRECT):
         return value == CORRECT
     return None
 
 
-def _attempts_from_scores(sample: object) -> List[str]:
+def _attempts_from_scores(sample: object) -> list[str]:
     """Raw submissions recorded by the scorer, for logs without message history."""
     scores = getattr(sample, "scores", None) or {}
     for score in scores.values():
@@ -181,7 +179,7 @@ def _attempts_from_scores(sample: object) -> List[str]:
     return []
 
 
-def find_logs(path: pathlib.Path) -> List[pathlib.Path]:
+def find_logs(path: pathlib.Path) -> list[pathlib.Path]:
     if path.is_file():
         return [path]
     return sorted(path.rglob("*.eval"))
@@ -191,18 +189,18 @@ def find_logs(path: pathlib.Path) -> List[pathlib.Path]:
 # Reference agents, for calibration
 # --------------------------------------------------------------------------
 
-Agent = Callable[[str, Sequence[str], int], List[str]]
+Agent = Callable[[str, Sequence[str], int], list[str]]
 
 
 def _play(
     word: str,
     dictionary: Sequence[str],
     max_wrong: int,
-    pick: Callable[[List[str], List[str], List[str]], Optional[str]],
-) -> List[str]:
+    pick: Callable[[list[str], list[str], list[str]], str | None],
+) -> list[str]:
     """Drive an agent to completion, returning the guess sequence it emitted."""
-    guessed: List[str] = []
-    emitted: List[str] = []
+    guessed: list[str] = []
+    emitted: list[str] = []
     wrong = 0
     # A repeat is ignored by the game, so cap emissions to avoid spinning
     # forever on an agent that only ever repeats itself.
@@ -227,23 +225,23 @@ def _play(
     return emitted
 
 
-def agent_optimal(word: str, dictionary: Sequence[str], max_wrong: int) -> List[str]:
+def agent_optimal(word: str, dictionary: Sequence[str], max_wrong: int) -> list[str]:
     """Plays the max-hit-probability move every turn. Regret zero by design."""
 
-    def pick(board: str, guessed: List[str], candidates: List[str]) -> Optional[str]:
+    def pick(board: str, guessed: list[str], candidates: list[str]) -> str | None:
         return choose_max_hit_probability(candidates, frozenset(guessed))
 
     return _play(word, dictionary, max_wrong, pick)
 
 
-def agent_frequency(word: str, dictionary: Sequence[str], max_wrong: int) -> List[str]:
+def agent_frequency(word: str, dictionary: Sequence[str], max_wrong: int) -> list[str]:
     """Fixed English letter-frequency order, ignoring evidence entirely.
 
     This is the strategy the eval's own system prompt suggests ("common letter
     frequencies"), so it is the relevant baseline for prompt-following play.
     """
 
-    def pick(board: str, guessed: List[str], candidates: List[str]) -> Optional[str]:
+    def pick(board: str, guessed: list[str], candidates: list[str]) -> str | None:
         for letter in FREQUENCY_ORDER:
             if letter not in guessed:
                 return letter
@@ -252,7 +250,7 @@ def agent_frequency(word: str, dictionary: Sequence[str], max_wrong: int) -> Lis
     return _play(word, dictionary, max_wrong, pick)
 
 
-def agent_sloppy(word: str, dictionary: Sequence[str], max_wrong: int) -> List[str]:
+def agent_sloppy(word: str, dictionary: Sequence[str], max_wrong: int) -> list[str]:
     """Mostly frequency order, but sometimes repeats or picks a dead letter.
 
     Exists to prove the error metrics fire. If the harness cannot detect this
@@ -262,7 +260,7 @@ def agent_sloppy(word: str, dictionary: Sequence[str], max_wrong: int) -> List[s
     # hash(word) would give different results on every run.
     rng = random.Random(zlib.crc32(word.encode("utf-8")))
 
-    def pick(board: str, guessed: List[str], candidates: List[str]) -> Optional[str]:
+    def pick(board: str, guessed: list[str], candidates: list[str]) -> str | None:
         roll = rng.random()
         if roll < 0.15 and guessed:
             return rng.choice(guessed)  # repeat
@@ -283,7 +281,7 @@ def agent_sloppy(word: str, dictionary: Sequence[str], max_wrong: int) -> List[s
     return _play(word, dictionary, max_wrong, pick)
 
 
-AGENTS: Dict[str, Agent] = {
+AGENTS: dict[str, Agent] = {
     "optimal": agent_optimal,
     "frequency": agent_frequency,
     "sloppy": agent_sloppy,
@@ -344,13 +342,13 @@ def write_per_guess(reports: Sequence[TrajectoryReport], path: pathlib.Path) -> 
                 )
 
 
-def summarise(reports: Sequence[TrajectoryReport]) -> List[Dict[str, object]]:
+def summarise(reports: Sequence[TrajectoryReport]) -> list[dict[str, object]]:
     """Aggregate per model. Rates are per scored guess, not per game."""
-    by_model: Dict[str, List[TrajectoryReport]] = {}
+    by_model: dict[str, list[TrajectoryReport]] = {}
     for report in reports:
         by_model.setdefault(report.model, []).append(report)
 
-    rows: List[Dict[str, object]] = []
+    rows: list[dict[str, object]] = []
     for model, group in sorted(by_model.items()):
         scored = sum(r.n_scored for r in group)
         emitted = sum(len(r.steps) for r in group)
@@ -361,34 +359,20 @@ def summarise(reports: Sequence[TrajectoryReport]) -> List[Dict[str, object]]:
                 "win_rate": statistics.mean(1.0 if r.final_won else 0.0 for r in group),
                 "guesses_emitted": emitted,
                 "guesses_scored": scored,
-                "repeat_rate": (sum(r.n_repeat for r in group) / emitted)
-                if emitted
-                else 0.0,
-                "invalid_rate": (sum(r.n_invalid for r in group) / emitted)
-                if emitted
-                else 0.0,
-                "dominated_rate": (sum(r.n_dominated for r in group) / scored)
-                if scored
-                else 0.0,
-                "suboptimal_rate": (sum(r.n_suboptimal for r in group) / scored)
-                if scored
-                else 0.0,
-                "mean_hit_prob_regret": statistics.mean(
-                    r.mean_hit_prob_regret for r in group
-                ),
+                "repeat_rate": (sum(r.n_repeat for r in group) / emitted) if emitted else 0.0,
+                "invalid_rate": (sum(r.n_invalid for r in group) / emitted) if emitted else 0.0,
+                "dominated_rate": (sum(r.n_dominated for r in group) / scored) if scored else 0.0,
+                "suboptimal_rate": (sum(r.n_suboptimal for r in group) / scored) if scored else 0.0,
+                "mean_hit_prob_regret": statistics.mean(r.mean_hit_prob_regret for r in group),
                 "mean_wrong_guesses": statistics.mean(r.wrong_guesses for r in group),
-                "mean_oracle_wrong": statistics.mean(
-                    r.oracle_wrong_guesses for r in group
-                ),
-                "mean_excess_wrong": statistics.mean(
-                    r.excess_wrong_guesses for r in group
-                ),
+                "mean_oracle_wrong": statistics.mean(r.oracle_wrong_guesses for r in group),
+                "mean_excess_wrong": statistics.mean(r.excess_wrong_guesses for r in group),
             }
         )
     return rows
 
 
-def write_summary(rows: Sequence[Dict[str, object]], path: pathlib.Path) -> None:
+def write_summary(rows: Sequence[dict[str, object]], path: pathlib.Path) -> None:
     if not rows:
         return
     with path.open("w", newline="", encoding="utf-8") as handle:
@@ -400,7 +384,7 @@ def write_summary(rows: Sequence[Dict[str, object]], path: pathlib.Path) -> None
             )
 
 
-def print_summary(rows: Sequence[Dict[str, object]]) -> None:
+def print_summary(rows: Sequence[dict[str, object]]) -> None:
     if not rows:
         print("No trajectories found.")
         return
@@ -412,7 +396,7 @@ def print_summary(rows: Sequence[Dict[str, object]]) -> None:
     print("-" * len(header))
     for row in rows:
         print(
-            f"{str(row['model']):<24} "
+            f"{row['model']!s:<24} "
             f"{row['games']:>5} "
             f"{row['win_rate']:>6.2f} "
             f"{row['repeat_rate']:>7.3f} "
@@ -435,7 +419,7 @@ def print_summary(rows: Sequence[Dict[str, object]]) -> None:
 # --------------------------------------------------------------------------
 
 
-def load_dataset_words() -> List[Tuple[str, str]]:
+def load_dataset_words() -> list[tuple[str, str]]:
     """(word, difficulty) from the benchmark's own dataset."""
     import importlib.util
 
@@ -448,9 +432,7 @@ def load_dataset_words() -> List[Tuple[str, str]]:
     return [(entry.word.lower(), entry.difficulty) for entry in module.ENGLISH_WORDS]
 
 
-def restrict_dictionary(
-    dictionary: Sequence[str], words: Iterable[str]
-) -> Dict[int, List[str]]:
+def restrict_dictionary(dictionary: Sequence[str], words: Iterable[str]) -> dict[int, list[str]]:
     """Index the dictionary by length; replay only ever needs one length."""
     index = by_length(dictionary)
     for word in words:
@@ -467,7 +449,7 @@ def run_from_logs(args: argparse.Namespace) -> int:
         return 1
 
     index = by_length(dictionary)
-    reports: List[TrajectoryReport] = []
+    reports: list[TrajectoryReport] = []
     for log_path in logs:
         for game in extract_trajectories(log_path, args.max_guesses):
             report = replay_trajectory(
@@ -494,14 +476,14 @@ def run_simulate(args: argparse.Namespace) -> int:
         words = words[: args.limit]
     index = by_length(dictionary)
 
-    reports: List[TrajectoryReport] = []
+    reports: list[TrajectoryReport] = []
     for name, agent in AGENTS.items():
         for word in words:
             pool = index.get(len(word), [])
             # The agent needs a dictionary it can actually win with, but the
             # report is scored against the real one so a missing target still
             # shows up as a data-quality warning.
-            playable = pool if word in pool else pool + [word]
+            playable = pool if word in pool else [*pool, word]
             guesses = agent(word, playable, args.max_guesses)
             reports.append(
                 replay_trajectory(
@@ -542,7 +524,7 @@ def emit(reports: Sequence[TrajectoryReport], out_prefix: pathlib.Path) -> None:
     print(f"Wrote {summary_path}")
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 

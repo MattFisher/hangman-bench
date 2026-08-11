@@ -3,6 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
+
 This is a Hangman benchmark for testing AI models' ability to play the classic word game using the [Inspect framework](https://github.com/UKGovernmentBEIS/inspect_ai). It implements a structured evaluation where models must guess letters to uncover words across different languages and difficulty levels.
 
 ## Development Commands
@@ -10,6 +11,7 @@ This is a Hangman benchmark for testing AI models' ability to play the classic w
 ### Installation & Setup
 
 #### Using uv (recommended)
+
 ```bash
 # Install with all dependencies
 uv sync --dev
@@ -19,6 +21,7 @@ uv run pre-commit install
 ```
 
 #### Using pip
+
 ```bash
 # Install in development mode with all dependencies
 pip install -e ".[dev]"
@@ -30,6 +33,7 @@ pre-commit install
 ### Testing
 
 #### Using uv
+
 ```bash
 # Run all tests
 uv run pytest
@@ -39,6 +43,7 @@ uv run pytest --cov
 ```
 
 #### Using pip
+
 ```bash
 # Run all tests
 pytest
@@ -50,6 +55,7 @@ pytest --cov
 ### Code Quality
 
 #### Using uv
+
 ```bash
 # Format and lint code
 uv run ruff check
@@ -57,6 +63,7 @@ uv run ruff format
 ```
 
 #### Using pip
+
 ```bash
 # Format and lint code (development dependency)
 ruff check
@@ -66,6 +73,7 @@ ruff format
 ### Running Evaluations
 
 #### Using uv
+
 ```bash
 # Basic evaluation
 uv run inspect eval hangman_bench/hangman
@@ -83,6 +91,7 @@ uv run inspect eval hangman_bench/hangman -T max_guesses=8
 ```
 
 #### Using pip
+
 ```bash
 # Basic evaluation
 inspect eval hangman_bench/hangman
@@ -102,6 +111,7 @@ inspect eval hangman_bench/hangman -T max_guesses=8
 ## Architecture
 
 ### Core Components
+
 The evaluation is built around three main modules:
 
 - **hangman.py**: Main evaluation logic with `@task`, `@solver`, `@scorer`, and `@tool` decorators
@@ -119,16 +129,19 @@ The evaluation is built around three main modules:
 **hangman_guess()** (`hangman.py:166`): Tool function that processes letter guesses and returns game state information.
 
 ### Inspect Framework Integration
+
 - Uses `Task` with dataset, solver, setup, and scorer components
 - `basic_agent` solver with custom system messages and tool access
 - `grouped` scorer by difficulty level with accuracy metrics
 - `store()` for maintaining game state across tool calls
 
 ### Scorers
+
 - `game_scorer`: win/loss, grouped by difficulty
 - `oracle_scorer`: per-guess quality — dominated moves, repeats, invalid guesses, and shortfall against the best available guess. Runs by default; disable with `-T oracle=false`. Can be applied to existing logs with `inspect score <log> --scorer src/hangman_bench/hangman.py@oracle_scorer --action append`.
 
 ### Task Parameters
+
 - `language`: Word language (default: "english")
 - `difficulty`: Specific difficulty 1-5, or None for mixed
 - `max_guesses`: Maximum incorrect guesses (default: 10)
@@ -149,4 +162,5 @@ Figures are part of the analysis pipeline and follow a fixed convention:
 - matplotlib is in the dev dependency group (`uv sync --dev`).
 
 ## Testing Strategy
+
 Tests cover dataset functions, task creation, and parameter validation. Located in `tests/test_hangman.py` with pytest framework.
