@@ -55,11 +55,13 @@ If you find a bug or have a feature request, please open an issue on GitHub. Whe
 ## Testing
 
 ### Using uv
+
 ```bash
 uv run pytest
 ```
 
 ### Using pip
+
 ```bash
 pytest
 ```

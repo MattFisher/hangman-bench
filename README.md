@@ -1,18 +1,19 @@
 # Hangman Benchmark
 
-A benchmark for testing AI models' ability to play the classic game of Hangman.
-Uses the [Inspect framework](https://github.com/UKGovernmentBEIS/inspect_ai) to evaluate the models.
+A benchmark for testing AI models' ability to play the classic game of Hangman. Uses the [Inspect framework](https://github.com/UKGovernmentBEIS/inspect_ai) to evaluate the models.
 
 This eval was built as a demonstration of how to enable models to play games using tools within the Inspect framework.
 
 ## Installation
 
 ### Using pip
+
 ```bash
 pip install hangman-bench
 ```
 
 ### Using uv (recommended)
+
 ```bash
 uv add hangman-bench
 ```
@@ -37,14 +38,9 @@ inspect eval hangman_bench/hangman -T allow-word-guesses=True
 Two scorers run by default:
 
 - `game_scorer` — did the agent win, grouped by difficulty.
-- `oracle_scorer` — *how* the game was played, by replaying each guess against
-  the exactly computable posterior over the hidden word. Reports the rate of
-  provably wrong moves (guessing a letter that appears in no remaining
-  candidate word, repeats, malformed input) and how far each guess fell below
-  the best available one.
+- `oracle_scorer` — *how* the game was played, by replaying each guess against the exactly computable posterior over the hidden word. Reports the rate of provably wrong moves (guessing a letter that appears in no remaining candidate word, repeats, malformed input) and how far each guess fell below the best available one.
 
-Because `oracle_scorer` is a normal Inspect scorer, its metrics can be added to
-logs that were produced without it:
+Because `oracle_scorer` is a normal Inspect scorer, its metrics can be added to logs that were produced without it:
 
 ```bash
 inspect score <log.eval> \
@@ -65,6 +61,7 @@ See [analysis/README.md](analysis/README.md) for the metric definitions.
 ## Development
 
 ### Using uv (recommended)
+
 1. Clone the repository
 2. Install with development dependencies:
    ```bash
@@ -80,6 +77,7 @@ See [analysis/README.md](analysis/README.md) for the metric definitions.
    ```
 
 ### Using pip
+
 1. Clone the repository
 2. Install with development dependencies:
    ```bash
