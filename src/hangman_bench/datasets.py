@@ -27,6 +27,22 @@ class Language(str, Enum):
 
 Difficulty = Literal["v_easy", "easy", "medium", "hard", "v_hard"]
 
+# The alphabet is part of each language's game specification: it defines
+# which single-character guesses are valid, and |alphabet| is the wrong-guess
+# budget at which losing becomes impossible (the "unlimited" budget). It is
+# declared rather than derived from a wordlist — which characters count as a
+# letter is a linguistic decision (accents, ß, digraphs), and a derived
+# alphabet would silently change whenever a dictionary is rebuilt. A test
+# verifies the shipped wordlist stays within the declaration.
+ALPHABETS: dict[Language, str] = {
+    Language.ENGLISH: "abcdefghijklmnopqrstuvwxyz",
+}
+
+
+def get_alphabet(language: Language) -> str:
+    """The declared letter inventory for a language."""
+    return ALPHABETS[language]
+
 
 @dataclass
 class WordEntry:

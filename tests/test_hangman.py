@@ -4,6 +4,7 @@ from hangman_bench.hangman import GameState, _build_system_message
 from hangman_bench.datasets import (
     Language,
     WordEntry,
+    get_alphabet,
     get_words_by_difficulty,
     get_words_by_language,
 )
@@ -183,9 +184,10 @@ class TestGuessRecording:
         with pytest.raises(ValueError, match="single letter"):
             state.guess("ab")
 
-    def test_non_ascii_letters_are_invalid(self):
-        # str.isalpha() would accept these; a letter outside a-z can never be
-        # revealed, so it must not reach the game and cost a life.
+    def test_letters_outside_the_alphabet_are_invalid(self):
+        # str.isalpha() would accept these; a letter outside the language's
+        # declared alphabet can never be revealed, so it must not reach the
+        # game and cost a life.
         state = GameState.start("apple", max_guesses=6)
         with pytest.raises(ValueError, match="single letter"):
             state.guess("é")
@@ -193,16 +195,29 @@ class TestGuessRecording:
         assert state.invalid_attempts == ["é", "ß", "λ"]
         assert state.remaining_guesses == 6
 
-    def test_wrong_guess_budget_of_26_is_unreachable(self):
+    def test_alphabet_sized_budget_is_unreachable(self):
         # The unlimited-budget protocol rests on this: guessing every letter
-        # of the alphabet completes any word before 26 wrong guesses accrue.
-        state = GameState.start("apple", max_guesses=26)
-        for letter in "abcdefghijklmnopqrstuvwxyz":
+        # of the alphabet completes any word before |alphabet| wrong guesses
+        # accrue.
+        alphabet = get_alphabet(Language.ENGLISH)
+        state = GameState.start("apple", max_guesses=len(alphabet))
+        for letter in alphabet:
             state.guess(letter)
             if state.game_over:
                 break
         assert state.won
         assert state.remaining_guesses > 0
+
+    def test_shipped_wordlist_fits_declared_alphabet(self):
+        # The alphabet is declared, not derived; this is the automatic
+        # cross-check that the shipped dictionary stays within it.
+        from hangman_bench.oracle import DEFAULT_WORDLIST, load_wordlist
+
+        alphabet = set(get_alphabet(Language.ENGLISH))
+        stray = {
+            ch for word in load_wordlist(DEFAULT_WORDLIST) for ch in word
+        } - alphabet
+        assert not stray
 
     def test_guess_ignores_repeats_without_costing_a_life(self):
         state = GameState.start("apple", max_guesses=6)

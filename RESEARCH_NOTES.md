@@ -395,9 +395,10 @@ Word-level flips of this size on one seed are why the review's replication
 requirement stands before any headline claim.
 
 **Win-vs-budget curves from one unlimited run — and models rise to scarcity
-(2026-08-10).** The wrong-guess budget of 10 was arbitrary. With letter
-guesses only, `max_guesses=26` is unreachable (guessing all 26 letters
-reveals any word first), so a b=26 run is effectively unlimited and the
+(2026-08-10).** The wrong-guess budget of 10 was arbitrary. With guesses
+restricted to the language's declared alphabet, a budget of |alphabet|
+cannot be exhausted — guessing every letter reveals the word first — so a
+run at b = |alphabet| (26 for English) is effectively unlimited and the
 whole win-vs-budget curve falls out of a single run: win@b is the fraction
 of games needing fewer than b wrong guesses. Run 2026-08-10, three models ×
 the same 100 words, default prompt, fixed nudge; plus a real constrained run

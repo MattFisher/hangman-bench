@@ -11,7 +11,7 @@ final win/loss.
 The metrics fall into two families.
 
 Provable errors (no judgement required):
-- invalid:        the guess was not a single letter a-z.
+- invalid:        the guess was not a single letter of the alphabet.
 - repeat:         the letter had already been guessed, so the guess cannot
                   change the belief state. Strictly wasted.
 - dominated_miss: a fresh letter that appears in ZERO consistent candidate
@@ -298,6 +298,7 @@ def replay_trajectory(
     max_wrong: int = 10,
     sample_id: str = "",
     model: str = "",
+    alphabet: Optional[str] = None,
 ) -> TrajectoryReport:
     """Score every guess in ``raw_guesses`` against the belief state.
 
@@ -307,6 +308,9 @@ def replay_trajectory(
     the eval records them separately in ``GameState.attempts``.
     """
     word = word.lower()
+    # The language's declared letter inventory; guesses outside it are scored
+    # invalid, mirroring the game's validation.
+    alphabet = alphabet if alphabet is not None else "".join(ALPHABET)
 
     # An oracle cannot reason about a word absent from its dictionary: the
     # candidate set would empty out mid-game. Flag it and continue.
@@ -328,9 +332,7 @@ def replay_trajectory(
 
     for step, raw in enumerate(raw_guesses):
         letter = (raw or "").strip().lower()
-        # Mirrors the game's _is_valid_letter: a-z only, not isalpha(), so a
-        # Unicode letter is scored as invalid exactly as the tool rejects it.
-        invalid = len(letter) != 1 or not ("a" <= letter <= "z")
+        invalid = len(letter) != 1 or letter not in alphabet
         repeat = (not invalid) and letter in guessed
 
         board = reveal(word, guessed)

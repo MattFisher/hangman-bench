@@ -35,6 +35,7 @@ from hangman_bench.oracle import (
 )
 from hangman_bench.datasets import (
     Language,
+    get_alphabet,
     get_words_by_difficulty,
     get_words_by_language,
     Difficulty,
@@ -42,6 +43,7 @@ from hangman_bench.datasets import (
 
 DEFAULT_MAX_GUESSES = 10
 DEFAULT_LANGUAGE = Language.ENGLISH
+DEFAULT_ALPHABET = get_alphabet(DEFAULT_LANGUAGE)
 NUM_ALLOWABLE_EXTRA_MESSAGES = 5  # Extra messages beyond word length + max guesses
 
 
@@ -143,11 +145,12 @@ def _normalise(letter: str) -> str:
     return (letter or "").strip().lower()
 
 
-def _is_valid_letter(letter: str) -> bool:
-    # ASCII a-z only: str.isalpha() admits any Unicode letter, and a letter
-    # outside a-z can never be revealed, so accepting one would make a
-    # 26-wrong-guess budget reachable and break the unlimited-budget protocol.
-    return len(letter) == 1 and "a" <= letter <= "z"
+def _is_valid_letter(letter: str, alphabet: str = DEFAULT_ALPHABET) -> bool:
+    # Only letters of the language's declared alphabet are valid: any other
+    # character can never be revealed, so counting it as a miss would let the
+    # wrong-guess count reach |alphabet| and break the unlimited-budget
+    # protocol (a budget of |alphabet| is otherwise impossible to exhaust).
+    return len(letter) == 1 and letter in alphabet
 
 
 @dataclass
@@ -161,19 +164,30 @@ class GameState:
     # and invalid guesses never reach guessed_letters, so without this record
     # they are invisible to any analysis of how the game was played.
     attempts: list[str] = field(default_factory=list)
+    # The language's declared letter inventory; guesses outside it are invalid.
+    alphabet: str = DEFAULT_ALPHABET
 
     @staticmethod
-    def start(word: str, max_guesses: int = DEFAULT_MAX_GUESSES) -> "GameState":
+    def start(
+        word: str,
+        max_guesses: int = DEFAULT_MAX_GUESSES,
+        alphabet: str = DEFAULT_ALPHABET,
+    ) -> "GameState":
         return GameState(
             word=word.lower(),
             guessed_letters=[],
             remaining_guesses=max_guesses,
+            alphabet=alphabet,
         )
 
     @property
     def invalid_attempts(self) -> List[str]:
-        """Submissions that were not a single letter."""
-        return [a for a in self.attempts if not _is_valid_letter(_normalise(a))]
+        """Submissions that were not a single letter of the alphabet."""
+        return [
+            a
+            for a in self.attempts
+            if not _is_valid_letter(_normalise(a), self.alphabet)
+        ]
 
     @property
     def repeated_attempts(self) -> List[str]:
@@ -182,7 +196,7 @@ class GameState:
         repeats: List[str] = []
         for raw in self.attempts:
             letter = _normalise(raw)
-            if not _is_valid_letter(letter):
+            if not _is_valid_letter(letter, self.alphabet):
                 continue
             if letter in seen:
                 repeats.append(letter)
@@ -208,8 +222,8 @@ class GameState:
             return self
 
         letter = _normalise(letter)
-        if not _is_valid_letter(letter):
-            raise ValueError("Guess must be a single letter a-z")
+        if not _is_valid_letter(letter, self.alphabet):
+            raise ValueError("Guess must be a single letter of the game's alphabet")
 
         if letter in self.guessed_letters:
             return self
@@ -269,12 +283,13 @@ def hangman_guess() -> Tool:
         game_state.attempts.append(letter)
 
         normalised = _normalise(letter)
-        if not _is_valid_letter(normalised):
+        if not _is_valid_letter(normalised, game_state.alphabet):
             # A ToolError is reported back to the model, which can then correct
             # itself. Letting the ValueError escape would abort the sample and
             # drop the game from the results entirely.
+            language = metadata.get("language", DEFAULT_LANGUAGE.value)
             raise ToolError(
-                f"'{letter}' is not a single letter from a to z. "
+                f"'{letter}' is not a single letter of the {language} alphabet. "
                 f"Guess exactly one letter, for example hangman_guess('a')."
             )
 
@@ -430,6 +445,7 @@ def game_initialiser() -> Solver:
         hangman_game = GameState.start(
             word=word,
             max_guesses=max_guesses,
+            alphabet=get_alphabet(Language(language)),
         )
 
         # Store game state and metadata using a typed store model
@@ -543,6 +559,9 @@ def oracle_scorer(
             max_wrong=max_guesses,
             sample_id=str(state.sample_id),
             model=str(state.model),
+            alphabet=get_alphabet(
+                Language(metadata.get("language", DEFAULT_LANGUAGE.value))
+            ),
         )
 
         # A game won by submitting the full word ends before every letter is

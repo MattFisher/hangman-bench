@@ -3,10 +3,12 @@
 
 A game won with w wrong guesses would have been won at any budget > w, so one
 run at a high budget yields the whole win-vs-budget curve below its cap by
-reading off the empirical CDF of wrong-guesses-needed. With letter guesses
-only, max_guesses=26 cannot be reached (26 letters reveal any word first), so
-a b=26 run is effectively unlimited and the distribution is uncensored except
-for games that never finish (message limit; reported separately as DNF).
+reading off the empirical CDF of wrong-guesses-needed. With guesses restricted
+to the language's declared alphabet, a budget of |alphabet| cannot be
+exhausted (guessing every letter reveals the word first), so a run at that
+budget — 26 for English — is effectively unlimited and the distribution is
+uncensored except for games that never finish (message limit; reported
+separately as DNF).
 
 The derived curve assumes budget-invariant play: the model is told its
 budget, so it could in principle play differently under scarcity. --validate
@@ -37,12 +39,16 @@ from compare_arms import binom_two_sided, load_arm  # noqa: E402
 from pilot_oracle import agent_frequency  # noqa: E402
 
 from hangman_bench.oracle import (  # noqa: E402
+    ALPHABET,
     load_dictionary_index,
     replay_trajectory,
     resolve_wordlist,
 )
 
-MAX_BUDGET = 26  # letter guesses only: unreachable, hence "unlimited"
+# The "unlimited" budget is the alphabet size: with guesses restricted to the
+# language's declared alphabet, at most |alphabet| - len(set(word)) can ever
+# be wrong, so a budget of |alphabet| cannot be exhausted. 26 for English.
+MAX_BUDGET = len(ALPHABET)
 
 
 def wrong_needed(games) -> Dict[str, int | None]:
