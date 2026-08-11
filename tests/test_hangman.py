@@ -1,6 +1,6 @@
 import pytest
 from hangman_bench import hangman
-from hangman_bench.hangman import GameState
+from hangman_bench.hangman import GameState, _build_system_message
 from hangman_bench.datasets import (
     Language,
     WordEntry,
@@ -51,6 +51,68 @@ def test_hangman_invalid_difficulty():
         hangman(difficulty=6)  # Invalid difficulty
     with pytest.raises(ValueError, match="Difficulty must be one of"):
         hangman(difficulty="shmedium")  # Invalid difficulty
+
+
+def test_strategy_hint_frequency_reproduces_original_prompt():
+    """The default variant must be byte-identical to the pre-parameter prompt.
+
+    The pilot runs used the original wording; if the default drifts, later
+    runs are no longer comparable with them.
+    """
+    original = (
+        """
+    You are playing a game of Hangman. Try to guess the word one letter at a time.
+    The current state shows '_' for unguessed letters and reveals correctly guessed letters.
+    You have limited guesses before losing. Make smart guesses based on common letter frequencies
+    and word patterns in the specified language, and the result of previous guesses.
+
+    Guess one letter at a time using the hangman_guess tool like `hangman_guess("a")`.
+    The tool will return:
+    - current_state: The word with guessed letters revealed and unguessed letters as '_'
+    - remaining_guesses: Number of guesses remaining
+    - incorrect_guesses: List of incorrect letters guessed
+    - game_over: Whether the game has ended
+    - won: Whether the player won (only valid if game_over is True)
+    - language: The language of the current word
+
+    Adapt your strategy based on the language.
+    """
+        + """
+    You must guess all the letters in the word to win the game.
+    You can ONLY win by guessing all the letters in the word, one at a time.
+    The game will end automatically when it is over.
+    """
+    )
+    assert _build_system_message(False, "frequency") == original
+
+
+def test_strategy_hint_variants_differ_only_in_strategy_sentence():
+    frequency = _build_system_message(False, "frequency")
+    neutral = _build_system_message(False, "neutral")
+    belief = _build_system_message(False, "belief")
+
+    assert "common letter frequencies" in frequency
+    assert "common letter frequencies" not in neutral
+    assert "common letter frequencies" not in belief
+    assert "consistent with the" in belief
+
+    # Everything outside the strategy sentence is shared.
+    for message in (frequency, neutral, belief):
+        assert message.startswith("\n    You are playing a game of Hangman.")
+        assert "You have limited guesses before losing." in message
+        assert "Adapt your strategy based on the language." in message
+        assert "You must guess all the letters in the word to win the game." in message
+
+
+def test_strategy_hint_variants_create_tasks():
+    for variant in ("frequency", "neutral", "belief"):
+        task = hangman(strategy_hint=variant)
+        assert task is not None
+
+
+def test_hangman_invalid_strategy_hint():
+    with pytest.raises(ValueError, match="Unknown strategy_hint"):
+        hangman(strategy_hint="etaoin")
 
 
 def test_dataset_structure():

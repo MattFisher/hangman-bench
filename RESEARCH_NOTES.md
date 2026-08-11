@@ -10,8 +10,15 @@ bonus: `dominated_rate` orders the models by generation (gpt-4o 0.18,
 gpt-5-nano 0.06, claude-sonnet-5 0.03) and keeps separating them after win
 rate saturates (0.93 / 0.99 for the two current models). Results, and the one
 harness artifact the pilot uncovered, are under [The pilot](#the-pilot). The
-continue-prompt artifact is fixed in code but post-dates these runs. Next:
-scale up (section 7).
+continue-prompt artifact is fixed in code but post-dates these runs. The
+re-scoring grid (2026-08-09, section 4) decided the thesis question: rankings
+are dictionary-invariant, so **thesis A — process metrics that keep
+discriminating after saturation — is the paper**, with prior/dictionary
+sensitivity as its robustness section. The prompt ablation (same day) ruled
+out the other deflationary reading: a belief-eliciting prompt does not
+collapse `dominated_rate`, so the metric measures capability, not
+instruction compliance. Next: scale up (section 7), ablation matrix and
+verbalised-posterior probe first among the additions.
 
 ---
 
@@ -237,8 +244,9 @@ Both are shown; say which one a number is whenever citing it.
 | invalid_rate | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 |
 
 **The thesis holds, and the metric tracks capability.** For the two current
-models, win rate sits at the ceiling (0.93 / 0.99, and nano's 0.93 matches
-the registered report) while `dominated_rate` stays meaningfully above zero —
+models, win rate sits at the ceiling (0.93 / 0.99; nano's 0.93 matches the
+registered report, though one of its seven losses is artifact-contested — see
+the nudge paragraph) while `dominated_rate` stays meaningfully above zero —
 the eval barely separates them on outcome but separates them cleanly on
 process (nano makes provably dead guesses at about twice sonnet's rate). The
 2024-era reference point extends this into a monotone gradient on every
@@ -282,9 +290,24 @@ fifteen consecutive turns on `happy` until the message limit ended the sample.
 The artifact is model-specific: sonnet emitted zero repeats and gpt-4o's three
 (g, d, d) are organic slips, not the example letter. As measured, nano's
 `repeat_rate` is harness-induced instruction-literalism, not spontaneous
-state-tracking failure. The nudge has since been reworded to name no letter;
-these three runs all predate the fix, so their numbers are comparable with
-each other but `repeat_rate` should be re-measured before being cited.
+state-tracking failure. The artifact is **not confined to `repeat_rate`**
+(external review, 2026-08-09): nano entered the loop on `happy` at 9/10 wrong
+with 11 candidates and a p=0.45 best move still available, and the message
+limit then scored the game a loss — so the 0.93 win rate contains one
+artifact-contested loss, and its match with the registered report partly
+rests on it. The nudge has since been reworded to name no letter; these three
+runs all predate the fix, so their numbers are comparable with each other but
+`repeat_rate` (and nano's exact win rate) should be re-measured before being
+cited.
+
+Re-measured under the fixed nudge (2026-08-09, the ablation's frequency arm):
+the example-letter artifact is gone — but nano still spiralled, this time
+organically. On `flopping` it repeated `g`, a letter it had already *hit*,
+ten times and lost. So the refined claim is: the old nudge chose the
+*letter*; the loop tendency is nano's own. `repeat_rate` is now citable as
+model behaviour: nano 13/976 guesses (10 of them that one spiral), sonnet
+zero in three arms and two in the belief arm (g and i, out of 957 guesses),
+gpt-4o ≤ 6 scattered singles per arm.
 
 ---
 
@@ -306,6 +329,67 @@ completely fixed and varying only the dictionary used to score them:
 "Model X makes provably dead guesses 35% of the time" is not a fact about the
 model. It is a fact about (model, dictionary). This must be reported as a
 sensitivity analysis, not hidden behind a default.
+
+**Re-scored on the 300 real pilot trajectories (2026-08-09): rankings and
+structure are dictionary-invariant; magnitudes are not.** The table above
+used synthetic agents in the 0.35–0.57 dominated regime; the external review
+asked whether the models' 0.03–0.20 regime behaves the same. Grid: {SCOWL
+en_GB tier-50 (shipped), en_GB tier-70, deterministic 25% subsample
+(`crc32(word) % 4 == 0`), en_US tier-50}, trajectories held fixed. Full table
+in `analysis/rescore_grid_summary.tsv`; what it shows:
+
+- Model ranking (gpt-4o > gpt-5-nano > claude-sonnet-5) is unchanged in every
+  cell, on every metric.
+- Endgame concentration survives everywhere: dominated misses with ≤3
+  candidates stay at 86–97% across cells; with a certain letter available,
+  73–91%.
+- Magnitudes move as the synthetic table predicted, and hardest for the best
+  model: sonnet's dominated_rate triples under the 25% subsample
+  (0.031 → 0.095) and the gpt-4o/sonnet contrast compresses from 6.5× to
+  3.0×. Dictionary choice changes between-model *contrast*, not order.
+- en_US ≈ en_GB to three decimals — consistent with the dialect audit finding
+  zero orthographic dominated misses.
+- Caveats: the 25% cell injects 222/300 targets, so it stress-tests the
+  injected-target regime more than it represents a plausible dictionary. And
+  the grid covers the only axis that can move `dominated_rate` at all — by
+  the support argument, the pending wordfreq prior axis can only move the
+  graded metrics (given the smoothing floor preserves support).
+
+**Verdict per the review's decision rule: thesis A is the paper** — process
+metrics keep discriminating after outcome saturation, and that finding is
+stable across defensible dictionaries. Prior/dictionary sensitivity becomes
+the robustness section, with "declare your dictionary" as a reporting
+requirement: magnitudes remain a fact about (model, dictionary).
+
+**The prompt does not drive the dead guesses (2026-08-09).** The system
+prompt instructs frequency play, so `dominated_rate` might have measured
+compliance rather than capability. Ablation: {frequency (original), neutral
+(no advice), belief (reason from the consistent candidate set)} × three
+models × the same 100 words, all under the post-fix nudge; paired by word
+(`analysis/compare_arms.py`, `analysis/ablation_summary.tsv`). Pooled
+dominated_rate:
+
+| model | frequency | neutral | belief |
+| --- | --- | --- | --- |
+| claude-sonnet-5 | 0.037 | 0.032 | 0.051 |
+| gpt-5-nano | 0.077 | 0.065 | 0.073 |
+| gpt-4o | 0.230 | 0.236 | 0.193 |
+
+No comparison reaches significance (all McNemar p ≥ 0.24; the closest sign
+test is gpt-4o frequency-vs-belief at p = 0.060, −0.49 dominated per word
+under belief). The belief-eliciting prompt does **not** collapse the metric —
+the review's conditional resolves in thesis A's favour: dominated_rate
+measures capability, not instruction compliance. The only directional hints
+are that belief-prompting weakly helps the weakest model and, if anything,
+slightly hurts the strongest (sonnet +0.14/word, p = 0.12) — consistent with
+prompt-following mattering most where the underlying skill is weakest, and
+too weak to claim without replication.
+
+The identical-prompt arms also calibrate single-run noise: pilot vs the
+re-run frequency arm (only the nudge wording differs) flips 18 of gpt-4o's
+100 word outcomes (12:6, p = 0.24) and moves its win rate 0.69 → 0.63.
+Word-level flips of this size on one seed are why the review's replication
+requirement stands before any headline claim.
 
 **Frequency weighting differentially helps common words.** Replacing the
 uniform posterior with a wordfreq-weighted one, wrong guesses needed:
@@ -565,16 +649,26 @@ construction. Mention and move on; do not try to fit both.
   is not the oracle's. Some of what looks like model error is a specification
   mismatch. This applies at the orthographic level too: if the hidden word is
   `realise` and the model guesses `z`, it is penalised for a convention nobody
-  communicated.
+  communicated. Call a dominated miss an "error under a declared reference
+  specification", not a "provable error" simpliciter. Audited in the pilot
+  (2026-08-09): **zero of the 328 dominated misses are dialect-orthographic**
+  — no `z` guesses on the `-ise` boards; `whisky`/`dwarfs` differ from their
+  US forms in length; `pajamas` was already excluded by the board evidence
+  wherever it could have mattered. The caveat is conceptually right and
+  currently empty; it becomes live when a scaled dataset admits `-ise/-ize`
+  verbs, so the wording change costs nothing now and pre-empts that.
 - The reference solvers are greedy, not optimal. `excess_wrong_guesses` can be
   negative.
 - Difficulty labels in the current dataset are LLM-authored and do not track
   computed difficulty. Do not use them as a difficulty axis without saying so.
 - The current 100 words are LLM-chosen and are not a sample of human hangman
   targets.
-- `repeat_rate` in the pilot is a harness artifact (the continue nudge's
-  literal example letter), not a model property. Do not cite it until the
-  nudge is reworded and the measurement repeated.
+- `repeat_rate` in the *pilot* is a harness artifact (the continue nudge's
+  literal example letter), not a model property. Re-measured under the fixed
+  nudge on 2026-08-09: the artifact is gone and `repeat_rate` is citable from
+  the ablation arms onward — with the nuance that nano's residual repeats are
+  one organic spiral (`flopping`, g × 10), so report it alongside its
+  concentration, not as a smooth rate.
 
 ## External review (2026-08-09)
 
@@ -762,3 +856,38 @@ code.
 8. Human endgame study.
 9. Contamination hygiene.
 10. Deliberate A-vs-B-vs-other-paper decision.
+
+### Disposition (2026-08-09)
+
+Working through the list above; status and divergences:
+
+- **Item 3 — done, result: empty.** Zero of 328 pilot dominated misses are
+  dialect-orthographic (details in section 8 caveats). Wording reframed.
+  Pushback on the union-dictionary suggestion: widening support redefines the
+  metric ("dead in every dialect") rather than fixing it; keep strict as
+  primary and add union as a robustness pair when a scaled dataset makes the
+  caveat live.
+- **Item 4 — done.** Containment claim corrected in section 3; the artifact
+  also contests one nano loss (`happy`).
+- **Item 1 — done, verdict: thesis A.** Rankings and endgame concentration
+  are invariant across the dictionary grid; magnitudes move (up to 3× for
+  the best model). Details in section 4. The prior axis waits on the
+  `prior=` parameter, and by the reviewer's own support argument it cannot
+  move `dominated_rate`, only the graded metrics — with the caveat that this
+  invariance requires the frequency prior's smoothing floor to preserve
+  support.
+- **Item 2 — done, verdict: not compliance.** The belief-eliciting prompt
+  does not collapse `dominated_rate` (no significant difference in any
+  paired comparison; details in section 4). The metric measures capability.
+  The re-run also cleared the nudge artifact: the example letter is gone,
+  nano's residual repeating is organic (one g-spiral on `flopping`), and
+  `repeat_rate` is citable from the ablation arms onward.
+- Pushback on dropping `suboptimal_rate` entirely: agreed off headlines, kept
+  in tables (it is the only per-decision rate; `hit_prob_regret` headlines).
+- Noted for scale-up: of the confound list, the reasoning-effort sweep is the
+  most urgent (nano reasons, gpt-4o does not; the gradient may be partly
+  test-time compute).
+- The verbalised-posterior probe has direct supporting evidence already: nano
+  spontaneously verbalises candidate lists mid-game ("Possible words remain:
+  gawky, …" on `happy`), so existing transcripts may be minable before any
+  probe is built.

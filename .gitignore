@@ -62,3 +62,6 @@ logs
 
 # Claude
 .claude/settings.local.json
+
+# SCOWL download cache (analysis/build_wordlist.py)
+.scowl-cache/

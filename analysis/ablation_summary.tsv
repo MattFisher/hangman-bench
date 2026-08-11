@@ -1,0 +1,13 @@
+arm	model	games	win_rate	dominated_rate	hit_prob_regret	excess_wrong	repeats	guesses_emitted	repeat_letters
+pilot-old-nudge	anthropic/claude-sonnet-5	100	0.9900	0.0311	0.1244	0.2700	0	965	
+frequency	anthropic/claude-sonnet-5	100	0.9800	0.0375	0.1287	-0.0200	0	934	
+neutral	anthropic/claude-sonnet-5	100	1.0000	0.0322	0.1265	-0.0600	0	933	
+belief	anthropic/claude-sonnet-5	100	0.9700	0.0513	0.1330	0.2600	2	957	g:1 i:1
+pilot-old-nudge	openai/gpt-4o	100	0.6900	0.2014	0.2967	2.7000	3	1135	d:2 g:1
+frequency	openai/gpt-4o	100	0.6300	0.2296	0.3057	3.0600	6	1160	e:3 r:2 l:1
+neutral	openai/gpt-4o	100	0.6200	0.2358	0.3341	3.3400	2	1182	b:1 e:1
+belief	openai/gpt-4o	100	0.6700	0.1925	0.2825	2.7000	5	1127	t:3 n:1 r:1
+pilot-old-nudge	openai/gpt-5-nano	100	0.9300	0.0722	0.1779	0.4900	21	990	a:21
+frequency	openai/gpt-5-nano	100	0.9200	0.0768	0.1777	0.4600	13	976	g:10 o:1 n:1 t:1
+neutral	openai/gpt-5-nano	100	0.9300	0.0647	0.1776	0.5300	1	975	t:1
+belief	openai/gpt-5-nano	100	0.9400	0.0725	0.1721	0.4500	1	966	i:1

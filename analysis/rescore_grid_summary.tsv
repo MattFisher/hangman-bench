@@ -1,0 +1,13 @@
+dictionary	model	dominated_rate	suboptimal_rate	hit_prob_regret	excess_wrong	oracle_wrong	n_dominated	dom_cands_le3	dom_certain_avail	targets_injected_of_300
+en_GB_50	anthropic/claude-sonnet-5	0.0311	0.4705	0.1244	0.2700	3.7500	30	0.967	0.867	0
+en_GB_50	openai/gpt-4o	0.2014	0.6608	0.2967	2.7000	3.7500	228	0.912	0.855	0
+en_GB_50	openai/gpt-5-nano	0.0722	0.5428	0.1779	0.4900	3.7500	70	0.857	0.857	0
+en_GB_70	anthropic/claude-sonnet-5	0.0228	0.4373	0.1075	0.0200	4	22	0.909	0.909	0
+en_GB_70	openai/gpt-4o	0.1767	0.6184	0.2662	2.4500	4	200	0.890	0.800	0
+en_GB_70	openai/gpt-5-nano	0.0599	0.5077	0.1650	0.2400	4	58	0.879	0.828	0
+en_GB_50_25pct	anthropic/claude-sonnet-5	0.0953	0.4642	0.1529	1.1500	2.8700	92	0.880	0.728	222
+en_GB_50_25pct	openai/gpt-4o	0.2818	0.6422	0.3380	3.5800	2.8700	319	0.940	0.887	222
+en_GB_50_25pct	openai/gpt-5-nano	0.1280	0.5222	0.2003	1.3700	2.8700	124	0.895	0.823	222
+en_US_50	anthropic/claude-sonnet-5	0.0301	0.4746	0.1252	0.3000	3.7200	29	0.966	0.862	12
+en_US_50	openai/gpt-4o	0.2014	0.6608	0.2973	2.7300	3.7200	228	0.912	0.855	12
+en_US_50	openai/gpt-5-nano	0.0722	0.5428	0.1791	0.5200	3.7200	70	0.857	0.857	12
