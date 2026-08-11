@@ -269,11 +269,22 @@ def hangman_guess() -> Tool:
                 f"Guess exactly one letter, for example hangman_guess('a')."
             )
 
+        # A repeat leaves the game unchanged, and silently returning the same
+        # board is the precondition for repeat spirals: the model sees no
+        # signal that anything went wrong. Say so, the way a human setter
+        # would. Lives are never charged for repeats — they buy no evidence.
+        already_guessed = normalised in game_state.guessed_letters
+
         if not game_state.game_over:
             game_state.guess(normalised)  # Updates the game state
 
         # Format the result as a readable string
-        result_lines = [
+        result_lines = []
+        if already_guessed:
+            result_lines.append(
+                f"You already guessed '{normalised}'. Guessing it again has no effect."
+            )
+        result_lines += [
             f"Word: {game_state.current_state}",
             f"Remaining guesses: {game_state.remaining_guesses}",
             f"Incorrect guesses: {', '.join(game_state.incorrect_guesses) if game_state.incorrect_guesses else 'none'}",
