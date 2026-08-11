@@ -134,8 +134,19 @@ The evaluation is built around three main modules:
 - `max_guesses`: Maximum incorrect guesses (default: 10)
 - `shuffle`: Randomize word order (default: True)
 - `allow_word_guesses`: Allow full word guesses (default: False)
+- `strategy_hint`: Strategy sentence in the system prompt — frequency (original wording, default), neutral, or belief
 - `oracle`: Also score each guess against optimal play (default: True)
 - `oracle_wordlist`: Dictionary for the oracle scorer (default: packaged SCOWL en_GB wordlist)
+
+## Plotting results
+
+Figures are part of the analysis pipeline and follow a fixed convention:
+
+- Every figure is rendered by a script named `analysis/plot_<figure>.py` that reads **committed TSVs only** — never eval logs — so every figure regenerates from a bare checkout. Output goes to `analysis/figures/<figure>.png`, which is committed alongside the script.
+- All plot scripts take their style from `analysis/figstyle.py`: surface/ink/grid tokens plus the fixed model→hue map. **Colour follows the entity** — the same model keeps the same hue in every figure, reference policies (greedy oracle, frequency player) wear neutral ink with dashed/dotted line styles so identity never rides on colour alone, and a new series takes the next slot of the validated palette (slot 4 is `#eda100`) rather than a new hue. The first three slots are CVD-validated all-pairs on the light surface.
+- Direct-label series on the plot and keep a legend. After rendering, **look at the image** (label collisions, overlaps) before committing — the palette is validated by tooling, the layout only by eyes.
+- To embed a figure in a PR, push first, then use the commit-SHA raw URL (`https://raw.githubusercontent.com/MattFisher/hangman-bench/<sha>/analysis/figures/<name>.png`) so the image survives branch deletion.
+- matplotlib is in the dev dependency group (`uv sync --dev`).
 
 ## Testing Strategy
 Tests cover dataset functions, task creation, and parameter validation. Located in `tests/test_hangman.py` with pytest framework.
