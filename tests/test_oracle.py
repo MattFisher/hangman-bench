@@ -97,6 +97,18 @@ class TestReplay:
         assert report.n_invalid == 3
         assert report.won
 
+    def test_non_ascii_guess_is_invalid_not_dominated(self) -> None:
+        report = replay_trajectory(
+            word="cat",
+            raw_guesses=["é", "c", "a", "t"],
+            dictionary=["cat", "cot"],
+            max_wrong=6,
+        )
+        assert report.steps[0].invalid
+        assert not report.steps[0].dominated_miss
+        assert report.n_invalid == 1
+        assert report.won
+
     def test_dominated_miss_detects_a_provably_dead_letter(self) -> None:
         """Once 'o' misses, only 'cat' survives, so 'u' cannot be in the word."""
         dictionary = ["cat", "cot"]

@@ -1,8 +1,9 @@
 import json
 from dataclasses import dataclass, field
-from typing import Any, List
+from typing import Any
 
 from inspect_ai import Task, task
+from inspect_ai.agent import AgentState, AgentSubmit, as_solver, react
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.scorer import (
     CORRECT,
@@ -11,10 +12,10 @@ from inspect_ai.scorer import (
     Scorer,
     Target,
     accuracy,
+    grouped,
     mean,
     scorer,
     stderr,
-    grouped,
 )
 from inspect_ai.solver import (
     Generate,
@@ -22,26 +23,27 @@ from inspect_ai.solver import (
     TaskState,
     solver,
 )
-from inspect_ai.agent import react, as_solver, AgentSubmit, AgentState
 from inspect_ai.tool import Tool, ToolError, tool
 from inspect_ai.util import StoreModel, store_as
 from pydantic import Field
 
+from hangman_bench.datasets import (
+    Difficulty,
+    Language,
+    get_alphabet,
+    get_words_by_difficulty,
+    get_words_by_language,
+)
 from hangman_bench.oracle import (
     CHOOSERS,
     load_dictionary_index,
     replay_trajectory,
     resolve_wordlist,
 )
-from hangman_bench.datasets import (
-    Language,
-    get_words_by_difficulty,
-    get_words_by_language,
-    Difficulty,
-)
 
 DEFAULT_MAX_GUESSES = 10
 DEFAULT_LANGUAGE = Language.ENGLISH
+DEFAULT_ALPHABET = get_alphabet(DEFAULT_LANGUAGE)
 NUM_ALLOWABLE_EXTRA_MESSAGES = 5  # Extra messages beyond word length + max guesses
 
 
@@ -143,8 +145,12 @@ def _normalise(letter: str) -> str:
     return (letter or "").strip().lower()
 
 
-def _is_valid_letter(letter: str) -> bool:
-    return len(letter) == 1 and letter.isalpha()
+def _is_valid_letter(letter: str, alphabet: str = DEFAULT_ALPHABET) -> bool:
+    # Only letters of the language's declared alphabet are valid: any other
+    # character can never be revealed, so counting it as a miss would let the
+    # wrong-guess count reach |alphabet| and break the unlimited-budget
+    # protocol (a budget of |alphabet| is otherwise impossible to exhaust).
+    return len(letter) == 1 and letter in alphabet
 
 
 @dataclass
@@ -158,28 +164,39 @@ class GameState:
     # and invalid guesses never reach guessed_letters, so without this record
     # they are invisible to any analysis of how the game was played.
     attempts: list[str] = field(default_factory=list)
+    # The language's declared letter inventory; guesses outside it are invalid.
+    alphabet: str = DEFAULT_ALPHABET
 
     @staticmethod
-    def start(word: str, max_guesses: int = DEFAULT_MAX_GUESSES) -> "GameState":
+    def start(
+        word: str,
+        max_guesses: int = DEFAULT_MAX_GUESSES,
+        alphabet: str = DEFAULT_ALPHABET,
+    ) -> "GameState":
         return GameState(
             word=word.lower(),
             guessed_letters=[],
             remaining_guesses=max_guesses,
+            alphabet=alphabet,
         )
 
     @property
-    def invalid_attempts(self) -> List[str]:
-        """Submissions that were not a single letter."""
-        return [a for a in self.attempts if not _is_valid_letter(_normalise(a))]
+    def invalid_attempts(self) -> list[str]:
+        """Submissions that were not a single letter of the alphabet."""
+        return [
+            a
+            for a in self.attempts
+            if not _is_valid_letter(_normalise(a), self.alphabet)
+        ]
 
     @property
-    def repeated_attempts(self) -> List[str]:
+    def repeated_attempts(self) -> list[str]:
         """Valid letters submitted more than once, in the order repeated."""
         seen: set[str] = set()
-        repeats: List[str] = []
+        repeats: list[str] = []
         for raw in self.attempts:
             letter = _normalise(raw)
-            if not _is_valid_letter(letter):
+            if not _is_valid_letter(letter, self.alphabet):
                 continue
             if letter in seen:
                 repeats.append(letter)
@@ -195,7 +212,7 @@ class GameState:
         )
 
     @property
-    def incorrect_guesses(self) -> List[str]:
+    def incorrect_guesses(self) -> list[str]:
         """Returns list of incorrect guesses"""
         return sorted(list(set(self.guessed_letters) - set(self.word)))
 
@@ -205,8 +222,8 @@ class GameState:
             return self
 
         letter = _normalise(letter)
-        if not _is_valid_letter(letter):
-            raise ValueError("Guess must be a single letter")
+        if not _is_valid_letter(letter, self.alphabet):
+            raise ValueError("Guess must be a single letter of the game's alphabet")
 
         if letter in self.guessed_letters:
             return self
@@ -266,12 +283,13 @@ def hangman_guess() -> Tool:
         game_state.attempts.append(letter)
 
         normalised = _normalise(letter)
-        if not _is_valid_letter(normalised):
+        if not _is_valid_letter(normalised, game_state.alphabet):
             # A ToolError is reported back to the model, which can then correct
             # itself. Letting the ValueError escape would abort the sample and
             # drop the game from the results entirely.
+            language = metadata.get("language", DEFAULT_LANGUAGE.value)
             raise ToolError(
-                f"'{letter}' is not a single letter. "
+                f"'{letter}' is not a single letter of the {language} alphabet. "
                 f"Guess exactly one letter, for example hangman_guess('a')."
             )
 
@@ -427,6 +445,7 @@ def game_initialiser() -> Solver:
         hangman_game = GameState.start(
             word=word,
             max_guesses=max_guesses,
+            alphabet=get_alphabet(Language(language)),
         )
 
         # Store game state and metadata using a typed store model
@@ -447,13 +466,13 @@ def game_initialiser() -> Solver:
     return solve
 
 
-def _guesses_from_messages(messages: list[Any]) -> List[str]:
+def _guesses_from_messages(messages: list[Any]) -> list[str]:
     """Raw letters submitted to hangman_guess, in order.
 
     Tool calls record what the agent actually sent, including repeats and
     malformed input that never reach guessed_letters.
     """
-    guesses: List[str] = []
+    guesses: list[str] = []
     for message in messages:
         for tool_call in getattr(message, "tool_calls", None) or []:
             if getattr(tool_call, "function", None) != "hangman_guess":
@@ -540,6 +559,9 @@ def oracle_scorer(
             max_wrong=max_guesses,
             sample_id=str(state.sample_id),
             model=str(state.model),
+            alphabet=get_alphabet(
+                Language(metadata.get("language", DEFAULT_LANGUAGE.value))
+            ),
         )
 
         # A game won by submitting the full word ends before every letter is

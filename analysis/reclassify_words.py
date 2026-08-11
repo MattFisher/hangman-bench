@@ -64,7 +64,11 @@ def read_means_from_tsv(tsv_path: pathlib.Path) -> Dict[str, float]:
     with tsv_path.open("r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f, delimiter="\t")
         # Basic validation of expected columns
-        if reader.fieldnames is None or "word" not in reader.fieldnames or "mean_wrong_guesses" not in reader.fieldnames:
+        if (
+            reader.fieldnames is None
+            or "word" not in reader.fieldnames
+            or "mean_wrong_guesses" not in reader.fieldnames
+        ):
             raise ValueError(
                 f"Input TSV must contain columns 'word' and 'mean_wrong_guesses' (got: {reader.fieldnames})"
             )
@@ -86,7 +90,9 @@ def load_current_words(datasets_path: pathlib.Path) -> Dict[str, str]:
 
     Returns a mapping word(lowercased) -> difficulty.
     """
-    spec = importlib.util.spec_from_file_location("hangman_datasets", str(datasets_path))
+    spec = importlib.util.spec_from_file_location(
+        "hangman_datasets", str(datasets_path)
+    )
     if spec is None or spec.loader is None:
         raise ImportError(f"Could not load module from {datasets_path}")
     module = importlib.util.module_from_spec(spec)
@@ -139,7 +145,9 @@ def compute_quantile_thresholds(values: Sequence[float], bins: int = 5) -> List[
     return thresholds
 
 
-def classify_by_thresholds(value: float, thresholds: Sequence[float], labels: Sequence[str]) -> str:
+def classify_by_thresholds(
+    value: float, thresholds: Sequence[float], labels: Sequence[str]
+) -> str:
     """Classify a numeric value into one of len(labels) bins based on thresholds.
 
     thresholds are interior cut points sorted ascending: [t1, t2, ..., t_{k-1}]
@@ -159,7 +167,9 @@ def classify_by_thresholds(value: float, thresholds: Sequence[float], labels: Se
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Reclassify words by mean_wrong_guesses")
+    parser = argparse.ArgumentParser(
+        description="Reclassify words by mean_wrong_guesses"
+    )
     parser.add_argument(
         "--tsv",
         default=str(REPO_ROOT / "SimulationData_parsed.tsv"),
@@ -216,7 +226,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             missing.append(w)
 
     if not present_means:
-        print("No words from datasets.py were found in the TSV. Check input paths.", file=sys.stderr)
+        print(
+            "No words from datasets.py were found in the TSV. Check input paths.",
+            file=sys.stderr,
+        )
         return 2
 
     # Determine thresholds
@@ -228,28 +241,47 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             return 2
         if len(thresholds) != len(DIFFICULTY_ORDER) - 1:
             print(
-                f"--cuts must provide exactly {len(DIFFICULTY_ORDER)-1} thresholds; got {len(thresholds)}",
+                f"--cuts must provide exactly {len(DIFFICULTY_ORDER) - 1} thresholds; got {len(thresholds)}",
                 file=sys.stderr,
             )
             return 2
         thresholds = sorted(thresholds)
     else:
-        thresholds = compute_quantile_thresholds(list(present_means.values()), bins=args.bins)
+        thresholds = compute_quantile_thresholds(
+            list(present_means.values()), bins=args.bins
+        )
 
     # Build results
     results: List[ReclassResult] = []
     for w, m in sorted(present_means.items()):
         new_diff = classify_by_thresholds(m, thresholds, DIFFICULTY_ORDER)
         old_diff = current_words.get(w)
-        results.append(ReclassResult(word=w, mean_wrong_guesses=m, old_difficulty=old_diff, new_difficulty=new_diff))
+        results.append(
+            ReclassResult(
+                word=w,
+                mean_wrong_guesses=m,
+                old_difficulty=old_diff,
+                new_difficulty=new_diff,
+            )
+        )
 
     # Write report TSV
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, delimiter="\t")
-        writer.writerow(["word", "mean_wrong_guesses", "old_difficulty", "new_difficulty", "change"])
+        writer.writerow(
+            ["word", "mean_wrong_guesses", "old_difficulty", "new_difficulty", "change"]
+        )
         for r in results:
-            writer.writerow([r.word, f"{r.mean_wrong_guesses:.3f}", r.old_difficulty or "", r.new_difficulty, r.change])
+            writer.writerow(
+                [
+                    r.word,
+                    f"{r.mean_wrong_guesses:.3f}",
+                    r.old_difficulty or "",
+                    r.new_difficulty,
+                    r.change,
+                ]
+            )
 
     # Console summary
     from collections import Counter
@@ -259,7 +291,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     print("Reclassification complete:")
     print(f"  Words processed: {len(results)}")
     if missing:
-        print(f"  Words missing from TSV: {len(missing)} (e.g., {', '.join(missing[:5])}{'...' if len(missing) > 5 else ''})")
+        print(
+            f"  Words missing from TSV: {len(missing)} (e.g., {', '.join(missing[:5])}{'...' if len(missing) > 5 else ''})"
+        )
     print("  New difficulty counts:")
     for label in DIFFICULTY_ORDER:
         print(f"    {label:7s}: {counts.get(label, 0)}")
@@ -273,13 +307,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         snippet_path.parent.mkdir(parents=True, exist_ok=True)
         # Sort by new difficulty order then alphabetically
         order_index = {d: i for i, d in enumerate(DIFFICULTY_ORDER)}
-        sorted_entries = sorted(results, key=lambda r: (order_index[r.new_difficulty], r.word))
+        sorted_entries = sorted(
+            results, key=lambda r: (order_index[r.new_difficulty], r.word)
+        )
         with snippet_path.open("w", encoding="utf-8") as sf:
             sf.write("# Auto-generated by scripts/reclassify_words.py\n")
             sf.write("from hangman_bench.datasets import WordEntry\n\n")
             sf.write("ENGLISH_WORDS_RECLASSIFIED = [\n")
             for r in sorted_entries:
-                sf.write(f"    WordEntry(\"{r.word}\", \"{r.new_difficulty}\"),\n")
+                sf.write(f'    WordEntry("{r.word}", "{r.new_difficulty}"),\n')
             sf.write("]\n")
         print(f"  Snippet written to: {snippet_path}")
 

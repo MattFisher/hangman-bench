@@ -17,7 +17,10 @@ discriminating after saturation — is the paper**, with prior/dictionary
 sensitivity as its robustness section. The prompt ablation (same day) ruled
 out the other deflationary reading: a belief-eliciting prompt does not
 collapse `dominated_rate`, so the metric measures capability, not
-instruction compliance. Next: scale up (section 7), ablation matrix and
+instruction compliance. The budget-curve experiment (2026-08-10, section 4)
+replaced the arbitrary ten-guess cap: one unlimited run yields the full
+win-vs-budget curve, the old cap was hiding gpt-4o's long tail, and models
+measurably rise to scarcity. Next: scale up (section 7), ablation matrix and
 verbalised-posterior probe first among the additions.
 
 ---
@@ -391,6 +394,78 @@ re-run frequency arm (only the nudge wording differs) flips 18 of gpt-4o's
 Word-level flips of this size on one seed are why the review's replication
 requirement stands before any headline claim.
 
+**Win-vs-budget curves from one unlimited run — and models rise to scarcity
+(2026-08-10).** The wrong-guess budget of 10 was arbitrary. With guesses
+restricted to the language's declared alphabet, a budget of |alphabet|
+cannot be exhausted — guessing every letter reveals the word first — so a
+run at b = |alphabet| (26 for English) is effectively unlimited and the
+whole win-vs-budget curve falls out of a single run: win@b is the fraction
+of games needing fewer than b wrong guesses. Run 2026-08-10, three models ×
+the same 100 words, default prompt, fixed nudge; plus a real constrained run
+at b=4 and the ablation's frequency arm as a b=10 point
+(`analysis/budget_curves.py`, `analysis/budget_curves.tsv`; all 600 new
+trajectories cross-checked clean):
+
+| agent | b=2 | b=4 | b=6 | b=10 | b=13 | b=16 | b=20 | median | p90 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| oracle (greedy, uniform) | .12 | .54 | .79 | 1.00 | 1.00 | 1.00 | 1.00 | 3 | 6 |
+| claude-sonnet-5 | .13 | .45 | .68 | .96 | 1.00 | 1.00 | 1.00 | 4 | 8 |
+| gpt-5-nano | .15 | .36 | .66 | .87 | .96 | .97 | 1.00 | 5 | 11 |
+| gpt-4o | .08 | .18 | .39 | .63 | .75 | .87 | .97 | 7 | 17 |
+| frequency (etaoin) | .00 | .00 | .02 | .13 | .28 | .53 | .89 | 15 | 20 |
+
+- **Zero DNFs.** When losing is impossible every game completes, so
+  turns-to-success is fully measured — no censoring. The b=10 cap had been
+  hiding gpt-4o's tail: 37% of its words complete only above b=10, all by
+  b=20. This is the small-scale analogue of AISI's inference-scaling result
+  in cyber evals (≈8% of their tasks solved only at the 50M-token budget):
+  a fixed evaluation budget understates the weaker model most. Repeats and
+  invalid submissions never cost a life, so the one failure mode left at
+  b=26 is a spiral into the message limit — the DNF column; none occurred,
+  and the worst game used 58 of 145 messages. gpt-4o won `larynx` only
+  after guessing the entire alphabet (20 wrong guesses): at full budget
+  even alphabet-exhaustion wins, which is exactly why b=26 is a cap in
+  name only.
+- **Play is budget-conditional, in the direction of rising to scarcity.**
+  The derived curve assumes the model plays the same regardless of the
+  budget it is told. It does not: the real constrained runs beat the derived
+  prediction in five of six (model × budget) cells and tie the sixth — at
+  b=4, sonnet won 53 actual vs 45 predicted, nano 43 vs 36, gpt-4o 23 vs 18.
+  Pooled discordant words 39:66, exact p = 0.011 (per-cell p 0.10–1.0;
+  pooling treats words as independent across models, which overstates
+  precision). So the single-run protocol is cheap but not behaviourally
+  neutral: the derived curve is a **lower bound** on constrained
+  performance. Protocol: one unlimited run + one constrained point brackets
+  the curve family at a sixth of the cost of the original sweep plan.
+- **At low budgets the models sit at or above the greedy uniform-prior
+  frontier** (b=4 actual: sonnet 53 wins vs the oracle's 54; the
+  pilot-derived curves crossed above it at b ≤ 3). The "oracle" is optimal
+  only relative to (greedy policy, uniform prior) — consistent with the
+  correlated-prior confound, and another reason the `prior=` parameter
+  matters.
+- **Per-guess rates must not be compared across budgets.** Dominated guesses
+  concentrate in the endgame, so longer games mechanically accrue more of
+  them; the budget changes the composition of guesses. Curves compare
+  outcomes; process metrics compare like-for-like only within a budget.
+- **Framing against the AISI cyber result**
+  (https://www.aisi.gov.uk/blog/evidence-for-inference-scaling-in-ai-cyber-tasks-increased-evaluation-budgets-reveal-higher-success-rates):
+  what transfers is "report curves, not fixed-budget points". What hangman
+  adds is an exactly *computable* reference pair — the greedy uniform-prior
+  baseline (median 3 wrong guesses) and the frequency floor — so a declared
+  share of each curve is attributable to the task rather than the model.
+  The horizontal gap at the 90th percentile — +2 / +5 / +11 wrong guesses
+  for sonnet / nano / gpt-4o — is relative to that declared greedy baseline,
+  **not to an optimum**: the reference maximises per-guess hit probability,
+  which does not minimise wrong guesses, and the models crossing it at low
+  budgets (above) is the proof. Truly optimal play is exactly computable
+  where the findings concentrate — the ≤3-candidate endgame — and is worth
+  adding at scale-up.
+  Honest disanalogies: success here is guaranteed at b=26, so this measures
+  efficiency rather than capability emergence (the emergence analogue, DNF,
+  did not occur); and this budget buys *evidence*, where theirs buys
+  compute. The compute axis (reasoning effort) is orthogonal and pairs with
+  this for a 2D evidence × compute scaling surface at scale-up.
+
 **Frequency weighting differentially helps common words.** Replacing the
 uniform posterior with a wordfreq-weighted one, wrong guesses needed:
 
@@ -610,9 +685,14 @@ confirmed by reproduction before fixing):
    have zero frequency and need a smoothing floor — the floor value is a real
    parameter, since it sets how much mass sits on morphological deadwood.
 3. **Re-baseline** `gpt-5-nano` and update the inspect_evals register entry.
-4. **De-saturate.** Sweep `max_guesses` over {2,3,4,6,8,10} and plot win rate
-   against budget for each model and for the oracle. This turns a saturated
-   benchmark into a discriminative one and gives a competence-gap curve.
+4. **De-saturate — done, by a cheaper route (2026-08-10).** Instead of the
+   planned {2,3,4,6,8,10} sweep: one unlimited run (b=26 is unreachable with
+   letter guesses) yields the whole win-vs-budget curve, and one constrained
+   point calibrates the scarcity effect it cannot see (models beat the
+   derived prediction under tight budgets — section 4). At scale-up, add
+   per-word replication and the reasoning-effort axis for a 2D
+   evidence × compute scaling surface against the computable reference
+   policies.
 5. **Scale the dataset.** Thousands of words, stratified by computed
    difficulty, held-out set for contamination control.
 6. **Score commitment, if word guesses are used.** `allow_word_guesses=True`

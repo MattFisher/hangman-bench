@@ -11,6 +11,7 @@ Usage:
     --input analysis/SimulationData_parsed.tsv \
     --output src/hangman_bench/data/wordlist.txt
 """
+
 from __future__ import annotations
 
 import argparse
@@ -58,9 +59,15 @@ def write_unique(words: List[str], output_path: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Extract wordlist from TSV first column")
-    parser.add_argument("--input", required=True, help="Path to TSV file (expects a 'word' header)")
-    parser.add_argument("--output", required=True, help="Path to write word list (one word per line)")
+    parser = argparse.ArgumentParser(
+        description="Extract wordlist from TSV first column"
+    )
+    parser.add_argument(
+        "--input", required=True, help="Path to TSV file (expects a 'word' header)"
+    )
+    parser.add_argument(
+        "--output", required=True, help="Path to write word list (one word per line)"
+    )
     args = parser.parse_args()
 
     words = read_words(args.input)
