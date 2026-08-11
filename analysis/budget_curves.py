@@ -136,6 +136,7 @@ def main() -> int:
             f"max={done[-1]}"
         )
 
+    validation_rows = []
     for spec in args.validate:
         b_str, _, path = spec.partition("=")
         budget = int(b_str)
@@ -158,6 +159,18 @@ def main() -> int:
             pred_only = sum(1 for w in words_both if predicted[w] and not real[w])
             real_only = sum(1 for w in words_both if real[w] and not predicted[w])
             p = binom_two_sided(min(pred_only, real_only), pred_only + real_only)
+            validation_rows.append(
+                {
+                    "budget": budget,
+                    "model": model,
+                    "n_words": len(words_both),
+                    "predicted_wins": sum(predicted.values()),
+                    "actual_wins": sum(real.values()),
+                    "pred_only": pred_only,
+                    "actual_only": real_only,
+                    "p_mcnemar": f"{p:.4f}",
+                }
+            )
             print(
                 f"{model.split('/')[-1]:<28} predicted {sum(predicted.values())}/100"
                 f" actual {sum(real.values())}/100 | discordant "
@@ -178,6 +191,18 @@ def main() -> int:
                     + [sum(1 for v in needed.values() if v is None)]
                 )
         print(f"\nWrote {path}")
+        if validation_rows:
+            vpath = out.with_name(out.name + "_validation.tsv")
+            with vpath.open("w", newline="", encoding="utf-8") as handle:
+                writer = csv.DictWriter(
+                    handle,
+                    fieldnames=list(validation_rows[0].keys()),
+                    delimiter="\t",
+                    lineterminator="\n",
+                )
+                writer.writeheader()
+                writer.writerows(validation_rows)
+            print(f"Wrote {vpath}")
     return 0
 
 
