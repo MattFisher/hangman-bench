@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Objective difficulty measurement for Hangman words independent of the
-original simulation. Produces a TSV report with multiple metrics per word.
+"""Objective difficulty measurement for Hangman words, independent of the original simulation.
+
+Produces a TSV report with multiple metrics per word.
 
 Metrics per word:
 - wrong_freq_raw: wrong guesses using a raw letter-frequency heuristic
@@ -220,7 +221,7 @@ def precompute_letter_incidence(
     length_words: dict[int, list[str]],
 ) -> dict[int, dict[str, float]]:
     out: dict[int, dict[str, float]] = {}
-    for L, words in length_words.items():
+    for length, words in length_words.items():
         denom = max(1, len(words))
         counts = dict.fromkeys(ALPHABET, 0)
         for w in words:
@@ -228,22 +229,22 @@ def precompute_letter_incidence(
             for c in s:
                 if c in counts:
                     counts[c] += 1
-        out[L] = {c: counts[c] / denom for c in ALPHABET}
+        out[length] = {c: counts[c] / denom for c in ALPHABET}
     return out
 
 
 def structural_scores(
     word: str, p_by_len: dict[int, dict[str, float]]
 ) -> tuple[float, float, float]:
-    L = len(word)
+    length = len(word)
     uniq = set(word)
-    pmap = p_by_len.get(L, {})
+    pmap = p_by_len.get(length, {})
     rare = 0.0
     for c in uniq:
         p = pmap.get(c, 1e-9)
         p = max(p, 1e-9)
         rare += -math.log(p)
-    dup_factor = L / max(1, len(uniq))
+    dup_factor = length / max(1, len(uniq))
     structural = rare / dup_factor
     return rare, dup_factor, structural
 
@@ -292,17 +293,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     # Compute metrics per word
     rows: list[list[str]] = []
     for w in dataset_words:
-        L = len(w)
+        length = len(w)
         # Skip words not present in dictionary length index; still compute structural using length bin
-        dict_L = length_index.get(L, [])
+        dict_words = length_index.get(length, [])
         # Solvers
         wrong_freq_raw = None
         wrong_coverage = None
         wrong_info_gain = None
-        if dict_L:
-            res_freq = solve_with_strategy(w, dict_L, best_move_freq_raw)
-            res_cov = solve_with_strategy(w, dict_L, best_move_coverage)
-            res_inf = solve_with_strategy(w, dict_L, best_move_info_gain)
+        if dict_words:
+            res_freq = solve_with_strategy(w, dict_words, best_move_freq_raw)
+            res_cov = solve_with_strategy(w, dict_words, best_move_coverage)
+            res_inf = solve_with_strategy(w, dict_words, best_move_info_gain)
             wrong_freq_raw = res_freq.wrong_guesses
             wrong_coverage = res_cov.wrong_guesses
             wrong_info_gain = res_inf.wrong_guesses
@@ -311,7 +312,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         rows.append(
             [
                 w,
-                str(L),
+                str(length),
                 str(wrong_freq_raw) if wrong_freq_raw is not None else "",
                 str(wrong_coverage) if wrong_coverage is not None else "",
                 str(wrong_info_gain) if wrong_info_gain is not None else "",

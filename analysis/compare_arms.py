@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Paired comparison of experiment arms that played the same words.
+r"""Paired comparison of experiment arms that played the same words.
 
 Each arm is a directory of Inspect .eval logs (one or more models). Every
 model plays the same word list in every arm, so comparisons are paired by

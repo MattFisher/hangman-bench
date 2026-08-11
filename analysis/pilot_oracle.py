@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pilot: score Hangman trajectories against an oracle instead of only win/loss.
+r"""Pilot: score Hangman trajectories against an oracle instead of only win/loss.
 
 The benchmark's headline metric is a win rate, and with a generous wrong-guess
 budget that metric saturates (gpt-5-nano reaches 0.93). This script measures
@@ -159,11 +159,10 @@ def _recorded_outcome(sample: object) -> bool | None:
     if score is None:
         return None
     won = (getattr(score, "metadata", None) or {}).get("won")
-    if isinstance(won, bool):
-        # A game won by submitting the full word never sets game_state.won, so
-        # fall through to the score value rather than trusting this flag alone.
-        if won:
-            return True
+    # A game won by submitting the full word never sets game_state.won, so on
+    # False fall through to the score value rather than trusting this flag.
+    if isinstance(won, bool) and won:
+        return True
     value = getattr(score, "value", None)
     if value in (CORRECT, INCORRECT):
         return value == CORRECT
@@ -484,7 +483,7 @@ def run_simulate(args: argparse.Namespace) -> int:
             # The agent needs a dictionary it can actually win with, but the
             # report is scored against the real one so a missing target still
             # shows up as a data-quality warning.
-            playable = pool if word in pool else pool + [word]
+            playable = pool if word in pool else [*pool, word]
             guesses = agent(word, playable, args.max_guesses)
             reports.append(
                 replay_trajectory(

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Bin words into difficulty tiers based on a chosen metric column from
-analysis/difficulty_report.tsv (default: wrong_coverage).
+"""Bin words into difficulty tiers based on a metric from difficulty_report.tsv.
+
+The metric column defaults to wrong_coverage.
 
 - Computes (bins-1) quantile thresholds over available numeric metric values
   and assigns labels: [v_easy, easy, medium, hard, v_hard].

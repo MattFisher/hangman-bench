@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Reclassify words in src/hangman_bench/datasets.py based on
-mean_wrong_guesses from SimulationData_parsed.tsv.
+"""Reclassify the datasets.py words by measured difficulty.
+
+Uses mean_wrong_guesses from SimulationData_parsed.tsv.
 
 By default, words are divided into 5 quantile-based bins and assigned to
 [v_easy, easy, medium, hard, v_hard] in ascending order of mean wrong guesses.
@@ -126,8 +127,8 @@ def compute_quantile_thresholds(values: Sequence[float], bins: int = 5) -> list[
         if p >= 100:
             return sorted_vals[-1]
         rank = (p / 100) * (len(sorted_vals) - 1)
-        lo = int(math.floor(rank))
-        hi = int(math.ceil(rank))
+        lo = math.floor(rank)
+        hi = math.ceil(rank)
         if lo == hi:
             return sorted_vals[lo]
         frac = rank - lo

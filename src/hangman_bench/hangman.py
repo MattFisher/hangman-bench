@@ -80,7 +80,9 @@ def hangman(
         lang_enum = Language(language.lower())
     except ValueError:
         supported = ", ".join([lang.value for lang in Language])
-        raise ValueError(f"Language '{language}' not supported. Supported languages: {supported}")
+        raise ValueError(
+            f"Language '{language}' not supported. Supported languages: {supported}"
+        ) from None
 
     # Get words based on language and optional difficulty
     if difficulty is not None:
@@ -204,7 +206,7 @@ class GameState:
     @property
     def incorrect_guesses(self) -> list[str]:
         """Returns list of incorrect guesses"""
-        return sorted(list(set(self.guessed_letters) - set(self.word)))
+        return sorted(set(self.guessed_letters) - set(self.word))
 
     def guess(self, letter: str) -> "GameState":
         """Process a letter guess and return the new game state"""
@@ -629,38 +631,37 @@ def game_scorer() -> Scorer:
             raise RuntimeError("No game state found in store")
 
         allow_word_guesses = metadata.get("allow_word_guesses", False)
-        if allow_word_guesses:
-            # If word guesses are allowed and the game is not over, the agent guessed early
-            if not game_state.game_over:
-                guessed_word = state.output.completion
-                explanation = (
-                    f"Early guess. Word: {game_state.word}. Language: {language}. "
-                    f"Difficulty: {difficulty}. "
-                    f"Guessed word: {guessed_word}. "
-                    f"Guessed letters: {game_state.guessed_letters}. "
-                    f"Final word state: {game_state.current_state}. "
-                    f"Remaining guesses: {game_state.remaining_guesses}. "
-                )
-                return Score(
-                    value=CORRECT if guessed_word == game_state.word else INCORRECT,
-                    answer=guessed_word,
-                    explanation=explanation,
-                    metadata={
-                        "won": game_state.won,
-                        "language": language,
-                        "difficulty": difficulty,
-                        "allow_word_guesses": allow_word_guesses,
-                        "guessed_word": guessed_word,
-                        "guessed_letters": game_state.guessed_letters,
-                        "final_word_state": game_state.current_state,
-                        "remaining_guesses": game_state.remaining_guesses,
-                        "incorrect_guesses": game_state.incorrect_guesses,
-                        "num_incorrect_guesses": len(game_state.incorrect_guesses),
-                        "attempts": game_state.attempts,
-                        "num_repeated_guesses": len(game_state.repeated_attempts),
-                        "num_invalid_guesses": len(game_state.invalid_attempts),
-                    },
-                )
+        # If word guesses are allowed and the game is not over, the agent guessed early
+        if allow_word_guesses and not game_state.game_over:
+            guessed_word = state.output.completion
+            explanation = (
+                f"Early guess. Word: {game_state.word}. Language: {language}. "
+                f"Difficulty: {difficulty}. "
+                f"Guessed word: {guessed_word}. "
+                f"Guessed letters: {game_state.guessed_letters}. "
+                f"Final word state: {game_state.current_state}. "
+                f"Remaining guesses: {game_state.remaining_guesses}. "
+            )
+            return Score(
+                value=CORRECT if guessed_word == game_state.word else INCORRECT,
+                answer=guessed_word,
+                explanation=explanation,
+                metadata={
+                    "won": game_state.won,
+                    "language": language,
+                    "difficulty": difficulty,
+                    "allow_word_guesses": allow_word_guesses,
+                    "guessed_word": guessed_word,
+                    "guessed_letters": game_state.guessed_letters,
+                    "final_word_state": game_state.current_state,
+                    "remaining_guesses": game_state.remaining_guesses,
+                    "incorrect_guesses": game_state.incorrect_guesses,
+                    "num_incorrect_guesses": len(game_state.incorrect_guesses),
+                    "attempts": game_state.attempts,
+                    "num_repeated_guesses": len(game_state.repeated_attempts),
+                    "num_invalid_guesses": len(game_state.invalid_attempts),
+                },
+            )
 
         if not game_state.game_over:
             return Score(

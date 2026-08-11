@@ -44,7 +44,7 @@ def test_hangman_task_creation_with_parameters():
 
 
 def test_hangman_invalid_language():
-    with pytest.raises(ValueError, match="Language .* not supported"):
+    with pytest.raises(ValueError, match=r"Language .* not supported"):
         hangman(language="invalid")
 
 

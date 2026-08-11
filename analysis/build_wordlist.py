@@ -128,7 +128,7 @@ def write_frequencies(words: Sequence[str], path: pathlib.Path) -> None:
     except ImportError:
         raise SystemExit(
             "wordfreq is required for --with-frequencies. Install it with: uv pip install wordfreq"
-        )
+        ) from None
 
     missing = 0
     with path.open("w", encoding="utf-8") as handle:

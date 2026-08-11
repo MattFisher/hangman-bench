@@ -430,7 +430,7 @@ class TestLogMetadataIsHonoured:
         from pilot_oracle import extract_trajectories
 
         # 12 wrong guesses then a win: legal only under the logged limit of 15.
-        letters = list("bcdfghijkmnq") + ["a", "p", "l", "e"]
+        letters = [*"bcdfghijkmnq", "a", "p", "l", "e"]
         log = self._run(letters, max_guesses=15)
         assert log.location is not None
 

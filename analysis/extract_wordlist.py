@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Extract a unique, lowercase wordlist (one word per line) from the first column
-of a TSV file like analysis/SimulationData_parsed.tsv.
+"""Extract a unique, lowercase wordlist (one word per line) from a TSV file.
+
+The input is shaped like analysis/SimulationData_parsed.tsv.
 
 It prefers the header column named "word" if available; otherwise it falls
 back to taking the first column.

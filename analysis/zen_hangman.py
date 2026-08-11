@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Python port of [zen-hangman.rb](https://gist.github.com/Dan-Q/7910309) by Dan Q,
-from blog post [The Hardest Hangman](https://danq.me/2013/12/15/hangman/)
+"""Python port of [zen-hangman.rb](https://gist.github.com/Dan-Q/7910309) by Dan Q.
+
+From the blog post [The Hardest Hangman](https://danq.me/2013/12/15/hangman/)
 
 Original dictionary was downloaded from https://www.curlewcommunications.uk/wordlist.html
 

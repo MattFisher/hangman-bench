@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Ingest SimulationData.txt and export a tab-separated file with one line per word,
-including the list of wrong guesses and the mean number of wrong guesses.
+"""Ingest SimulationData.txt and export a tab-separated file with one line per word.
+
+Each line includes the list of wrong guesses and the mean number of wrong guesses.
 
 Usage:
   python scripts/ingest_simulation.py --input SimulationData.txt --output SimulationData_parsed.tsv

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Win-vs-budget curves from a single high-budget run, with validation.
+r"""Win-vs-budget curves from a single high-budget run, with validation.
 
 A game won with w wrong guesses would have been won at any budget > w, so one
 run at a high budget yields the whole win-vs-budget curve below its cap by
@@ -91,7 +91,7 @@ def main() -> int:
     frequency_needed: dict[str, int | None] = {}
     for word in words:
         pool = index.get(len(word), [])
-        playable = pool if word in pool else pool + [word]
+        playable = pool if word in pool else [*pool, word]
         report = replay_trajectory(
             word=word,
             raw_guesses=agent_frequency(word, playable, MAX_BUDGET),

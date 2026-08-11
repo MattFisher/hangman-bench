@@ -11,7 +11,8 @@ MEASURE_PATH = pathlib.Path(__file__).resolve().parents[1] / "analysis" / "measu
 
 def _load_module():
     spec = importlib.util.spec_from_file_location("measure_difficulty", MEASURE_PATH)
-    assert spec is not None and spec.loader is not None
+    assert spec is not None
+    assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules["measure_difficulty"] = module
     spec.loader.exec_module(module)
