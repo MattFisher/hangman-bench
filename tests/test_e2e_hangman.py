@@ -59,6 +59,39 @@ class TestHangmanE2E:
         assert "game_scorer.v_easy" in scores
         assert scores["game_scorer.v_easy"] == 1.0
 
+    def test_repeated_guess_is_called_out_and_costs_nothing(self) -> None:
+        """A repeat gets an explicit notice and never decrements lives."""
+        mock_outputs = [
+            create_letter_guess("a"),
+            create_letter_guess("a"),  # repeat
+            create_letter_guess("p"),
+            create_letter_guess("l"),
+            create_letter_guess("e"),
+        ]
+
+        log = eval(
+            tasks=hangman(max_guesses=6),
+            model=get_model("mockllm/model", custom_outputs=mock_outputs),
+            sample_id="apple",
+        )[0]
+
+        assert log.status == "success"
+        assert log.samples is not None
+        tool_messages = [m.text for m in log.samples[0].messages if m.role == "tool"]
+        assert "You already guessed 'a'" in tool_messages[1]
+        assert "already guessed" not in tool_messages[0]
+        # The repeat costs no life: all six guesses remain until 'a' misses...
+        # ('a' is in "apple", so no life is ever lost here at all).
+        assert "Remaining guesses: 6" in tool_messages[1]
+
+        assert log.results is not None
+        scores = {
+            f"{score.name}.{name}": metric.value
+            for score in log.results.scores
+            for name, metric in score.metrics.items()
+        }
+        assert scores["game_scorer.all"] == 1.0
+
     def test_hangman_loss_hard_word(self) -> None:
         """Test hangman loss scenario with hard word and poor guesses."""
         # Mock model outputs for losing on a difficult word
