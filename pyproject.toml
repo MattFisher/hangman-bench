@@ -23,15 +23,15 @@ classifiers = [
     "Typing :: Typed",
     "Operating System :: OS Independent",
 ]
-dependencies = ["inspect-ai>=0.3.132"]
+dependencies = ["inspect-ai>=0.3.257"]
 
 [project.entry-points.inspect_ai]
 hangman_bench = "hangman_bench"
 
 [project.optional-dependencies]
 # Runtime extras that users can opt into, e.g. provider integrations
-openai = ["openai>=1.108.0"]
-anthropic = ["anthropic>=0.69.0"]
+openai = ["openai>=2.54.0"]
+anthropic = ["anthropic>=0.121.0"]
 
 [project.urls]
 Homepage = "https://github.com/MattFisher/hangman-bench"
@@ -40,11 +40,11 @@ Issues = "https://github.com/MattFisher/hangman-bench/issues"
 
 [dependency-groups]
 dev = [
-    "pytest>=8.0.0",
-    "pytest-cov>=7.0.0",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
     "basedpyright>=1.39",
     "pre-commit>=4.0.0",
-    "ruff>=0.12.0",
+    "ruff>=0.16.2",
     "matplotlib>=3.9",
 ]
 
