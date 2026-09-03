@@ -54,6 +54,11 @@ Results vary greatly depending on the solvers used, so the words have not curren
     - `rare_score`, `dup_factor`, `structural_score` from letter incidence by word length.
   - Output: `analysis/difficulty_report.tsv`.
 
+- `analysis/pinned_endgame.py`
+
+  - Conditional miss rate once the consistent candidate set has collapsed to a single word, computed from a committed per-guess TSV (`analysis/pilot_per_guess.tsv` by default). Most dominated misses happen in this regime, where the task has no decision left and the only thing to do is name the word; see `RESEARCH_NOTES.md` section 1.
+  - Output: `analysis/pinned_endgame.tsv`.
+
 - `analysis/bin_difficulty.py`
 
   - Bins words into difficulty tiers by quantiles of a chosen metric (default `wrong_coverage`; can use `wrong_freq_raw` or `wrong_info_gain`).

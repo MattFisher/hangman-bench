@@ -2,27 +2,35 @@
 
 Working notes for turning hangman-bench into a paper. Written to be picked up cold — by a person or an agent in a different environment — so it states what exists, what we found, what to do next, and what is still undecided.
 
-**Status:** the pilot ran on 2026-08-07 — three models spanning a capability generation, all 100 words. The central claim survived first contact, with a bonus: `dominated_rate` orders the models by generation (gpt-4o 0.18, gpt-5-nano 0.06, claude-sonnet-5 0.03) and keeps separating them after win rate saturates (0.93 / 0.99 for the two current models). Results, and the one harness artifact the pilot uncovered, are under [The pilot](#the-pilot). The continue-prompt artifact is fixed in code but post-dates these runs. The re-scoring grid (2026-08-09, section 4) decided the thesis question: rankings are dictionary-invariant, so **thesis A — process metrics that keep discriminating after saturation — is the paper**, with prior/dictionary sensitivity as its robustness section. The prompt ablation (same day) ruled out the other deflationary reading: a belief-eliciting prompt does not collapse `dominated_rate`, so the metric measures capability, not instruction compliance. The budget-curve experiment (2026-08-10, section 4) replaced the arbitrary ten-guess cap: one unlimited run yields the full win-vs-budget curve, the old cap was hiding gpt-4o's long tail, and models measurably rise to scarcity. Next: scale up (section 7), ablation matrix and verbalised-posterior probe first among the additions.
+**Status (2026-09-03): refocused.** The benchmark and its measurement pipeline are built and validated (sections 2–5). The pilot, the dictionary grid, the prompt ablation and the budget-curve experiment all ran on 100 words and one seed each (sections 3–4). A review of the whole project on 2026-09-03 concluded that the thesis those experiments were organised around — process metrics that keep discriminating after outcome saturation — is the weakest paper this material supports, and that the two most interesting findings in the repo were being treated as side results. The project now targets those two (section 1); the superseded theses and the reasons they are backburnered are in section 6; the plan, with a decision gate before any expensive scale-up, is section 7. Nothing in sections 2–5 has been re-run; they are the record the new direction rests on.
 
 ______________________________________________________________________
 
-## 1. Why there might be a paper here
+## 1. The question
 
-hangman-bench started as a demonstration of tool use in Inspect. Two properties turn out to make it more interesting than that.
+hangman-bench started as a demonstration of tool use in Inspect. One property makes it worth more than that: at every step the exact posterior over the hidden word, and the best available move, are computable from a dictionary. Almost no agentic task has this. It means the belief state a model *should* hold is known exactly, so the benchmark can answer something sharper than "does the model win":
 
-**The benchmark is saturated at the outcome level.** `gpt-5-nano` scores 0.93. With a ten wrong-guess budget on five to ten letter words, a player can ignore the evidence entirely and still usually win. Win rate carries little signal.
+> Where does an LLM's belief state break inside an agentic loop, and what breaks it?
 
-**Hangman has computable ground truth.** At every step the exact posterior over the hidden word, and the best available move, are computable from a dictionary. Almost no agentic benchmark has this. It means we can score the *process* — was each guess defensible given what the player had been told — rather than only the outcome.
+Two results to chase. Both are already visible in the pilot data (section 4), neither is replicated, and each has a cheap experiment that decides whether it is real (section 7).
 
-The working thesis:
+**Result 1 — the residual failure is retrieval at the pinned endgame.** Most provably dead guesses are made *after* the dictionary has collapsed to a single candidate. At that point there is no decision left, only a word to name, and the models still miss:
 
-> On a task where ground truth is computable, measuring process rather than outcome requires committing to a prior over the hidden word. The obvious choices — uniform over a dictionary, or corpus frequency — are measurably wrong in opposite directions. We quantify how far conclusions move across defensible choices.
+| model           | guesses with word pinned | misses | pinned miss rate | share of dominated misses at the pinned endgame |
+| --------------- | ------------------------ | ------ | ---------------- | ----------------------------------------------- |
+| gpt-4o          | 326                      | 167    | 0.51             | 73%                                             |
+| gpt-5-nano      | 230                      | 41     | 0.18             | 59%                                             |
+| claude-sonnet-5 | 216                      | 20     | 0.09             | 67%                                             |
 
-The prior-sensitivity result is the contribution, not a caveat to bury.
+(`analysis/pinned_endgame.py` over `analysis/pilot_per_guess.tsv`; output in `analysis/pinned_endgame.tsv`.) gpt-4o, facing `.o..ee` with only `a` and `t` excluded, guesses r, s, l, m, n, d before finding `c`, then guesses `b` on `co..ee`. On `.a.e.o` it guesses n, l, i, c, d, m, p and loses without ever producing `gazebo`. That is not sequential decision-making failing; it is lexical retrieval, or verification, under a pattern constraint. The pinned miss rate is a cleaner headline than `dominated_rate`: it needs no argument about what "dominated" means, it is conditional on a regime a reader can picture, and it isolates the part of the task that the character-level literature studies statically. What this benchmark can add is the decomposition — retrieval (pattern → word), verification (pattern + word → fits?), decision (pattern + candidate list → choose), and whether a belief state exists at all (verbalised posterior) — measured inside a loop where the evidence accumulated turn by turn, and with the oracle supplying the ground truth for every leg.
+
+**Result 2 — play is budget-conditional.** Models told a tight wrong-guess budget win more than the curve derived from their own unlimited play predicts, in five of six cells and tied in the sixth (section 4). If that replicates across seeds and is dose-dependent in the budget, it is a finding about evaluations in general, not about hangman: a model's policy depends on the stakes it is told, so a fixed-budget score is neither a capability estimate nor a ceiling, and the derived curve is a lower bound. Hangman supplies the exactly computable reference curves (greedy oracle, frequency floor) that make the effect attributable to the model rather than the task.
+
+Everything else in the repo — dictionary sensitivity, the prompt ablation, the LLM-fingerprint findings about the dataset — is either robustness material for those two results or a blog post. Section 6 records the theses this replaces and why.
 
 ### Related work to position against
 
-The character-level angle ("how many r's in strawberry") is a crowded field: The Strawberry Problem (arXiv:2505.14172), CharBench (arXiv:2508.02591), TASE, SubTokenTest. Do not frame this as a character-level competence paper. Likewise, "here is another text game" is covered by TextArena and Game Reasoning Arena. The differentiator is the computable oracle and the treatment of the prior.
+The character-level competence papers — The Strawberry Problem (arXiv:2505.14172), CharBench (arXiv:2508.02591), TASE, SubTokenTest — are the nearest neighbours to result 1. Earlier notes said to avoid that framing because the field is crowded; the data says the phenomenon lives there, so the positioning changes instead. Those papers measure static string competence with a single prompt. This work measures where the same competence breaks inside an agentic loop, separates retrieval from verification from decision, and adds two things with no static analogue: whether the model's verbalised belief state matches the computable one, and whether its policy shifts with the budget it is told. Text-game benchmarks (TextArena, Game Reasoning Arena) score outcomes without a computable reference. LLM papers on Wordle and other deduction games are closer than either cluster and must be engaged directly, as the external review noted. For result 2, AISI's inference-scaling cyber post (section 4) is the framing to borrow: report curves, not points.
 
 ______________________________________________________________________
 
@@ -43,6 +51,7 @@ Four measurement bugs, each of which silently distorted a number rather than fai
 - `oracle_scorer` in `hangman.py` — a real Inspect scorer, in the task's scorer list by default. Returns a dict-valued `Score` that Inspect expands into per-key metrics.
 - `analysis/pilot_oracle.py` — batch scoring over logs (`from-logs`) and calibration against reference agents (`simulate`).
 - `analysis/build_wordlist.py` — builds the oracle dictionary from SCOWL.
+- `analysis/pinned_endgame.py` — conditional miss rate once the candidate set is pinned, from a committed per-guess TSV. The number behind result 1.
 
 ### Metrics
 
@@ -159,7 +168,7 @@ Two aggregation conventions are in play: `oracle_scorer` reports the mean of per
 
 **The thesis holds, and the metric tracks capability.** For the two current models, win rate sits at the ceiling (0.93 / 0.99; nano's 0.93 matches the registered report, though one of its seven losses is artifact-contested — see the nudge paragraph) while `dominated_rate` stays meaningfully above zero — the eval barely separates them on outcome but separates them cleanly on process (nano makes provably dead guesses at about twice sonnet's rate). The 2024-era reference point extends this into a monotone gradient on every process metric: gpt-4o → nano → sonnet is 0.18 → 0.06 → 0.03 dominated, +2.7 → +0.5 → +0.3 excess wrong. Two consequences for the paper. First, the benchmark was *not* saturated a generation ago (gpt-4o wins 0.69); saturation is a property of current models, and the process metrics keep discriminating after it sets in. Second, current models are far closer to the optimal reference than to the frequency baseline, so the claim to make is "wins while sometimes playing provably wrong", not "wins while playing badly".
 
-**Where the dead guesses live.** For all three models the dominated guesses concentrate in the endgame: 86% (nano) / 97% (sonnet) / 91% (gpt-4o) were made with three or fewer candidates remaining, and 86–87% (all three) while a *certain* letter (hit probability 1.0) was available. The canonical failure: board `.a..i.es`, candidate set = {bagpipes}, and nano guesses c, d, u, m, h on five consecutive turns. The board plus dictionary has already pinned the word; the model cannot retrieve it. This makes the lexical-access ablation (roadmap item 7) the single most informative next experiment — the failure is concentrated exactly where it would bite, and it holds across a model generation.
+**Where the dead guesses live.** For all three models the dominated guesses concentrate in the endgame: 86% (nano) / 97% (sonnet) / 91% (gpt-4o) were made with three or fewer candidates remaining, and 86–87% (all three) while a *certain* letter (hit probability 1.0) was available. The canonical failure: board `.a..i.es`, candidate set = {bagpipes}, and nano guesses c, d, u, m, h on five consecutive turns. The board plus dictionary has already pinned the word; the model cannot retrieve it. This makes the endgame decomposition (section 7) the single most informative next experiment — the failure is concentrated exactly where it would bite, and it holds across a model generation.
 
 **Losses.** nano lost 7: bagpipes, puppy, foxglove, jukebox, zephyr, ivy, happy. sonnet lost 1: puppy — a v_easy label, which says again that the LLM-authored difficulty labels do not track computed difficulty. gpt-4o lost 31, dominated by rare-letter and doubled-letter words (quartz, sphinx, onyx, nymph, lymph, larynx, jinx, kayak, kiosk, haiku, zephyr, zodiac, …). One nuance to keep honest: gpt-4o's win rate *does* fall along the LLM-authored labels (v_easy 0.80, medium 0.95, hard 0.55, v_hard 0.25), even though the labels do not correlate with solver-computed difficulty — plausibly both the labeller and the player are sensitive to word rarity. Worth one line in the benchmark-construction paper, not more.
 
@@ -172,6 +181,8 @@ ______________________________________________________________________
 ## 4. Findings so far
 
 Ordered by how much a reviewer would care.
+
+**Most dead guesses are made after the word is already pinned (2026-09-03).** Re-reading the pilot per-guess table conditional on candidate-set size: when exactly one candidate remains, gpt-4o misses 51% of its guesses, gpt-5-nano 18%, claude-sonnet-5 9% (`analysis/pinned_endgame.tsv`; 326 / 230 / 216 such guesses). Those pinned misses account for 73% / 59% / 67% of each model's dominated misses, and they cluster: gpt-4o's fall on 51 distinct words, sonnet's on 16. This sharpens the endgame-concentration finding below (≤3 candidates) to its limiting case, where the task has no decision component left. It is the basis for result 1 in section 1. Caveats: one seed, the pinned regime is defined by the shipped dictionary's support (a larger dictionary pins later), and the rate is not comparable across budgets for the same composition reason as the other per-guess metrics.
 
 **Per-guess metrics depend heavily on the dictionary.** Holding trajectories completely fixed and varying only the dictionary used to score them:
 
@@ -193,7 +204,7 @@ Ordered by how much a reviewer would care.
 - en_US ≈ en_GB to three decimals — consistent with the dialect audit finding zero orthographic dominated misses.
 - Caveats: the 25% cell injects 222/300 targets, so it stress-tests the injected-target regime more than it represents a plausible dictionary. And the grid covers the only axis that can move `dominated_rate` at all — by the support argument, the pending wordfreq prior axis can only move the graded metrics (given the smoothing floor preserves support).
 
-**Verdict per the review's decision rule: thesis A is the paper** — process metrics keep discriminating after outcome saturation, and that finding is stable across defensible dictionaries. Prior/dictionary sensitivity becomes the robustness section, with "declare your dictionary" as a reporting requirement: magnitudes remain a fact about (model, dictionary).
+**Verdict per the review's decision rule: thesis A is the paper** — process metrics keep discriminating after outcome saturation, and that finding is stable across defensible dictionaries. Prior/dictionary sensitivity becomes the robustness section, with "declare your dictionary" as a reporting requirement: magnitudes remain a fact about (model, dictionary). *(Superseded 2026-09-03: the finding stands, the thesis built on it does not — see section 6.)*
 
 **The prompt does not drive the dead guesses (2026-08-09).** The system prompt instructs frequency play, so `dominated_rate` might have measured compliance rather than capability. Ablation: {frequency (original), neutral (no advice), belief (reason from the consistent candidate set)} × three models × the same 100 words, all under the post-fix nudge; paired by word (`analysis/compare_arms.py`, `analysis/ablation_summary.tsv`). Pooled dominated_rate:
 
@@ -306,60 +317,119 @@ Revisit if a packaged release appears. Its POS and inflection data would be usef
 
 ______________________________________________________________________
 
-## 6. Open questions and decisions
+## 6. Other considered theses
 
-**Undecided — needs a call before scale-up:**
+Three framings were carried at various points. Each has evidence in this repo and none is wrong; they are backburnered because none would be a paper a reader outside the project would act on.
 
-- *What prior to treat as primary.* Recommendation: make it an explicit parameter (`uniform` | `frequency` | a curated-target prior) and report across all of them, rather than picking one and defending it.
-- *Where a target distribution could come from.* No source gives "what humans pick for hangman". Candidates, best first: published hangman word lists; wordlists bundled with open-source hangman implementations; adjacent human-curated puzzle targets (Wordle answers, Codenames); psycholinguistic norms to *characterise* rather than supply a list. Actual play logs would be ideal and are probably unobtainable.
-- *Dataset scale and composition.* 100 words is far too few, and they are LLM-chosen. Needs thousands, stratified by computed difficulty, with a contamination-controlled held-out set — these 100 are on public GitHub.
+**Thesis A — process metrics keep discriminating after outcome saturation.** The organising thesis from the pilot (2026-08-07) through the ablation (2026-08-09). Evidence: `dominated_rate` and `hit_prob_regret` order the three models monotonically while win rate sits at 0.93 / 0.99 for the two current ones; the ordering is dictionary-invariant; it is not prompt compliance. Why backburnered:
 
-**Fixed after review** (raised by an automated reviewer on PR #3, all three confirmed by reproduction before fixing):
+- It is expected. That per-step metrics have more resolution than a binary outcome, and that a 2024 model makes more dead guesses than a 2026 one, surprises nobody. The external review called A modest and was right.
+- The budget-curve result undercuts its premise. Saturation was an artefact of a generous budget; at b=4 win rate discriminates fine and is an outcome metric. Once curves are reported instead of points, process metrics become a nice-to-have, and the motivation for A evaporates.
+- The gradient it rests on confounds vendor, generation and reasoning effort, on one seed, over 100 LLM-chosen words, and there is no external-validity evidence that `dominated_rate` on hangman predicts anything else.
+
+What survives: the metrics, the calibration, and the finding itself as one figure in the robustness section. `suboptimal_rate` stays out of headlines (review disposition, 2026-08-09).
+
+**Thesis B — measuring process requires committing to a prior, and defensible priors disagree.** The original working thesis (section 1 before 2026-08-09). Evidence: the synthetic and real dictionary grids, the wordfreq-weighting table, the Wordle answer/guess split. Why backburnered: the real-trajectory grid showed rankings and structure are invariant and only magnitudes move, which makes it a reporting requirement ("declare your dictionary") rather than a result. The support-vs-weight distinction (dominated misses depend only on the prior's support; graded metrics on its weights) is the one idea from B worth a paragraph in the metrics section of whatever gets written.
+
+**The benchmark-construction paper — LLM-authored difficulty labels are noise; LLM-generated targets are frequency- and concreteness-skewed.** Evidence: Spearman ≈ 0 between labels and computed difficulty; concreteness 4.41 vs 3.53 for Wordle's human-curated answers; the correlated-priors confound. The external review suggested this had the larger audience. Disagreed on 2026-09-03: one generator of unknown identity, 100 words, and "LLM-generated data skews common and concrete" has been reported many times. It is a blog post that takes an afternoon, plus one paragraph in any paper's dataset section. Write it, link it, move on.
+
+**Also considered and folded in rather than dropped:** commit calibration (does the model know that it knows, via `allow_word_guesses`) is now the fourth leg of the decomposition in section 7 rather than a separate headline; "evil hangman" and the memory ablation stay on the later list.
+
+______________________________________________________________________
+
+## 7. Plan
+
+The principle: decide the question before spending on scale. The scaled dataset (thousands of words, held-out tier) was the largest cost item on the old roadmap and buys the least until the two results are confirmed. Two cheap experiments decide them; a gate follows; scale-up is conditional on the gate.
+
+### Stage 1 — decide result 1 without the game loop (near zero API cost)
+
+**The static pinned-board probe.** The pinned regime does not need an agentic harness. Sample boards directly from the dictionary: choose a target, choose a set of guessed letters, keep the (board, excluded letters) pair only if exactly one word in the dictionary is consistent with it. Present each as a single prompt — board, excluded letters, "name the word" — and score exact match against the oracle's one candidate. Also record whether the model's answer is *consistent* with the board at all (a wrong-but-consistent answer is a dictionary-coverage mismatch; an inconsistent answer is a verification failure).
+
+- Several hundred boards, stratified by word length and by wordfreq band, drawn from the dictionary rather than the 100-word dataset so the LLM-chosen-targets confound is gone by construction.
+- Same three models as the pilot, plus (this is the point of doing it now) a same-family ladder or a thinking on/off pair on one model, so the reasoning-effort confound is settled before any further gradient claim.
+- Reads: if the static probe reproduces the 0.51 / 0.18 / 0.09 gradient, the failure is isolated with no game loop and no scaled dataset, and the agentic runs are for the *loop-dependent* legs only. If the static rate is much lower than the in-game rate, the loop is contributing (turn-by-turn evidence accumulation, context length, or the frequency instruction) and that gap is itself the finding.
+
+**Mine the transcripts already on disk.** nano verbalises candidate lists spontaneously ("Possible words remain: gawky, …"). Before building a probe, extract every such list from the existing logs and score it against the oracle's candidate set (precision, recall, count accuracy). Free, and it says whether the verbalised-posterior probe is measuring something models will do.
+
+### Stage 2 — decide result 2 (small API cost)
+
+**Budget-conditional replication.** Two models (one reasoning, one not), three seeds each, real constrained runs at b ∈ {2, 4, 6, 8}, plus the unlimited run per seed to derive the prediction. Paired by word, McNemar per cell, and a dose-response read across b. Add a reasoning-effort sweep on the reasoning model so the effect can be separated from test-time compute.
+
+- Mechanism check without the composition problem: compare `hit_prob_regret` on the first three guesses only, like-for-like across budgets. If models play tighter early when told the budget is tight, that is the mechanism; if the early game is identical and only the endgame differs, the effect is something else.
+- Reads: dose-dependent and replicated → a paper section. Present at one budget only, or gone under replication → a paragraph in the methods ("derived curves are a lower bound") and no more.
+
+### Gate
+
+Run stages 1 and 2, then decide:
+
+- **Both hold** → a workshop paper (NeurIPS/ICLR evaluation or datasets-and-benchmarks track; arXiv after review): result 1 as the headline with the decomposition below, result 2 as the second contribution, thesis A's figure and the dictionary grid as robustness.
+- **Only result 1 holds** → a short paper on belief-state decomposition with exact ground truth; result 2 becomes a methods caveat.
+- **Only result 2 holds** → it is small; write it up as a note alongside the benchmark contribution and stop.
+- **Neither holds** → ship the eval to inspect_evals, write the benchmark-construction blog post, and stop with a clear conscience.
+
+### Stage 3 — conditional on the gate: the decomposition matrix
+
+Only if result 1 holds. Each leg has the oracle as ground truth; the first is stage 1's probe.
+
+| leg          | prompt                                              | measures                                                                    |
+| ------------ | --------------------------------------------------- | --------------------------------------------------------------------------- |
+| retrieval    | pattern + exclusions → name the word                | can the model produce it                                                    |
+| verification | pattern + exclusions + a word → does it fit?        | can the model check it (yes/no, both polarities)                            |
+| decision     | pattern + exclusions + candidate list → choose      | given the belief state, does it choose well                                 |
+| belief       | mid-game: how many candidates? name up to k         | does a belief state exist; calibration vs oracle                            |
+| commit       | `allow_word_guesses=True`: when does it submit?     | was the submission consistent; \|C\| at commit; realised success vs 1/\|C\| |
+| tokenisation | spaced vs contiguous board rendering, retrieval leg | is the failure in reading the board                                         |
+
+Plus the **human endgame study** the review proposed (10 people × 10 pinned boards): cheap, and it buys the sentence "models fail exactly where humans do not", which is the sentence that makes result 1 land.
+
+### Stage 3 — conditional on the gate: scale-up prerequisites
+
+Carried over from the external review, unchanged, and still required before any headline number: pinned and recorded generation configs; ≥3 seeds on headline cells; paired statistics clustered by word; the stratified runtime target generator (dev / held-out / fresh-seed tiers, salted hash manifest for the held-out set) in place of a committed word list; raw Inspect logs published with any write-up. `prior=uniform|frequency` on the oracle stays on the list because the decomposition's graded metrics depend on it, but it is no longer on the critical path.
+
+### Hygiene (do alongside stage 1, none blocks anything)
+
+- The system prompt still describes tool-output fields (`current_state`, `game_over`, `won`) that the tool does not return; it returns `Word:` / `Status:` lines. Align one with the other.
+- `Sample.input` is dead code: `game_initialiser` overwrites `user_prompt.text`. Remove one.
+- `analysis/README.md` still describes the Wolfram pipeline as the source of the shipped dictionary in places.
+- Write the benchmark-construction blog post from the evidence already in section 4.
+
+### Known issues
+
+- A sample that ends by message limit can leave the model's final tool call unanswered; the replay counts it as an attempt the game never processed. Observed once in 200 games (`happy`, a trailing repeat). Cosmetic at current scale; worth an explicit rule (score only answered calls) if it recurs.
+- The registered evaluation report cannot be updated with the pilot results yet. A registry entry pins a `repository_commit` that a reader can check out and reproduce from, and the pilot ran at 68493ba — on the PR #3 branch, not on `main`. Update the register once that history is on `main`: bump `source.repository_commit`, and replace the single stale gpt-5-nano row with the three-model table from section 3.
+- The registered evaluation report (0.93, `gpt-5-nano`) predates the malformed guess fix. Samples that previously errored out and vanished are now scored, so it is not comparable. Re-baseline before citing it.
+- `hangman_player`'s `on_continue` nudge previously named an example letter and gpt-5-nano followed it literally (section 3). Fixed; all three pilot runs predate the fix, so `repeat_rate` is citable only from the ablation arms onward.
+- The pilot runbook previously said `uv sync --dev`, which removes the provider SDKs; use `uv sync --dev --all-extras`.
+
+### Fixed after review (2026-08-09)
+
+Raised by an automated reviewer on PR #3, all three confirmed by reproduction before fixing:
 
 - `from-logs` applied one global `--max-guesses` to every replay instead of the limit each sample was played under. On a log run at 15, replaying at the default 10 turned a genuine win into a loss and truncated the wrong-guess count from 12 to 10. The logged value now wins; the flag is a fallback only.
 - Games won by submitting the full word were replayed as losses, because `extract_trajectories` drops the `submit` action and the letter sequence alone never completes the word. Both the batch reader and `oracle_scorer` now take the outcome from the recorded score.
 - Under `--strategy info_gain`, `optimal_letter` came from the chooser while `best_hit_prob` came from the maximum hit probability, so the reference policy scored as suboptimal against itself. Both now come from the configured policy. The default `max_hit_prob` is unaffected — calibration output is byte-identical.
 
-**Known issues:**
+### Open decisions deferred past the gate
 
-- `hangman_player`'s `on_continue` guidance embedded a concrete example letter — "Continue by calling hangman_guess('a') (replace 'a' with your next letter)." — and gpt-5-nano followed it literally: every repeat guess in the pilot was the letter `a`, emitted immediately after that nudge (see section 3). The nudge now names the tool without naming a letter (and the `submit('word')` example went with it), but all three pilot runs predate the fix: re-measure before citing `repeat_rate`.
-- The pilot runbook previously said `uv sync --dev`, which does not install the model-provider SDKs (and actively removes them if present): they are optional-dependency extras. `pyproject.toml` now has both `openai` and `anthropic` extras; use `uv sync --dev --all-extras`.
-- A sample that ends by message limit can leave the model's final tool call unanswered; the replay counts it as an attempt the game never processed. Observed once in 200 games (`happy`, a trailing repeat). Cosmetic at current scale; worth an explicit rule (score only answered calls) if it recurs.
-- The registered evaluation report cannot be updated with the pilot results yet. A registry entry pins a `repository_commit` that a reader can check out and reproduce from, and the pilot ran at 68493ba — on the PR #3 branch, not on `main`. `main` is currently at ab0fcc8 and the register still pins 9f1f396, older than both. Update the register once PR #3 merges: bump `source.repository_commit`, and replace the single stale gpt-5-nano row with the three-model table from section 3.
-- The registered evaluation report (0.93, `gpt-5-nano`) predates the malformed guess fix. Samples that previously errored out and vanished are now scored, so it is not comparable. Re-baseline before citing it.
-- `analysis/README.md` still describes the Wolfram-derived pipeline as the source of the shipped dictionary in places.
-
-______________________________________________________________________
-
-## 7. Roadmap
-
-1. **Run the pilot.** Done 2026-08-07; the thesis held. Results in section 3. Follow-ups it created: reword the `on_continue` nudge (known issues), then the lexical-access ablation (item 7) has first claim on the next run — the pilot showed dead guesses concentrate exactly where it tests.
-
-2. **Add `prior=uniform|frequency` to the oracle**, so the comparison is a first-class result rather than a fork in the code. Frequencies are one flag away: `build_wordlist.py --with-frequencies` emits `word<TAB>frequency` (~295 KB gzipped, no runtime dependency on wordfreq). 8.6% of SCOWL words have zero frequency and need a smoothing floor — the floor value is a real parameter, since it sets how much mass sits on morphological deadwood.
-
-3. **Re-baseline** `gpt-5-nano` and update the inspect_evals register entry.
-
-4. **De-saturate — done, by a cheaper route (2026-08-10).** Instead of the planned {2,3,4,6,8,10} sweep: one unlimited run (b=26 is unreachable with letter guesses) yields the whole win-vs-budget curve, and one constrained point calibrates the scarcity effect it cannot see (models beat the derived prediction under tight budgets — section 4). At scale-up, add per-word replication and the reasoning-effort axis for a 2D evidence × compute scaling surface against the computable reference policies.
-
-5. **Scale the dataset.** Thousands of words, stratified by computed difficulty, held-out set for contamination control.
-
-6. **Score commitment, if word guesses are used.** `allow_word_guesses=True` lets a model end the game by submitting the whole word. That is a *commit* action, and it measures something letter guesses cannot: whether the model knows that it knows. The oracle can score it exactly — was the submitted word still in the consistent candidate set (submitting one the board had ruled out is a provable error), how many candidates remained at the moment of commit, and does realised success match the 1/|candidates| prior. That last one is a calibration measurement and may be a better headline than `dominated_rate`. Word guesses are currently out of scope for the primary experiment and off by default; the replay no longer mis-scores them, but it does not score the commitment itself.
-
-7. **The lexical-access ablation.** Give the model the explicit candidate list at each step. If it then plays near-optimally, the bottleneck is character-level lexical retrieval; if not, it is sequential decision-making under uncertainty. Cheap and decisive, and it turns the character-level question into a measured variable instead of an assumption.
-
-8. **Write up.** Aim at a NeurIPS/ICLR evaluation or datasets-and-benchmarks workshop rather than a cold arXiv drop: 4–8 pages, real review, still goes on arXiv. Note that arXiv cs.\* requires endorsement for first-time submitters without an institutional affiliation — sort that early.
-
-The LLM-fingerprint findings (difficulty labels are noise; LLM-generated target distributions are detectably skewed) are a **separate paper** about benchmark construction. Mention and move on; do not try to fit both.
+- *What prior to treat as primary.* Still: make it an explicit parameter and report across all of them. Matters for the graded metrics in the decomposition, not for the pinned miss rate, which depends only on support.
+- *Where a target distribution could come from.* Unchanged list of candidates (published hangman lists, open-source hangman wordlists, Wordle answers, psycholinguistic norms). The stage-1 probe sidesteps it by sampling from the dictionary and stratifying by frequency band.
+- *Dataset scale and composition.* Thousands of words, stratified, held-out tier. Only after the gate.
 
 ______________________________________________________________________
 
 ## 8. Caveats to state explicitly in any write-up
 
 - The model is never told which dictionary the oracle uses, so its belief state is not the oracle's. Some of what looks like model error is a specification mismatch. This applies at the orthographic level too: if the hidden word is `realise` and the model guesses `z`, it is penalised for a convention nobody communicated. Call a dominated miss an "error under a declared reference specification", not a "provable error" simpliciter. Audited in the pilot (2026-08-09): **zero of the 328 dominated misses are dialect-orthographic** — no `z` guesses on the `-ise` boards; `whisky`/`dwarfs` differ from their US forms in length; `pajamas` was already excluded by the board evidence wherever it could have mattered. The caveat is conceptually right and currently empty; it becomes live when a scaled dataset admits `-ise/-ize` verbs, so the wording change costs nothing now and pre-empts that.
+
 - The reference solvers are greedy, not optimal. `excess_wrong_guesses` can be negative.
+
 - Difficulty labels in the current dataset are LLM-authored and do not track computed difficulty. Do not use them as a difficulty axis without saying so.
+
 - The current 100 words are LLM-chosen and are not a sample of human hangman targets.
+
 - `repeat_rate` in the *pilot* is a harness artifact (the continue nudge's literal example letter), not a model property. Re-measured under the fixed nudge on 2026-08-09: the artifact is gone and `repeat_rate` is citable from the ablation arms onward — with the nuance that nano's residual repeats are one organic spiral (`flopping`, g × 10), so report it alongside its concentration, not as a smooth rate.
+
+- The pinned miss rate (section 1) is conditional on the shipped dictionary's support: a larger dictionary pins the word later, so the regime is defined relative to a declared dictionary in exactly the way a dominated miss is. Report the dictionary with it.
 
 ## External review (2026-08-09)
 
@@ -459,3 +529,14 @@ Working through the list above; status and divergences:
 - Pushback on dropping `suboptimal_rate` entirely: agreed off headlines, kept in tables (it is the only per-decision rate; `hit_prob_regret` headlines).
 - Noted for scale-up: of the confound list, the reasoning-effort sweep is the most urgent (nano reasons, gpt-4o does not; the gradient may be partly test-time compute).
 - The verbalised-posterior probe has direct supporting evidence already: nano spontaneously verbalises candidate lists mid-game ("Possible words remain: gawky, …" on `happy`), so existing transcripts may be minable before any probe is built.
+
+### Refocus (2026-09-03)
+
+A review of the whole project against the question "is this interesting, or a paper for its own sake". Outcome, recorded in sections 1, 6 and 7:
+
+- Thesis A retired as the organising thesis: expected, undercut by the budget-curve result, and resting on a confounded three-model gradient. Its evidence stays as robustness material.
+- The pinned-endgame miss rate (`analysis/pinned_endgame.py`) promoted from an unremarked feature of the per-guess table to result 1. Most dominated misses are made after the word is already determined; the character-level framing the earlier notes avoided is where the phenomenon lives, and the decomposition matrix from this review is how the project adds to that literature rather than joining it.
+- Budget-conditional play promoted to result 2, contingent on replication.
+- The benchmark-construction findings demoted from candidate paper to blog post.
+- Scale-up made conditional on a gate that two cheap experiments decide. The review's scale-up prerequisites are carried unchanged behind the gate.
+- Two harness defects from this review (system prompt describes fields the tool does not return; `Sample.input` is dead code) confirmed still open and listed under hygiene.
