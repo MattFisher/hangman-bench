@@ -59,6 +59,16 @@ Results vary greatly depending on the solvers used, so the words have not curren
   - Conditional miss rate once the consistent candidate set has collapsed to a single word, computed from a committed per-guess TSV (`analysis/pilot_per_guess.tsv` by default). Most dominated misses happen in this regime, where the task has no decision left and the only thing to do is name the word; see `RESEARCH_NOTES.md` section 1.
   - Output: `analysis/pinned_endgame.tsv`.
 
+- `analysis/pinned_boards.py`
+
+  - Builds the board set for the `pinned_probe` task: the exact single-candidate states the pilot models faced (reconstructed from `analysis/pilot_per_guess.tsv`, with which models faced and missed each), plus a seeded, length- and zipf-band-stratified sample of fresh boards from the dictionary. Band stratification needs `wordfreq` (`uv pip install wordfreq`); without it the sample is stratified by length only.
+  - Output: `analysis/pinned_boards.tsv`.
+
+- `analysis/mine_verbalised.py`
+
+  - Mines raw Inspect logs for the candidate words a model names in its text, and scores each list against the oracle's candidate set at that moment (precision; recall when the true set has at most five words; whether the model named the target and then guessed a dead letter anyway). Needs the logs, which are not committed.
+  - Output: `<out>_per_step.tsv`, `<out>_summary.tsv`.
+
 - `analysis/bin_difficulty.py`
 
   - Bins words into difficulty tiers by quantiles of a chosen metric (default `wrong_coverage`; can use `wrong_freq_raw` or `wrong_info_gain`).

@@ -1,0 +1,1046 @@
+word	board	excluded	source	zipf_band	faced_by	missed_by
+awkward	a...ar.	eilnostu	pilot	moderate	openai/gpt-5-nano	
+awkward	a...ar.	eilnotu	pilot	moderate	openai/gpt-5-nano	openai/gpt-5-nano
+awkward	a...ar.	elnost	pilot	moderate	openai/gpt-4o	
+awkward	a...ar.	elnst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+awkward	a...ar.	enst	pilot	moderate	anthropic/claude-sonnet-5,openai/gpt-4o	openai/gpt-4o
+awkward	a...ar.	ent	pilot	moderate	anthropic/claude-sonnet-5,openai/gpt-4o	anthropic/claude-sonnet-5,openai/gpt-4o
+awkward	a...ar.	et	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+awkward	a...ard	eilnostu	pilot	moderate	openai/gpt-5-nano	
+awkward	a...ard	elnost	pilot	moderate	openai/gpt-4o	
+awkward	aw.war.	enst	pilot	moderate	anthropic/claude-sonnet-5	
+awkward	aw.ward	eilnostu	pilot	moderate	openai/gpt-5-nano	
+awkward	aw.ward	elnost	pilot	moderate	openai/gpt-4o	
+awkward	awkwar.	enst	pilot	moderate	anthropic/claude-sonnet-5	
+bagpipes	.a..i.es	cdlmnort	pilot	rare	openai/gpt-4o	
+bagpipes	.a..i.es	cdlmnortu	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+bagpipes	.a..i.es	cdlnort	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+bagpipes	.a..i.es	cdlnortu	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+bagpipes	.a..i.es	clmnort	pilot	rare	openai/gpt-4o	openai/gpt-4o
+bagpipes	.a..i.es	clnort	pilot	rare	openai/gpt-4o,openai/gpt-5-nano	openai/gpt-4o,openai/gpt-5-nano
+bagpipes	.a..i.es	cnr	pilot	rare	anthropic/claude-sonnet-5	
+bagpipes	.a..i.es	lnort	pilot	rare	openai/gpt-4o,openai/gpt-5-nano	openai/gpt-4o,openai/gpt-5-nano
+bagpipes	.a..i.es	nort	pilot	rare	openai/gpt-4o	openai/gpt-4o
+bagpipes	ba..i.es	cdlmnort	pilot	rare	openai/gpt-4o	
+bagpipes	ba..i.es	cnr	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+bagpipes	ba..i.es	cnrt	pilot	rare	anthropic/claude-sonnet-5	
+bagpipes	bag.i.es	cdlmnort	pilot	rare	openai/gpt-4o	openai/gpt-4o
+bagpipes	bag.i.es	cdlmnortz	pilot	rare	openai/gpt-4o	openai/gpt-4o
+bagpipes	bag.i.es	cnrt	pilot	rare	anthropic/claude-sonnet-5	
+banana	.anana	e	pilot	moderate	openai/gpt-5-nano	
+banana	.anana	elmrst	pilot	moderate	openai/gpt-4o	
+banana	ba.a.a	e	pilot	moderate	anthropic/claude-sonnet-5	
+bicycle	.i...le	adnorst	pilot	moderate	openai/gpt-4o	
+bicycle	.i...le	adnrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+bicycle	.i...le	anrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+bicycle	.ic.c.e	anrs	pilot	moderate	anthropic/claude-sonnet-5	
+bicycle	.ic.cle	adkmnorst	pilot	moderate	openai/gpt-4o	
+bicycle	.ic.cle	admnorst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+bicycle	.ic.cle	adnorst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+bicycle	bi....e	ao	pilot	moderate	openai/gpt-5-nano	
+bicycle	bic.c.e	anrs	pilot	moderate	anthropic/claude-sonnet-5	
+bicycle	bic.c.e	ao	pilot	moderate	openai/gpt-5-nano	
+bicycle	bic.cle	adkmnorst	pilot	moderate	openai/gpt-4o	
+bicycle	bicyc.e	anrs	pilot	moderate	anthropic/claude-sonnet-5	
+bicycle	bicyc.e	ao	pilot	moderate	openai/gpt-5-nano	
+butterfly	.utte....	ai	pilot	moderate	openai/gpt-5-nano	
+butterfly	.utter...	acino	pilot	moderate	anthropic/claude-sonnet-5	
+butterfly	.utter...	ai	pilot	moderate	openai/gpt-5-nano	
+butterfly	.utter...	aino	pilot	moderate	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+butterfly	.utter.l.	ai	pilot	moderate	openai/gpt-5-nano	
+butterfly	butter...	acino	pilot	moderate	anthropic/claude-sonnet-5	
+butterfly	butter.l.	ai	pilot	moderate	openai/gpt-5-nano	
+butterfly	butterf..	acino	pilot	moderate	anthropic/claude-sonnet-5	
+butterfly	butterf..	ao	pilot	moderate	openai/gpt-4o	
+butterfly	butterfl.	acino	pilot	moderate	anthropic/claude-sonnet-5	
+butterfly	butterfl.	ai	pilot	moderate	openai/gpt-5-nano	
+butterfly	butterfl.	ao	pilot	moderate	openai/gpt-4o	
+buzzard	....ar.	cehilnost	pilot	rare	openai/gpt-4o	openai/gpt-4o
+buzzard	..zzard	egos	pilot	rare	anthropic/claude-sonnet-5	
+buzzard	b.zzard	egos	pilot	rare	anthropic/claude-sonnet-5	
+buzzard	bu..ar.	eiklnost	pilot	rare	openai/gpt-5-nano	
+buzzard	bu..ar.	eiklost	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+buzzard	bu..ar.	eilost	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+buzzard	bu..ard	eiklnost	pilot	rare	openai/gpt-5-nano	
+camera	.a.era		pilot	common	openai/gpt-4o	openai/gpt-4o
+camera	.a.era	blnst	pilot	common	openai/gpt-4o	
+camera	.a.era	bnst	pilot	common	openai/gpt-4o	openai/gpt-4o
+camera	.a.era	nst	pilot	common	openai/gpt-4o	openai/gpt-4o
+camera	.a.era	nt	pilot	common	openai/gpt-4o	openai/gpt-4o
+camera	.a.era	st	pilot	common	openai/gpt-5-nano	
+camera	.a.era	t	pilot	common	openai/gpt-4o	openai/gpt-4o
+camera	.amera	blnst	pilot	common	openai/gpt-4o	
+camera	ca.e.a		pilot	common	anthropic/claude-sonnet-5	
+camera	ca.era	st	pilot	common	openai/gpt-5-nano	
+camera	came.a		pilot	common	anthropic/claude-sonnet-5	
+castle	.a.tle	mn	pilot	moderate	openai/gpt-5-nano	
+castle	.a.tle	n	pilot	moderate	anthropic/claude-sonnet-5	
+castle	.astle	n	pilot	moderate	anthropic/claude-sonnet-5	
+castle	ca.tle	br	pilot	moderate	openai/gpt-4o	
+castle	ca.tle	mn	pilot	moderate	openai/gpt-5-nano	
+coffee	..ffee	rt	pilot	common	anthropic/claude-sonnet-5	
+coffee	.o..ee	adlmnrst	pilot	common	openai/gpt-4o	
+coffee	.o..ee	almnrst	pilot	common	openai/gpt-4o	openai/gpt-4o
+coffee	.o..ee	almrst	pilot	common	openai/gpt-4o	openai/gpt-4o
+coffee	.o..ee	alrst	pilot	common	openai/gpt-4o	openai/gpt-4o
+coffee	.o..ee	arst	pilot	common	openai/gpt-4o	openai/gpt-4o
+coffee	.o..ee	art	pilot	common	openai/gpt-4o	openai/gpt-4o
+coffee	.o..ee	at	pilot	common	openai/gpt-4o	openai/gpt-4o
+coffee	c.ffee	rt	pilot	common	anthropic/claude-sonnet-5	
+coffee	co..ee	abdlmnrst	pilot	common	openai/gpt-4o	
+coffee	co..ee	adlmnrst	pilot	common	openai/gpt-4o	openai/gpt-4o
+compass	....ass	et	pilot	moderate	openai/gpt-5-nano	
+compass	.o..ass	einrt	pilot	moderate	anthropic/claude-sonnet-5	
+compass	.o..ass	enrt	pilot	moderate	openai/gpt-4o	
+compass	c...ass	et	pilot	moderate	openai/gpt-5-nano	
+compass	co..ass	einrt	pilot	moderate	anthropic/claude-sonnet-5	
+compass	co..ass	enrt	pilot	moderate	openai/gpt-4o	
+compass	co..ass	et	pilot	moderate	openai/gpt-5-nano	
+compass	com.ass	einrt	pilot	moderate	anthropic/claude-sonnet-5	
+compass	com.ass	enrt	pilot	moderate	openai/gpt-4o	
+compass	com.ass	et	pilot	moderate	openai/gpt-5-nano	
+cookie	.oo..e	abdlmnrst	pilot	moderate	openai/gpt-4o	
+cookie	.ook.e	abdlmnrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+cookie	cook.e	adgt	pilot	moderate	openai/gpt-5-nano	
+croquet	cro..et	ahip	pilot	rare	anthropic/claude-sonnet-5	
+croquet	cro..et	ailmnps	pilot	rare	openai/gpt-4o	
+croquet	cro..et	aip	pilot	rare	anthropic/claude-sonnet-5,openai/gpt-5-nano	anthropic/claude-sonnet-5
+croquet	cro.uet	ailmnps	pilot	rare	openai/gpt-4o	
+croquet	cro.uet	aip	pilot	rare	openai/gpt-5-nano	
+croquet	croq.et	ahip	pilot	rare	anthropic/claude-sonnet-5	
+crypt	.r..t	abefgiou	pilot	rare	openai/gpt-4o	
+crypt	.r..t	abefiou	pilot	rare	openai/gpt-4o	openai/gpt-4o
+crypt	.ry.t	aeiou	pilot	rare	anthropic/claude-sonnet-5	
+crypt	c.y..	aeio	pilot	rare	openai/gpt-5-nano	
+crypt	cr..t	abefgiou	pilot	rare	openai/gpt-4o	
+crypt	cry..	aeio	pilot	rare	openai/gpt-5-nano	
+crypt	cry.t	abefgiou	pilot	rare	openai/gpt-4o	
+crypt	cry.t	aeio	pilot	rare	openai/gpt-5-nano	
+crypt	cry.t	aeiou	pilot	rare	anthropic/claude-sonnet-5	
+diamond	..a.on.	est	pilot	moderate	openai/gpt-5-nano	
+diamond	.ia.o..	erst	pilot	moderate	openai/gpt-4o	
+diamond	.ia.on.	celrst	pilot	moderate	openai/gpt-4o	
+diamond	.ia.on.	cerst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+diamond	.ia.on.	erst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+diamond	.ia.on.	est	pilot	moderate	openai/gpt-5-nano	
+diamond	d.a.ond	er	pilot	moderate	anthropic/claude-sonnet-5	
+diamond	dia.ond	celrst	pilot	moderate	openai/gpt-4o	
+diamond	dia.ond	er	pilot	moderate	anthropic/claude-sonnet-5	
+diamond	dia.ond	est	pilot	moderate	openai/gpt-5-nano	
+duplex	.u.le.	abginorst	pilot	rare	openai/gpt-4o	
+duplex	.u.le.	abinorst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+duplex	du..e.	agimnort	pilot	rare	anthropic/claude-sonnet-5	
+duplex	du..e.	aginort	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+duplex	du.le.	abginorst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+duplex	du.le.	agimnort	pilot	rare	anthropic/claude-sonnet-5	
+duplex	du.le.	aiot	pilot	rare	openai/gpt-5-nano	
+duplex	duple.	agimnort	pilot	rare	anthropic/claude-sonnet-5	
+duplex	duple.	aiot	pilot	rare	openai/gpt-5-nano	
+dwarfs	..ar.s	ehinotuy	pilot	rare	openai/gpt-5-nano	
+dwarfs	..arfs	eio	pilot	rare	anthropic/claude-sonnet-5	
+dwarfs	d.ar.s	bcehilmpt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+dwarfs	d.ar.s	ehinotuy	pilot	rare	openai/gpt-5-nano	
+dwarfs	d.arfs	eio	pilot	rare	anthropic/claude-sonnet-5	
+dwarfs	dwar.s	ehinotuy	pilot	rare	openai/gpt-5-nano	
+earth	ea.t.		pilot	common	openai/gpt-4o	
+earth	eart.		pilot	common	anthropic/claude-sonnet-5,openai/gpt-4o	
+earth	eart.	gs	pilot	common	openai/gpt-5-nano	
+elephant	e.e..a.t	r	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+elephant	e.e..a.t	rs	pilot	moderate	openai/gpt-4o	
+elephant	e.e..ant	rs	pilot	moderate	openai/gpt-4o	
+elephant	ele....t		pilot	moderate	openai/gpt-5-nano	
+elephant	ele..ant	rs	pilot	moderate	openai/gpt-4o	
+elephant	elep...t		pilot	moderate	openai/gpt-5-nano	
+elephant	elep..n.	rs	pilot	moderate	anthropic/claude-sonnet-5	
+elephant	elep.ant	rs	pilot	moderate	openai/gpt-4o	
+elephant	eleph..t		pilot	moderate	openai/gpt-5-nano	
+elephant	eleph.n.	rs	pilot	moderate	anthropic/claude-sonnet-5	
+elephant	elepha.t		pilot	moderate	openai/gpt-5-nano	
+elephant	elephan.	rs	pilot	moderate	anthropic/claude-sonnet-5	
+espionage	e.....a.e	rt	pilot	rare	openai/gpt-4o	
+espionage	e..i..a.e	t	pilot	rare	anthropic/claude-sonnet-5	
+espionage	e..i.na.e		pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+espionage	e..i.na.e	t	pilot	rare	openai/gpt-5-nano	
+espionage	e..iona.e	t	pilot	rare	openai/gpt-5-nano	
+espionage	es....a.e	clrt	pilot	rare	openai/gpt-4o	
+espionage	es....a.e	crt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+espionage	es....a.e	rt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+espionage	es.i..a.e	t	pilot	rare	anthropic/claude-sonnet-5	
+espionage	es.iona.e	t	pilot	rare	openai/gpt-5-nano	
+espionage	esp...a.e	clrt	pilot	rare	openai/gpt-4o	
+espionage	espi..a.e	clrt	pilot	rare	openai/gpt-4o	
+espionage	espi..a.e	t	pilot	rare	anthropic/claude-sonnet-5	
+espionage	espio.a.e	clrt	pilot	rare	openai/gpt-4o	
+espionage	espio.a.e	t	pilot	rare	anthropic/claude-sonnet-5	
+espionage	espiona.e	clrt	pilot	rare	openai/gpt-4o	
+espionage	espiona.e	t	pilot	rare	anthropic/claude-sonnet-5,openai/gpt-5-nano	
+fishing	fis.in.	acdelortu	pilot	moderate	openai/gpt-5-nano	
+fishing	fishin.	acdelortu	pilot	moderate	openai/gpt-5-nano	
+fishing	fishin.	aeort	pilot	moderate	openai/gpt-4o	
+flopping	.lopping	acerst	pilot	rare	anthropic/claude-sonnet-5,openai/gpt-5-nano	
+forest	.orest	a	pilot	common	anthropic/claude-sonnet-5	
+forest	f.rest	ai	pilot	common	openai/gpt-4o	
+forest	fo.e.t	acimu	pilot	common	openai/gpt-5-nano	
+forest	fore.t	acimu	pilot	common	openai/gpt-5-nano	
+foxglove	.o...o.e	ainrst	pilot	rare	openai/gpt-4o	
+foxglove	.o...o.e	ainrt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+foxglove	.o...o.e	anrst	pilot	rare	openai/gpt-5-nano	
+foxglove	.o..lo.e	acdmnrst	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+foxglove	.o..lo.e	acdmnrstu	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+foxglove	.o..lo.e	acdnrst	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+foxglove	.o..lo.e	adnrst	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+foxglove	.o..lo.e	ainrst	pilot	rare	openai/gpt-4o	
+foxglove	.o..lo.e	anrst	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+foxglove	.o..love	ainrst	pilot	rare	openai/gpt-4o	
+foxglove	.o.glove	acdhinrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+foxglove	.o.glove	acdinrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+foxglove	.o.glove	acinrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+foxglove	.o.glove	ainrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+foxglove	fo...o.e	air	pilot	rare	anthropic/claude-sonnet-5	
+foxglove	fox..o.e	air	pilot	rare	anthropic/claude-sonnet-5	
+foxglove	foxg.o.e	air	pilot	rare	anthropic/claude-sonnet-5	
+foxglove	foxglo.e	air	pilot	rare	anthropic/claude-sonnet-5	
+galvanise	.a..an..e	crt	pilot	rare	anthropic/claude-sonnet-5	
+galvanise	.a..an.se	crt	pilot	rare	anthropic/claude-sonnet-5	
+galvanise	.a..an.se	dort	pilot	rare	openai/gpt-5-nano	
+galvanise	.a..anise	dort	pilot	rare	openai/gpt-4o	
+galvanise	.a..anise	dot	pilot	rare	openai/gpt-4o	openai/gpt-4o
+galvanise	.a..anise	ot	pilot	rare	openai/gpt-4o	openai/gpt-4o
+galvanise	.al.an.se	dort	pilot	rare	openai/gpt-5-nano	
+galvanise	.al.anise	dmoprt	pilot	rare	openai/gpt-4o	
+galvanise	.al.anise	dmort	pilot	rare	openai/gpt-4o	openai/gpt-4o
+galvanise	.al.anise	dort	pilot	rare	openai/gpt-4o,openai/gpt-5-nano	openai/gpt-4o
+galvanise	.alvanise	dmoprt	pilot	rare	openai/gpt-4o	
+galvanise	ga..an.se	crt	pilot	rare	anthropic/claude-sonnet-5	
+galvanise	gal.an.se	crt	pilot	rare	anthropic/claude-sonnet-5	
+galvanise	gal.anise	dort	pilot	rare	openai/gpt-5-nano	
+galvanise	galvan.se	crt	pilot	rare	anthropic/claude-sonnet-5	
+garden	gar.en		pilot	common	openai/gpt-5-nano	
+gazebo	.a.e.o	cdilmnrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+gazebo	.a.e.o	cdilnrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+gazebo	.a.e.o	cilnrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+gazebo	.a.e.o	ilnrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+gazebo	.a.e.o	inrst	pilot	rare	openai/gpt-5-nano	
+gazebo	.a.e.o	lnrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+gazebo	.a.e.o	nrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+gazebo	.a.e.o	rst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+gazebo	ga.e..	lnrst	pilot	rare	anthropic/claude-sonnet-5	
+gazebo	ga.e.o	inrst	pilot	rare	openai/gpt-5-nano	
+gazebo	gaze..	lnrst	pilot	rare	anthropic/claude-sonnet-5	
+gazebo	gaze.o	inrst	pilot	rare	openai/gpt-5-nano	
+gazebo	gazeb.	lnrst	pilot	rare	anthropic/claude-sonnet-5	
+giraffe	..ra..e	cdnost	pilot	rare	anthropic/claude-sonnet-5	
+giraffe	..ra..e	cdns	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+giraffe	..ra..e	cdnst	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+giraffe	..ra..e	dlmnst	pilot	rare	openai/gpt-4o	
+giraffe	..ra..e	lmnst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+giraffe	..ra..e	lnst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+giraffe	..raffe	cdnost	pilot	rare	anthropic/claude-sonnet-5	
+giraffe	.i.affe	ot	pilot	rare	openai/gpt-5-nano	
+giraffe	g.ra..e	bcdhlmnst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+giraffe	g.ra..e	bdhlmnst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+giraffe	g.ra..e	bdlmnst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+giraffe	g.ra..e	dlmnst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+giraffe	g.raffe	cdnost	pilot	rare	anthropic/claude-sonnet-5	
+giraffe	gi.affe	ot	pilot	rare	openai/gpt-5-nano	
+guitar	..i.ar	eo	pilot	moderate	anthropic/claude-sonnet-5	
+guitar	..ita.	eo	pilot	moderate	openai/gpt-4o	
+guitar	..itar	bcehlops	pilot	moderate	openai/gpt-4o	
+guitar	..itar	cehlops	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+guitar	..itar	cehlos	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+guitar	..itar	ceho	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+guitar	..itar	cehos	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+guitar	..itar	ceo	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+guitar	..itar	eo	pilot	moderate	anthropic/claude-sonnet-5,openai/gpt-4o	openai/gpt-4o
+guitar	g..ta.	enos	pilot	moderate	openai/gpt-5-nano	
+guitar	g.itar	bcehlops	pilot	moderate	openai/gpt-4o	
+guitar	g.itar	eo	pilot	moderate	anthropic/claude-sonnet-5	
+guitar	gu.ta.	enos	pilot	moderate	openai/gpt-5-nano	
+guitar	guita.	enos	pilot	moderate	openai/gpt-5-nano	
+haiku	.ai..	elnorsty	pilot	rare	anthropic/claude-sonnet-5	
+haiku	hai..	elnorsty	pilot	rare	anthropic/claude-sonnet-5	
+haiku	haik.	elnorsty	pilot	rare	anthropic/claude-sonnet-5	
+haiku	haik.	est	pilot	rare	openai/gpt-5-nano	
+happy	.appy	deinorst	pilot	common	anthropic/claude-sonnet-5	
+harvest	harve.t	n	pilot	moderate	openai/gpt-5-nano	
+holiday	..l..a.	enrst	pilot	common	openai/gpt-4o	
+holiday	..li.a.	cemnprst	pilot	common	openai/gpt-4o	openai/gpt-4o
+holiday	..li.a.	cemnprstv	pilot	common	openai/gpt-4o	
+holiday	..li.a.	cemnrst	pilot	common	openai/gpt-4o	openai/gpt-4o
+holiday	..li.a.	cenrst	pilot	common	openai/gpt-4o	openai/gpt-4o
+holiday	..li.a.	enrst	pilot	common	openai/gpt-4o	openai/gpt-4o
+holiday	..lida.	cemnprstv	pilot	common	openai/gpt-4o	
+holiday	.ol..a.	egnrt	pilot	common	anthropic/claude-sonnet-5	
+holiday	.ol..a.	enrt	pilot	common	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+holiday	.oli.a.	ent	pilot	common	openai/gpt-5-nano	openai/gpt-5-nano
+holiday	.oli.a.	entv	pilot	common	openai/gpt-5-nano	
+holiday	.olida.	bcenrstv	pilot	common	openai/gpt-5-nano	
+holiday	.olida.	bcenstv	pilot	common	openai/gpt-5-nano	openai/gpt-5-nano
+holiday	.olida.	cemnprstv	pilot	common	openai/gpt-4o	
+holiday	.olida.	censtv	pilot	common	openai/gpt-5-nano	openai/gpt-5-nano
+holiday	.olida.	enstv	pilot	common	openai/gpt-5-nano	openai/gpt-5-nano
+holiday	.olida.	entv	pilot	common	openai/gpt-5-nano	openai/gpt-5-nano
+holiday	hol..a.	egnrt	pilot	common	anthropic/claude-sonnet-5	
+holiday	holi.a.	egnrt	pilot	common	anthropic/claude-sonnet-5	
+holiday	holida.	bcenrstv	pilot	common	openai/gpt-5-nano	
+holiday	holida.	cemnprstv	pilot	common	openai/gpt-4o	
+holiday	holida.	egnrt	pilot	common	anthropic/claude-sonnet-5	
+hyphen	....en	adilostu	pilot	rare	openai/gpt-5-nano	
+hyphen	....en	adilotu	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+hyphen	....en	ailorst	pilot	rare	openai/gpt-4o	
+hyphen	....en	ailotu	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+hyphen	h..he.	aiortu	pilot	rare	anthropic/claude-sonnet-5	
+hyphen	h..hen	acdilorst	pilot	rare	openai/gpt-4o	
+hyphen	h..hen	acilorst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+hyphen	h..hen	adilostu	pilot	rare	openai/gpt-5-nano	
+hyphen	h..hen	ailorst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+hyphen	h.phen	acdilorst	pilot	rare	openai/gpt-4o	
+hyphen	hy.he.	aiortu	pilot	rare	anthropic/claude-sonnet-5	
+hyphen	hy.hen	adilostu	pilot	rare	openai/gpt-5-nano	
+hyphen	hyphe.	aiortu	pilot	rare	anthropic/claude-sonnet-5	
+ivory	i..r.	aelnst	pilot	moderate	openai/gpt-4o	
+ivory	i..r.	aenst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+ivory	i..r.	aest	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+ivory	i.or.	acelnst	pilot	moderate	openai/gpt-4o	
+ivory	i.or.	ae	pilot	moderate	anthropic/claude-sonnet-5	
+ivory	i.or.	ael	pilot	moderate	openai/gpt-5-nano	
+ivory	i.or.	aelnst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+ivory	ivor.	acelnst	pilot	moderate	openai/gpt-4o	
+ivory	ivor.	ae	pilot	moderate	anthropic/claude-sonnet-5	
+ivory	ivor.	ael	pilot	moderate	openai/gpt-5-nano	
+ivy	iv.	acekmnot	pilot	moderate	anthropic/claude-sonnet-5	
+jacket	.ac.et	hlnpr	pilot	moderate	openai/gpt-4o	
+jacket	.acket	hlnpr	pilot	moderate	openai/gpt-4o	
+jacket	ja.ket	rs	pilot	moderate	openai/gpt-5-nano	
+jackpot	.a....t	eilnrs	pilot	moderate	openai/gpt-5-nano	
+jackpot	.a...o.	elnrs	pilot	moderate	anthropic/claude-sonnet-5	
+jackpot	.a...ot	eilnrs	pilot	moderate	openai/gpt-5-nano	openai/gpt-5-nano
+jackpot	.a...ot	eilnrsu	pilot	moderate	openai/gpt-5-nano	
+jackpot	.a...ot	elmnrs	pilot	moderate	openai/gpt-4o	
+jackpot	.a...ot	elnr	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+jackpot	.a...ot	elnrs	pilot	moderate	anthropic/claude-sonnet-5,openai/gpt-4o	openai/gpt-4o
+jackpot	.a...ot	enr	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+jackpot	.a.k.ot	elnrs	pilot	moderate	anthropic/claude-sonnet-5	
+jackpot	.ac..ot	eilnrsu	pilot	moderate	openai/gpt-5-nano	
+jackpot	.ac..ot	elmnrs	pilot	moderate	openai/gpt-4o	
+jackpot	.ack.ot	befilmnrs	pilot	moderate	openai/gpt-4o	
+jackpot	.ack.ot	beflmnrs	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+jackpot	.ack.ot	belmnrs	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+jackpot	.ack.ot	elmnrs	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+jackpot	.ackpot	befilmnrs	pilot	moderate	openai/gpt-4o	
+jackpot	ja.k.ot	elnrs	pilot	moderate	anthropic/claude-sonnet-5	
+jackpot	jac..ot	eilnrsu	pilot	moderate	openai/gpt-5-nano	
+jackpot	jack.ot	eilnrsu	pilot	moderate	openai/gpt-5-nano	
+jackpot	jack.ot	elnrs	pilot	moderate	anthropic/claude-sonnet-5	
+jigsaw	.i.sa.	celmnoprt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+jigsaw	.i.sa.	celnoprt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+jigsaw	.i.sa.	celnort	pilot	rare	openai/gpt-4o	openai/gpt-4o
+jigsaw	.i.sa.	cenort	pilot	rare	openai/gpt-4o	openai/gpt-4o
+jigsaw	.i.sa.	denort	pilot	rare	openai/gpt-5-nano	
+jigsaw	.i.sa.	enor	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+jigsaw	.i.sa.	enort	pilot	rare	anthropic/claude-sonnet-5,openai/gpt-5-nano	openai/gpt-5-nano
+jigsaw	.i.sa.	eor	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+jigsaw	.igsa.	denort	pilot	rare	openai/gpt-5-nano	
+jigsaw	.igsa.	enort	pilot	rare	anthropic/claude-sonnet-5	
+jigsaw	jigsa.	denort	pilot	rare	openai/gpt-5-nano	
+jigsaw	jigsa.	enort	pilot	rare	anthropic/claude-sonnet-5	
+jukebox	...e.o.	acilmnrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+jukebox	.u.e.o.	acdilnrst	pilot	rare	anthropic/claude-sonnet-5	
+jukebox	.u.e.o.	adilnrst	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+jukebox	.u.e.o.	adilnrsty	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+jukebox	ju.e.o.	acdilnrst	pilot	rare	anthropic/claude-sonnet-5	
+jukebox	juke.o.	acdilnrst	pilot	rare	anthropic/claude-sonnet-5	
+jukebox	jukebo.	acdilnrst	pilot	rare	anthropic/claude-sonnet-5	
+jungle	.u.gle	abdiorz	pilot	moderate	anthropic/claude-sonnet-5	
+jungle	.ungle	abdiorz	pilot	moderate	anthropic/claude-sonnet-5	
+jungle	j.ngle	adfiorst	pilot	moderate	openai/gpt-4o	
+kangaroo	.a..a.oo	eit	pilot	moderate	openai/gpt-4o	
+kangaroo	.a..a.oo	et	pilot	moderate	openai/gpt-5-nano	
+kangaroo	.an.a.oo	et	pilot	moderate	openai/gpt-5-nano	
+kangaroo	.angar..	ety	pilot	moderate	anthropic/claude-sonnet-5	
+kangaroo	.angaroo	ety	pilot	moderate	anthropic/claude-sonnet-5	
+kangaroo	ka..a.oo	eit	pilot	moderate	openai/gpt-4o	
+kangaroo	kan.a.oo	eit	pilot	moderate	openai/gpt-4o	
+kangaroo	kan.a.oo	et	pilot	moderate	openai/gpt-5-nano	
+kangaroo	kanga.oo	eit	pilot	moderate	openai/gpt-4o	
+kangaroo	kanga.oo	et	pilot	moderate	openai/gpt-5-nano	
+kayak	ka.ak	celnr	pilot	rare	openai/gpt-5-nano	
+kayak	ka.ak	delnrst	pilot	rare	anthropic/claude-sonnet-5	
+kiosk	..os.	acenrtw	pilot	rare	anthropic/claude-sonnet-5	
+kiosk	..os.	aelnrt	pilot	rare	openai/gpt-5-nano	
+kiosk	..os.	aert	pilot	rare	openai/gpt-4o	
+kiosk	.ios.	abefglprt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+kiosk	.ios.	abefgprt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+kiosk	.ios.	abegprt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+kiosk	.ios.	abegrt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+kiosk	.ios.	aegrt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+kiosk	.ios.	aert	pilot	rare	openai/gpt-4o	openai/gpt-4o
+kiosk	k.osk	acenrtw	pilot	rare	anthropic/claude-sonnet-5	
+kiosk	k.osk	aelnrt	pilot	rare	openai/gpt-5-nano	
+lantern	.an.ern	s	pilot	moderate	anthropic/claude-sonnet-5	
+lantern	.ante.n		pilot	moderate	openai/gpt-5-nano	
+lantern	.antern	s	pilot	moderate	anthropic/claude-sonnet-5	
+lantern	la.ter.	p	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+lantern	la.ter.	pu	pilot	moderate	openai/gpt-4o	
+lantern	lante.n		pilot	moderate	openai/gpt-5-nano	
+larynx	.a..n.	eiotu	pilot	rare	openai/gpt-5-nano	
+larynx	.ar.n.	deiotu	pilot	rare	openai/gpt-5-nano	
+larynx	.ar.n.	egiost	pilot	rare	anthropic/claude-sonnet-5	
+larynx	.ar.n.	eiost	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+larynx	.ar.n.	eiot	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+larynx	.ar.n.	eiotu	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+larynx	.aryn.	deiotu	pilot	rare	openai/gpt-5-nano	
+larynx	lar.n.	cdegkmpst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+larynx	lar.n.	cdegkmst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+larynx	lar.n.	cdegkst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+larynx	lar.n.	cdekst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+larynx	lar.n.	cdest	pilot	rare	openai/gpt-4o	openai/gpt-4o
+larynx	lar.n.	cest	pilot	rare	openai/gpt-4o	openai/gpt-4o
+larynx	lar.n.	egiost	pilot	rare	anthropic/claude-sonnet-5	
+larynx	laryn.	deiotu	pilot	rare	openai/gpt-5-nano	
+larynx	laryn.	egiost	pilot	rare	anthropic/claude-sonnet-5	
+lymph	.ymph	aeino	pilot	rare	anthropic/claude-sonnet-5	
+lymph	l...h	aceinorst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+lymph	lym..	aeiors	pilot	rare	openai/gpt-5-nano	
+lymph	lymp.	aeiors	pilot	rare	openai/gpt-5-nano	
+market	.a.ket	bcg	pilot	common	openai/gpt-5-nano	
+market	.arket		pilot	common	anthropic/claude-sonnet-5,openai/gpt-4o	
+market	ma.ket	bcg	pilot	common	openai/gpt-5-nano	
+marquis	.ar..is	cdehlnot	pilot	rare	openai/gpt-4o	
+marquis	.ar..is	enpt	pilot	rare	openai/gpt-5-nano	
+marquis	.ar..is	ent	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+marquis	.ar.ui.	eot	pilot	rare	anthropic/claude-sonnet-5	
+marquis	.arq.is	enpt	pilot	rare	openai/gpt-5-nano	
+marquis	.arqui.	eot	pilot	rare	anthropic/claude-sonnet-5	
+marquis	.arquis	enpt	pilot	rare	openai/gpt-5-nano	
+marquis	mar..is	cdehlnot	pilot	rare	openai/gpt-4o	openai/gpt-4o
+marquis	mar..is	cdehlnotv	pilot	rare	openai/gpt-4o	openai/gpt-4o
+marquis	marqui.	eot	pilot	rare	anthropic/claude-sonnet-5	
+matrix	.at.i.	eno	pilot	moderate	openai/gpt-5-nano	
+matrix	.atr..	cehos	pilot	moderate	openai/gpt-4o	
+matrix	.atr..	ceos	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+matrix	.atr..	eo	pilot	moderate	anthropic/claude-sonnet-5,openai/gpt-4o	openai/gpt-4o
+matrix	.atr..	eos	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+matrix	.atri.	eno	pilot	moderate	openai/gpt-5-nano	
+matrix	.atri.	eo	pilot	moderate	anthropic/claude-sonnet-5	
+matrix	matr..	cehos	pilot	moderate	openai/gpt-4o	
+matrix	matri.	cehos	pilot	moderate	openai/gpt-4o	
+matrix	matri.	eno	pilot	moderate	openai/gpt-5-nano	
+matrix	matri.	eo	pilot	moderate	anthropic/claude-sonnet-5	
+monkey	.onke.	adr	pilot	moderate	anthropic/claude-sonnet-5	
+monkey	m.n.e.	acilrst	pilot	moderate	openai/gpt-4o	
+monkey	mon.e.	acilrst	pilot	moderate	openai/gpt-4o	
+monkey	monke.	acilrst	pilot	moderate	openai/gpt-4o	
+monkey	monke.	adr	pilot	moderate	anthropic/claude-sonnet-5	
+monkey	monke.	art	pilot	moderate	openai/gpt-5-nano	
+mountain	m..n.ain	e	pilot	common	anthropic/claude-sonnet-5	
+mountain	m..ntain	elrs	pilot	common	openai/gpt-4o	
+mountain	m..ntain	ers	pilot	common	openai/gpt-5-nano	
+mountain	mo.n.ain	e	pilot	common	anthropic/claude-sonnet-5	
+mountain	mo.ntain	elrs	pilot	common	openai/gpt-4o	
+mountain	mo.ntain	ers	pilot	common	openai/gpt-5-nano	
+mountain	moun.ain	e	pilot	common	anthropic/claude-sonnet-5	
+notebook	..te....	airs	pilot	moderate	openai/gpt-4o	
+notebook	..te....	ar	pilot	moderate	openai/gpt-4o,openai/gpt-5-nano	openai/gpt-4o
+notebook	..te....	ars	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+notebook	.o.e.oo.	air	pilot	moderate	anthropic/claude-sonnet-5	
+notebook	.ote.oo.	air	pilot	moderate	anthropic/claude-sonnet-5	
+notebook	.ote.oo.	airs	pilot	moderate	openai/gpt-4o	
+notebook	n.te....	ar	pilot	moderate	openai/gpt-5-nano	
+notebook	note.oo.	air	pilot	moderate	anthropic/claude-sonnet-5	
+notebook	note.oo.	airs	pilot	moderate	openai/gpt-4o	
+notebook	note.oo.	ar	pilot	moderate	openai/gpt-5-nano	
+notebook	noteboo.	air	pilot	moderate	anthropic/claude-sonnet-5	
+notebook	noteboo.	airs	pilot	moderate	openai/gpt-4o	
+notebook	noteboo.	ar	pilot	moderate	openai/gpt-5-nano	
+nymph	n....	adeiorstu	pilot	rare	openai/gpt-4o	openai/gpt-4o
+nymph	n....	aeiorstu	pilot	rare	openai/gpt-4o	openai/gpt-4o
+nymph	ny...	aeiou	pilot	rare	anthropic/claude-sonnet-5	
+nymph	nym..	aeiou	pilot	rare	anthropic/claude-sonnet-5	
+nymph	nym.h	aeiou	pilot	rare	openai/gpt-5-nano	
+nymph	nymp.	aeiou	pilot	rare	anthropic/claude-sonnet-5	
+octopus	o.to...	ae	pilot	rare	openai/gpt-4o	
+octopus	o.to..s	aen	pilot	rare	openai/gpt-5-nano	
+octopus	o.top..	ae	pilot	rare	openai/gpt-4o	
+octopus	oc.o...	aei	pilot	rare	anthropic/claude-sonnet-5	
+octopus	octo...	aei	pilot	rare	anthropic/claude-sonnet-5	
+octopus	octo..s	aen	pilot	rare	openai/gpt-5-nano	
+octopus	octop..	ae	pilot	rare	openai/gpt-4o	
+octopus	octop..	aei	pilot	rare	anthropic/claude-sonnet-5	
+octopus	octop.s	aen	pilot	rare	openai/gpt-5-nano	
+octopus	octopu.	ae	pilot	rare	openai/gpt-4o	
+octopus	octopu.	aei	pilot	rare	anthropic/claude-sonnet-5	
+onyx	on..	aceilrstu	pilot	rare	openai/gpt-4o	openai/gpt-4o
+onyx	on..	aeilrstu	pilot	rare	openai/gpt-4o	openai/gpt-4o
+onyx	on..	aeilrtu	pilot	rare	openai/gpt-4o	openai/gpt-4o
+onyx	ony.	aeirtu	pilot	rare	anthropic/claude-sonnet-5	
+onyx	ony.	aelt	pilot	rare	openai/gpt-5-nano	
+orange	.range	st	pilot	common	openai/gpt-4o	
+orange	oran.e		pilot	common	anthropic/claude-sonnet-5	
+orange	oran.e	t	pilot	common	openai/gpt-5-nano	
+oxidise	..i.ise	alnrt	pilot	rare	anthropic/claude-sonnet-5	
+oxidise	..i.ise	anrt	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+oxidise	..idise	alnrt	pilot	rare	anthropic/claude-sonnet-5	
+oxidise	o.i.i.e	agnrt	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+oxidise	o.i.i.e	agnrtu	pilot	rare	openai/gpt-5-nano	
+oxidise	o.i.i.e	anrt	pilot	rare	openai/gpt-4o,openai/gpt-5-nano	openai/gpt-5-nano
+oxidise	o.i.ise	agnrtu	pilot	rare	openai/gpt-5-nano	
+oxidise	o.i.ise	alnrt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+oxidise	o.i.ise	alnrtv	pilot	rare	openai/gpt-4o	
+oxidise	o.i.ise	anrt	pilot	rare	openai/gpt-4o	openai/gpt-4o
+oxidise	o.idise	almnrtv	pilot	rare	openai/gpt-4o	
+oxidise	o.idise	alnrt	pilot	rare	anthropic/claude-sonnet-5	
+oxidise	o.idise	alnrtv	pilot	rare	openai/gpt-4o	openai/gpt-4o
+oxidise	oxi.ise	agnrtu	pilot	rare	openai/gpt-5-nano	
+paper	pape.		pilot	common	openai/gpt-5-nano	
+pencil	.e..il	afmrst	pilot	moderate	openai/gpt-4o	
+pencil	.e..il	afrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+pencil	.e..il	arst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+pencil	.en.i.	adost	pilot	moderate	openai/gpt-5-nano	
+pencil	.en.i.	adot	pilot	moderate	openai/gpt-5-nano	openai/gpt-5-nano
+pencil	.en.i.	aorst	pilot	moderate	anthropic/claude-sonnet-5	
+pencil	.en.i.	aort	pilot	moderate	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+pencil	.en.i.	aot	pilot	moderate	openai/gpt-5-nano	openai/gpt-5-nano
+pencil	.en.il	adost	pilot	moderate	openai/gpt-5-nano	
+pencil	.en.il	afmrst	pilot	moderate	openai/gpt-4o	
+pencil	.en.il	aorst	pilot	moderate	anthropic/claude-sonnet-5	
+pencil	.encil	aorst	pilot	moderate	anthropic/claude-sonnet-5	
+pencil	pen.il	adost	pilot	moderate	openai/gpt-5-nano	
+pencil	pen.il	afmrst	pilot	moderate	openai/gpt-4o	
+penguin	.e...i.	almrst	pilot	moderate	openai/gpt-4o	
+penguin	.e...i.	aor	pilot	moderate	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+penguin	.e...i.	aort	pilot	moderate	anthropic/claude-sonnet-5	
+penguin	.en..in	acdlmrst	pilot	moderate	openai/gpt-4o	
+penguin	.en..in	adlmrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+penguin	.en..in	almrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+penguin	.en..in	aort	pilot	moderate	anthropic/claude-sonnet-5	
+penguin	.en..in	at	pilot	moderate	openai/gpt-5-nano	
+penguin	.eng.in	acdlmrst	pilot	moderate	openai/gpt-4o	
+penguin	pen..in	aort	pilot	moderate	anthropic/claude-sonnet-5	
+penguin	pen..in	at	pilot	moderate	openai/gpt-5-nano	
+penguin	peng.in	acdlmrst	pilot	moderate	openai/gpt-4o	
+penguin	peng.in	aort	pilot	moderate	anthropic/claude-sonnet-5	
+penguin	peng.in	at	pilot	moderate	openai/gpt-5-nano	
+people	.e..le	bdghmnrst	pilot	common	anthropic/claude-sonnet-5	
+people	.eo..e		pilot	common	openai/gpt-5-nano	
+people	pe.ple	abcdfmrst	pilot	common	openai/gpt-4o	
+people	pe.ple	bdghmnrst	pilot	common	anthropic/claude-sonnet-5	
+people	peop.e		pilot	common	openai/gpt-5-nano	
+pixel	.i.el	abdhnrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+pixel	.i.el	abdhnrstv	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+pixel	.i.el	adhnrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+pixel	.i.el	adnorst	pilot	moderate	anthropic/claude-sonnet-5	
+pixel	.i.el	ahnrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+pixel	.i.el	anrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+pixel	.ixe.	adknorst	pilot	moderate	openai/gpt-5-nano	
+pixel	.ixel	adknorst	pilot	moderate	openai/gpt-5-nano	
+pixel	pi.el	adnorst	pilot	moderate	anthropic/claude-sonnet-5	
+pizza	.izza	eort	pilot	moderate	openai/gpt-5-nano	
+pizza	pi..a	eglnos	pilot	moderate	anthropic/claude-sonnet-5	
+pizza	pi..a	elrst	pilot	moderate	openai/gpt-4o	
+planet	..anet	rs	pilot	common	openai/gpt-4o	
+planet	p.a.et	r	pilot	common	anthropic/claude-sonnet-5	
+planet	p.anet	rs	pilot	common	openai/gpt-4o	
+planet	pla.et	r	pilot	common	anthropic/claude-sonnet-5	
+pocket	.oc.et	abdilnrs	pilot	moderate	openai/gpt-4o	
+pocket	.ocket	abdilnrs	pilot	moderate	openai/gpt-4o	
+pocket	poc.et	abghinrs	pilot	moderate	openai/gpt-5-nano	
+postcard	.o.tcar.	ehilmn	pilot	rare	openai/gpt-4o	
+postcard	.o.tcar.	ehiln	pilot	rare	openai/gpt-4o	openai/gpt-4o
+postcard	.o.tcard	ehilmn	pilot	rare	openai/gpt-4o	
+postcard	.ost.ar.	eimn	pilot	rare	anthropic/claude-sonnet-5	
+postcard	.ostcar.	eimn	pilot	rare	anthropic/claude-sonnet-5	
+postcard	.ostcard	eimn	pilot	rare	anthropic/claude-sonnet-5	
+postcard	po.tcard	ehilmn	pilot	rare	openai/gpt-4o	
+postcard	post.a..	em	pilot	rare	openai/gpt-5-nano	
+postcard	post.ar.	em	pilot	rare	openai/gpt-5-nano	
+postcard	postcar.	em	pilot	rare	openai/gpt-5-nano	
+purple	pu.p.e	aio	pilot	moderate	anthropic/claude-sonnet-5	
+purple	purp.e	aio	pilot	moderate	anthropic/claude-sonnet-5	
+pyjamas	...a.a.	delnort	pilot	rare	openai/gpt-5-nano	
+pyjamas	...amas	elnrt	pilot	rare	openai/gpt-4o	
+pyjamas	.y.a.a.	delnort	pilot	rare	openai/gpt-5-nano	
+pyjamas	.y.a.as	delnort	pilot	rare	openai/gpt-5-nano	
+pyjamas	p..a.as	enrt	pilot	rare	anthropic/claude-sonnet-5	
+pyjamas	p..amas	elnrt	pilot	rare	openai/gpt-4o	
+pyjamas	p.jamas	elnrt	pilot	rare	openai/gpt-4o	
+pyjamas	py.a.as	delnort	pilot	rare	openai/gpt-5-nano	
+pyjamas	py.a.as	enrt	pilot	rare	anthropic/claude-sonnet-5	
+pyjamas	pyja.as	delnort	pilot	rare	openai/gpt-5-nano	
+pyjamas	pyja.as	enrt	pilot	rare	anthropic/claude-sonnet-5	
+quartz	..art.	cefhimops	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+question	..e..io.	ar	pilot	common	anthropic/claude-sonnet-5	
+question	..e.t.o.	a	pilot	common	openai/gpt-4o,openai/gpt-5-nano	openai/gpt-4o,openai/gpt-5-nano
+question	..e.t.o.	ar	pilot	common	openai/gpt-4o,openai/gpt-5-nano	
+question	..e.t.on	ar	pilot	common	openai/gpt-4o,openai/gpt-5-nano	
+question	..est.on	acr	pilot	common	openai/gpt-4o	
+question	..est.on	ar	pilot	common	openai/gpt-4o	openai/gpt-4o
+question	.ue.t.on	ar	pilot	common	openai/gpt-5-nano	
+question	.uest.on	acr	pilot	common	openai/gpt-4o	
+question	q.e..io.	ar	pilot	common	anthropic/claude-sonnet-5	
+question	que..io.	ar	pilot	common	anthropic/claude-sonnet-5	
+question	que.t.on	ar	pilot	common	openai/gpt-5-nano	
+question	ques.io.	ar	pilot	common	anthropic/claude-sonnet-5	
+question	quest.on	acr	pilot	common	openai/gpt-4o	
+question	quest.on	ar	pilot	common	openai/gpt-5-nano	
+question	questio.	ar	pilot	common	anthropic/claude-sonnet-5	
+quibble	..i...e	anorst	pilot	rare	openai/gpt-4o	
+quibble	..i..le	acdmnorst	pilot	rare	openai/gpt-4o	
+quibble	..i..le	acmnorst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+quibble	..i..le	acnorst	pilot	rare	anthropic/claude-sonnet-5	
+quibble	..i..le	acnort	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+quibble	..i..le	amnorst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+quibble	..i..le	anorst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+quibble	..i..le	anort	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+quibble	..ibble	acdmnorst	pilot	rare	openai/gpt-4o	
+quibble	..ibble	acnorst	pilot	rare	anthropic/claude-sonnet-5	
+quibble	.ui...e	ao	pilot	rare	openai/gpt-5-nano	
+quibble	q.ibble	acdmnorst	pilot	rare	openai/gpt-4o	
+quibble	q.ibble	acnorst	pilot	rare	anthropic/claude-sonnet-5	
+quibble	qui...e	ao	pilot	rare	openai/gpt-5-nano	
+quibble	quibb.e	ao	pilot	rare	openai/gpt-5-nano	
+rabbit	ra..it	e	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+rabbit	ra..it	elns	pilot	moderate	openai/gpt-5-nano	
+rabbit	ra..it	en	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+rabbit	ra..it	ens	pilot	moderate	openai/gpt-4o	
+rhythm	...t..	aeiou	pilot	moderate	openai/gpt-5-nano	
+rhythm	.h.th.	aeiou	pilot	moderate	openai/gpt-5-nano	
+rhythm	r..t..	aeilnosu	pilot	moderate	openai/gpt-4o	
+rhythm	r..t..	aeinosu	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+rhythm	r..t..	aeios	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+rhythm	r..t..	aeiosu	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+rhythm	r..t..	aeos	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+rhythm	r.y...	aeiou	pilot	moderate	anthropic/claude-sonnet-5	
+rhythm	rh.th.	aeilnosu	pilot	moderate	openai/gpt-4o	
+rhythm	rh.th.	aeiou	pilot	moderate	openai/gpt-5-nano	
+rhythm	rhy.h.	aeiou	pilot	moderate	anthropic/claude-sonnet-5	
+rhythm	rhyth.	aeilnosu	pilot	moderate	openai/gpt-4o	
+rhythm	rhyth.	aeiou	pilot	moderate	anthropic/claude-sonnet-5,openai/gpt-5-nano	
+rocket	ro..et	a	pilot	moderate	openai/gpt-4o,openai/gpt-5-nano	
+rocket	ro.ket	a	pilot	moderate	openai/gpt-5-nano	
+rocket	roc.et	a	pilot	moderate	openai/gpt-4o	
+school	...oo.	aeint	pilot	common	openai/gpt-5-nano	
+school	s..oo.	ae	pilot	common	anthropic/claude-sonnet-5	
+school	s..oo.	aeint	pilot	common	openai/gpt-5-nano	
+school	s..oo.	aet	pilot	common	openai/gpt-4o	
+school	sc.oo.	ae	pilot	common	anthropic/claude-sonnet-5	
+school	sc.oo.	aeint	pilot	common	openai/gpt-5-nano	
+school	sc.oo.	aept	pilot	common	openai/gpt-4o	
+school	sc.oo.	aet	pilot	common	openai/gpt-4o	openai/gpt-4o
+school	schoo.	ae	pilot	common	anthropic/claude-sonnet-5	
+school	schoo.	aeint	pilot	common	openai/gpt-5-nano	
+school	schoo.	aept	pilot	common	openai/gpt-4o	
+silver	sil.e.	anotu	pilot	common	openai/gpt-5-nano	
+silver	sil.er	anot	pilot	common	anthropic/claude-sonnet-5	
+silver	sil.er	at	pilot	common	openai/gpt-4o	
+silver	silve.	anotu	pilot	common	openai/gpt-5-nano	
+sphinx	s..in.	aegort	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+sphinx	s..in.	aegorty	pilot	rare	anthropic/claude-sonnet-5	
+sphinx	s.hin.	aegklmort	pilot	rare	openai/gpt-4o	openai/gpt-4o
+sphinx	s.hin.	aegklort	pilot	rare	openai/gpt-4o	openai/gpt-4o
+sphinx	s.hin.	aeklort	pilot	rare	openai/gpt-4o	openai/gpt-4o
+sphinx	s.hin.	aelort	pilot	rare	openai/gpt-4o	openai/gpt-4o
+sphinx	s.hin.	aet	pilot	rare	openai/gpt-5-nano	
+sphinx	sp.in.	aegorty	pilot	rare	anthropic/claude-sonnet-5	
+sphinx	sphin.	aegorty	pilot	rare	anthropic/claude-sonnet-5	
+sphinx	sphin.	aet	pilot	rare	openai/gpt-5-nano	
+steam	.team		pilot	common	openai/gpt-5-nano	
+strawberry	...a..e...	iou	pilot	moderate	openai/gpt-4o	
+strawberry	..ra..err.		pilot	moderate	anthropic/claude-sonnet-5	
+strawberry	..ra..err.	iou	pilot	moderate	openai/gpt-4o	
+strawberry	.t.a..e...		pilot	moderate	openai/gpt-5-nano	openai/gpt-5-nano
+strawberry	.t.a..e...	i	pilot	moderate	openai/gpt-5-nano	
+strawberry	.tra..err.		pilot	moderate	anthropic/claude-sonnet-5	
+strawberry	.tra..err.	iou	pilot	moderate	openai/gpt-4o	
+strawberry	st.a..e...	i	pilot	moderate	openai/gpt-5-nano	
+strawberry	stra..err.		pilot	moderate	anthropic/claude-sonnet-5	
+strawberry	stra..err.	ghinopu	pilot	moderate	openai/gpt-4o	
+strawberry	stra..err.	ghinou	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+strawberry	stra..err.	ginou	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+strawberry	stra..err.	i	pilot	moderate	openai/gpt-5-nano	
+strawberry	stra..err.	inou	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+strawberry	stra..err.	iou	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+strawberry	straw.err.		pilot	moderate	anthropic/claude-sonnet-5	
+strawberry	straw.err.	ghinopu	pilot	moderate	openai/gpt-4o	
+strawberry	straw.err.	i	pilot	moderate	openai/gpt-5-nano	
+strawberry	strawberr.		pilot	moderate	anthropic/claude-sonnet-5	
+strawberry	strawberr.	ghinopu	pilot	moderate	openai/gpt-4o	
+strawberry	strawberr.	i	pilot	moderate	openai/gpt-5-nano	
+summer	summe.	adfilnopt	pilot	common	openai/gpt-5-nano	
+topaz	to.a.	delrs	pilot	rare	openai/gpt-4o	
+topaz	topa.	delnr	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+topaz	topa.	delnrs	pilot	rare	anthropic/claude-sonnet-5	
+topaz	topa.	delrs	pilot	rare	openai/gpt-4o	
+topaz	topa.	der	pilot	rare	openai/gpt-5-nano	
+turtle	t..t.e	aio	pilot	moderate	openai/gpt-5-nano	
+turtle	t.rt.e	aio	pilot	moderate	openai/gpt-4o,openai/gpt-5-nano	
+turtle	turt.e	aio	pilot	moderate	openai/gpt-4o,openai/gpt-5-nano	
+volcano	.o..a.o	erst	pilot	moderate	openai/gpt-4o	
+volcano	.o..a.o	ert	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+volcano	.o..ano	bemrst	pilot	moderate	openai/gpt-4o	
+volcano	.o..ano	emrst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+volcano	.o..ano	erst	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+volcano	.ol.ano	bemrst	pilot	moderate	openai/gpt-4o	
+volcano	.ol.ano	e	pilot	moderate	openai/gpt-5-nano	
+volcano	.olcano	bemrst	pilot	moderate	openai/gpt-4o	
+volcano	.olcano	e	pilot	moderate	openai/gpt-5-nano	
+volcano	vo..ano	e	pilot	moderate	anthropic/claude-sonnet-5	
+volcano	vol.ano	e	pilot	moderate	anthropic/claude-sonnet-5	
+vortex	.orte.	acdmns	pilot	rare	openai/gpt-5-nano	
+vortex	.orte.	acdns	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+vortex	.ortex	acdmns	pilot	rare	openai/gpt-5-nano	
+vortex	vorte.	adnps	pilot	rare	anthropic/claude-sonnet-5	
+whisky	..is..	acemnort	pilot	moderate	openai/gpt-4o	
+whisky	..is..	aemnort	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+whisky	..is..	aenort	pilot	moderate	anthropic/claude-sonnet-5,openai/gpt-4o	openai/gpt-4o
+whisky	.his..	acemnort	pilot	moderate	openai/gpt-4o	openai/gpt-4o
+whisky	.his..	acemnortu	pilot	moderate	openai/gpt-4o	
+whisky	w.is..	aenort	pilot	moderate	anthropic/claude-sonnet-5	
+whisky	whis..	acemnortu	pilot	moderate	openai/gpt-4o	
+whisky	whis..	aenort	pilot	moderate	anthropic/claude-sonnet-5	
+whisky	whis.y	aeot	pilot	moderate	openai/gpt-5-nano	
+whisky	whisk.	acemnortu	pilot	moderate	openai/gpt-4o	
+whisky	whisk.	aenort	pilot	moderate	anthropic/claude-sonnet-5	
+winter	.i.ter	abfghlmps	pilot	common	openai/gpt-4o	openai/gpt-4o
+winter	.i.ter	abfhlmps	pilot	common	openai/gpt-4o	openai/gpt-4o
+winter	.i.ter	abfhlps	pilot	common	openai/gpt-4o	openai/gpt-4o
+winter	.i.ter	abhlps	pilot	common	openai/gpt-4o	openai/gpt-4o
+winter	.i.ter	ahlps	pilot	common	openai/gpt-4o	openai/gpt-4o
+winter	.i.ter	ahls	pilot	common	openai/gpt-4o	openai/gpt-4o
+winter	.inter	adgo	pilot	common	openai/gpt-5-nano	
+winter	win.er	adgo	pilot	common	anthropic/claude-sonnet-5	
+yellow	yello.	adinrstu	pilot	common	openai/gpt-5-nano	
+yellow	yello.	ahmprt	pilot	common	openai/gpt-4o	
+zebra	.e.ra		pilot	rare	anthropic/claude-sonnet-5	
+zebra	.e.ra	t	pilot	rare	openai/gpt-4o,openai/gpt-5-nano	
+zebra	.ebra	t	pilot	rare	openai/gpt-4o	
+zebra	ze.ra		pilot	rare	anthropic/claude-sonnet-5	
+zebra	ze.ra	t	pilot	rare	openai/gpt-5-nano	
+zephyr	.e...r	adilmnost	pilot	rare	openai/gpt-4o	
+zephyr	.e...r	adilnost	pilot	rare	openai/gpt-4o,openai/gpt-5-nano	openai/gpt-4o
+zephyr	.e...r	adinos	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+zephyr	.e...r	adinost	pilot	rare	openai/gpt-4o,openai/gpt-5-nano	openai/gpt-4o,openai/gpt-5-nano
+zephyr	.e...r	aino	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+zephyr	.e...r	ainos	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+zephyr	.e...r	ainost	pilot	rare	openai/gpt-4o	openai/gpt-4o
+zephyr	.e...r	aio	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+zephyr	.e...r	aiost	pilot	rare	openai/gpt-4o	openai/gpt-4o
+zephyr	.e...r	aiot	pilot	rare	openai/gpt-4o	openai/gpt-4o
+zephyr	.e...r	anost	pilot	rare	anthropic/claude-sonnet-5	
+zephyr	.e...r	anot	pilot	rare	anthropic/claude-sonnet-5	anthropic/claude-sonnet-5
+zephyr	.ep..r	adiklnost	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+zephyr	.ep..r	adilmnost	pilot	rare	openai/gpt-4o	openai/gpt-4o
+zephyr	.ep..r	adilnost	pilot	rare	openai/gpt-5-nano	openai/gpt-5-nano
+zephyr	ze...r	anost	pilot	rare	anthropic/claude-sonnet-5	
+zephyr	zep..r	anost	pilot	rare	anthropic/claude-sonnet-5	
+zephyr	zeph.r	anost	pilot	rare	anthropic/claude-sonnet-5	
+zodiac	.o..a.	ehlnrst	pilot	rare	anthropic/claude-sonnet-5	
+zodiac	.o.iac	enst	pilot	rare	openai/gpt-5-nano	
+zodiac	.od.a.	beklnprst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+zodiac	.od.a.	eklnprst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+zodiac	.od.a.	eklnrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+zodiac	.od.a.	elnrst	pilot	rare	openai/gpt-4o	openai/gpt-4o
+zodiac	.odiac	enst	pilot	rare	openai/gpt-5-nano	
+zodiac	zo..a.	ehlnrst	pilot	rare	anthropic/claude-sonnet-5	
+zodiac	zod.a.	ehlnrst	pilot	rare	anthropic/claude-sonnet-5	
+zodiac	zodia.	ehlnrst	pilot	rare	anthropic/claude-sonnet-5	
+toxin	.o.in	abcegsuy	dictionary	rare		
+bebop	.e..p	adglnrst	dictionary	rare		
+umber	u.ber	adios	dictionary	rare		
+nicks	ni..s	aelo	dictionary	rare		
+conic	co.ic	aelmsuy	dictionary	rare		
+alums	a.u.s	beno	dictionary	rare		
+lodge	.od.e	ainrsu	dictionary	moderate		
+newsy	.e.s.	adh	dictionary	rare		
+vulva	.u..a	bceijos	dictionary	rare		
+cysts	..sts	aeiou	dictionary	rare		
+soapy	s.ap.	cehmnt	dictionary	rare		
+bonny	bo..y	adeglrs	dictionary	rare		
+crier	cr.er	dsy	dictionary	rare		
+armed	a.med	cis	dictionary	common		
+moult	.ou.t	acdehnsy	dictionary	rare		
+semis	s..is	a	dictionary	rare		
+ruled	ru.ed	abios	dictionary	moderate		
+smith	s.it.	aeo	dictionary	common		
+wormy	.or.y	adeflns	dictionary	rare		
+floes	..oes	ai	dictionary	rare		
+skulk	s.ul.	aceino	dictionary	rare		
+stall	sta..	defikp	dictionary	moderate		
+rocks	roc.s	ael	dictionary	moderate		
+pumps	pu.ps	aeilno	dictionary	moderate		
+scare	sca.e	hlnpt	dictionary	moderate		
+mount	.ount	acdefhsy	dictionary	moderate		
+stamp	sta.p	eik	dictionary	moderate		
+spree	s..ee		dictionary	moderate		
+moron	.oron	abes	dictionary	moderate		
+daily	da.ly	enrs	dictionary	common		
+whose	.hose	ct	dictionary	common		
+maker	.aker	bdfglst	dictionary	moderate		
+stray	stra.	epw	dictionary	moderate		
+peaks	.ea.s	bhlnrt	dictionary	moderate		
+elbow	e.bo.	nst	dictionary	moderate		
+forum	fo.um	aesy	dictionary	moderate		
+pleas	.leas	fr	dictionary	moderate		
+poker	.oker	acdfjnsvw	dictionary	moderate		
+waste	.aste	bchp	dictionary	common		
+dream	drea.	s	dictionary	common		
+loans	loa.s	defr	dictionary	common		
+proud	pro.d	aenst	dictionary	common		
+ready	read.	cs	dictionary	common		
+tough	.ough	abcdersy	dictionary	common		
+sense	se.se	ah	dictionary	common		
+grant	.ran.	cdeks	dictionary	common		
+voice	.oice	ajrs	dictionary	common		
+guide	g.ide	aclnrs	dictionary	common		
+loves	lo.es	abdgip	dictionary	common		
+throw	thro.	abeis	dictionary	common		
+phase	.hase	co	dictionary	common		
+magpie	.a.pie	lo	dictionary	rare		
+murmur	mu.mu.	aeios	dictionary	rare		
+verily	.eril.	p	dictionary	rare		
+rapids	ra.ids	eno	dictionary	moderate		
+hubris	.ub.is	aeo	dictionary	rare		
+strict	s.ri..	ehnp	dictionary	moderate		
+sequel	se..e.	adrt	dictionary	moderate		
+prefix	pref..	ans	dictionary	rare		
+whiled	..i.ed	acnors	dictionary	rare		
+karats	ka.a.s	cdej	dictionary	rare		
+clover	clo.er	adisw	dictionary	rare		
+insult	i.s...	e	dictionary	moderate		
+clerks	cle..s	af	dictionary	rare		
+vainer	.ainer	df	dictionary	rare		
+assort	ass...	eg	dictionary	rare		
+graphs	.ra..s	bcdent	dictionary	moderate		
+limply	li..l.	es	dictionary	rare		
+cooped	coo.ed	abfhklm	dictionary	rare		
+coffin	co..in	abdes	dictionary	moderate		
+appeal	a..eal	ns	dictionary	common		
+docile	.o.ile	am	dictionary	rare		
+portal	.or.al	eims	dictionary	moderate		
+mewing	me.ing	hrst	dictionary	rare		
+upland	...an.	eist	dictionary	rare		
+extend	e.te..	as	dictionary	moderate		
+strong	stro.g	aeiy	dictionary	common		
+brooms	broo.s	adek	dictionary	rare		
+lesser	.esser	adt	dictionary	moderate		
+hourly	.ou.ly	adeis	dictionary	moderate		
+social	s..i.l	enr	dictionary	common		
+evolve	e....e	ainx	dictionary	moderate		
+alpine	al...e	c	dictionary	moderate		
+phrase	p..a.e	ilotu	dictionary	moderate		
+deemed	dee.ed		dictionary	moderate		
+agenda	..en..	crsy	dictionary	moderate		
+intake	inta.e	lu	dictionary	moderate		
+raised	rai.ed	cglnpt	dictionary	common		
+banana	ba.a.a	eis	dictionary	moderate		
+deaths	.ea.hs	r	dictionary	common		
+nearby	.earb.	hl	dictionary	common		
+action	a..ion	es	dictionary	common		
+sexual	se...l	nr	dictionary	common		
+groups	.ro..s	acelnt	dictionary	common		
+lawyer	la..er	cdhinpt	dictionary	common		
+caught	.aught	eiosy	dictionary	common		
+unique	.ni..e	lr	dictionary	common		
+medium	.ed.u.	blnrst	dictionary	common		
+update	..date	ilr	dictionary	common		
+agency	..enc.	hrs	dictionary	common		
+others	ot.ers		dictionary	common		
+season	se.s..	r	dictionary	common		
+origins	..igin.	e	dictionary	moderate		
+charily	c.arily	ens	dictionary	rare		
+porters	.or.ers	acdfk	dictionary	rare		
+dynamic	d.na.ic	e	dictionary	moderate		
+wagoner	.ag..er	dhils	dictionary	rare		
+kidneys	.i.ne.s	rt	dictionary	rare		
+sponged	spo..ed	acit	dictionary	rare		
+audible	au.i..e	r	dictionary	rare		
+praised	.raised	b	dictionary	moderate		
+loaning	l.aning	e	dictionary	rare		
+itchier	i...ier	ds	dictionary	rare		
+cycling	.y..ing	aeou	dictionary	moderate		
+partner	.ar..er	bdhis	dictionary	common		
+seizure	se..ure	t	dictionary	moderate		
+critics	..iti.s	en	dictionary	moderate		
+inhered	i.hered	ao	dictionary	rare		
+slovens	s.o.ens	ar	dictionary	rare		
+anteing	a..ei..	ls	dictionary	rare		
+yardage	.ar.age	cs	dictionary	rare		
+insurer	..s.rer		dictionary	moderate		
+bylines	b..i.es	amo	dictionary	rare		
+rubella	..bella	s	dictionary	rare		
+selects	se.e..s		dictionary	rare		
+pileups	..leu.s	ant	dictionary	rare		
+cleaves	.le.ves	dr	dictionary	rare		
+varying	.ar.ing	bcdefhlmp	dictionary	moderate		
+totally	.o.ally	ceims	dictionary	common		
+plateau	..a.ea.	nrs	dictionary	moderate		
+rainbow	r.in.o.	el	dictionary	moderate		
+usually	.s.a...	ei	dictionary	common		
+flipped	.li..ed	abcostu	dictionary	moderate		
+jointly	..intly	aer	dictionary	moderate		
+spoiled	s..iled	a	dictionary	moderate		
+praises	.raises	b	dictionary	moderate		
+viewing	vie.ing	r	dictionary	moderate		
+examine	e.ami.e		dictionary	moderate		
+typical	...ical	eos	dictionary	common		
+morning	.orning	ace	dictionary	common		
+severed	.evered	fl	dictionary	moderate		
+warning	wa.ning	e	dictionary	common		
+hundred	h.ndred	s	dictionary	common		
+drivers	dri.ers	ao	dictionary	common		
+against	...i.st	e	dictionary	common		
+teacher	te...er	ds	dictionary	common		
+company	co..a..	deis	dictionary	common		
+careful	ca.eful	bs	dictionary	common		
+fucking	fuc.ing	abelosz	dictionary	common		
+suggest	s...est	aio	dictionary	common		
+numbers	.umbers	ailo	dictionary	common		
+appears	a..ears	lt	dictionary	common		
+workers	.orkers	acdf	dictionary	common		
+paroling	pa..ling	bcdeft	dictionary	rare		
+superior	...erior	t	dictionary	moderate		
+fortieth	f..t.et.	s	dictionary	rare		
+thousand	..o.sa..	ei	dictionary	common		
+excusing	excu.ing	a	dictionary	rare		
+possibly	..ssi...	e	dictionary	common		
+dividing	.ivi.ing	el	dictionary	moderate		
+tailless	...lless	n	dictionary	rare		
+plumpest	.l...est	bgir	dictionary	rare		
+piebalds	.ie.a...		dictionary	rare		
+funkiest	fun.iest	am	dictionary	rare		
+adequate	a.e..a.e	lr	dictionary	moderate		
+tasering	ta.ering	p	dictionary	rare		
+trombone	..o..o.e	aik	dictionary	rare		
+backside	.ac.si.e		dictionary	rare		
+dainties	..in.ies	cr	dictionary	rare		
+watering	.atering	c	dictionary	moderate		
+whiplash	.hip.a.h	e	dictionary	rare		
+pictures	.i.tures	ax	dictionary	common		
+encircle	e..i...e	a	dictionary	rare		
+favoured	.a.oured	bs	dictionary	moderate		
+infamous	in.a.o.s	e	dictionary	moderate		
+blackens	bla..ens	r	dictionary	rare		
+porthole	.or.hole	aim	dictionary	rare		
+bisexual	.i.e...l	r	dictionary	moderate		
+sadistic	s..is.i.	e	dictionary	rare		
+accepted	acce..ed	ns	dictionary	common		
+bookings	boo.ings	ae	dictionary	rare		
+consumed	cons..ed	ar	dictionary	moderate		
+spinning	s.inning	ehk	dictionary	moderate		
+laughter	la..h.er	dis	dictionary	moderate		
+pentagon	.enta..n	i	dictionary	moderate		
+jeopardy	jeopard.	it	dictionary	moderate		
+accuracy	acc.rac.	ei	dictionary	moderate		
+doubtful	.ou.tful	aei	dictionary	moderate		
+crawling	cra.ling	des	dictionary	moderate		
+weighing	.eig.ing		dictionary	moderate		
+exciting	exci.ing	s	dictionary	common		
+speeches	spee..es	r	dictionary	moderate		
+examples	e.a...es	i	dictionary	common		
+proposed	..o.osed		dictionary	common		
+customer	c.s.o.e.	d	dictionary	common		
+download	do..load	ei	dictionary	common		
+director	d.re...r		dictionary	common		
+numerous	numer.u.		dictionary	common		
+provides	.ro.ides	bc	dictionary	common		
+original	..igin..	e	dictionary	common		
+soldiers	s.l..ers	pt	dictionary	common		
+aircraft	ai...a..	es	dictionary	common		
+tomorrow	.o.o..o.	aei	dictionary	common		
+violence	.i.lence		dictionary	common		
+dishevels	..s.e.els		dictionary	rare		
+quagmires	..a..ires		dictionary	rare		
+downstate	.....tate		dictionary	rare		
+fallacies	.alla.ies	b	dictionary	rare		
+bisecting	.i.e.ting	d	dictionary	rare		
+maligning	.a.igning	e	dictionary	rare		
+centipede	ce....e.e		dictionary	rare		
+curtained	....a.ned	s	dictionary	rare		
+olfactory	o..a..o..	ei	dictionary	rare		
+herculean	.e...lean	s	dictionary	rare		
+worthiest	.orthiest		dictionary	rare		
+sangfroid	.an....i.	e	dictionary	rare		
+recovered	re...ere.		dictionary	moderate		
+undersell	...e.sell		dictionary	rare		
+largeness	.a.geness		dictionary	rare		
+assigning	a..igning	e	dictionary	rare		
+vassalage	.a..ala.e	d	dictionary	rare		
+amplified	a......ed	cst	dictionary	rare		
+deserving	deser.ing	t	dictionary	moderate		
+judgement	....ement	as	dictionary	moderate		
+champions	c.a..i.ns	e	dictionary	moderate		
+artillery	a..i..e..	ns	dictionary	moderate		
+specially	..e.ia...	r	dictionary	moderate		
+auxiliary	a..i.ia..	es	dictionary	moderate		
+waterfall	water.a..	ci	dictionary	moderate		
+cancelled	.a..elled	ors	dictionary	moderate		
+precision	.rec...on		dictionary	moderate		
+boulevard	.o..e..r.	i	dictionary	moderate		
+narrative	na..a.i.e		dictionary	moderate		
+bilateral	bila.eral	s	dictionary	moderate		
+explosion	e...o.ion		dictionary	moderate		
+synthesis	s....es.s		dictionary	moderate		
+bathrooms	ba.hrooms	ei	dictionary	moderate		
+cinematic	ci.e.a.ic		dictionary	moderate		
+happening	.a..ening	dt	dictionary	common		
+wondering	.ondering	ap	dictionary	common		
+continues	c...i..es	a	dictionary	common		
+operation	o.er...o.		dictionary	common		
+dangerous	.an.erous	ci	dictionary	common		
+necessary	necessa.y		dictionary	common		
+direction	dire..ion		dictionary	common		
+literally	li.erally	bs	dictionary	common		
+committed	commi..ed	as	dictionary	common		
+currently	c.rre....	i	dictionary	common		
+officials	officia.s	e	dictionary	common		
+typically	.y.ically	e	dictionary	common		
+published	....ished	ar	dictionary	common		
+determine	.ete....e		dictionary	common		
+exclusive	excl.sive	a	dictionary	common		
+agreement	..ree.e..		dictionary	common		
+commander	c...ander	s	dictionary	common		
+propellers	.ro.ellers	g	dictionary	rare		
+haversacks	.a.ersacks	il	dictionary	rare		
+demolition	de.olition		dictionary	moderate		
+spotlights	sp..li...s	e	dictionary	rare		
+kinematics	.i.e.a.i..	l	dictionary	rare		
+inhabitant	in.a.i.an.	e	dictionary	rare		
+stealthier	.te..t..er		dictionary	rare		
+expressway	e...e.....	i	dictionary	rare		
+magnitudes	.a.ni...es	c	dictionary	rare		
+shipboards	s.i.b.a..s	e	dictionary	rare		
+authorised	a...o.ised		dictionary	moderate		
+recaptured	re.....red	s	dictionary	rare		
+brigantine	..ig..ti.e		dictionary	rare		
+malodorous	m.lo.o.o..	ei	dictionary	rare		
+dramatises	..a.a.ises		dictionary	rare		
+hospitably	.o..i.ably	de	dictionary	rare		
+gangrenous	..n.ren...	i	dictionary	rare		
+offshoring	o....o.ing	ae	dictionary	rare		
+privations	..i.a.i.ns	e	dictionary	rare		
+respective	re..ective	f	dictionary	moderate		
+celebrates	.e.e...tes		dictionary	moderate		
+apartments	...rt.e.ts		dictionary	moderate		
+beneficial	.ene.icia.		dictionary	moderate		
+inaccurate	ina..urate		dictionary	moderate		
+subscribed	s..scr..e.		dictionary	moderate		
+connection	..nne..i.n		dictionary	common		
+ironically	ir..i.a...	e	dictionary	moderate		
+creativity	c.e..i.i..	g	dictionary	moderate		
+ridiculous	.i.i...o..	ae	dictionary	moderate		
+volunteers	......eers	a	dictionary	moderate		
+relentless	.e.e...ess		dictionary	moderate		
+questioned	..es....e.	r	dictionary	moderate		
+engagement	en...ement		dictionary	moderate		
+associates	ass...a.es		dictionary	moderate		
+overcoming	overco.ing		dictionary	moderate		
+commission	.o..i..ion	e	dictionary	common		
+definitely	de.i.ite..	s	dictionary	common		
+facilities	.a.i.ities		dictionary	common		
+literature	li.e.a...e		dictionary	common		
+activities	a.ti.ities		dictionary	common		
+particular	.a..ic..a.	e	dictionary	common		
+constantly	.o.s.a....	ei	dictionary	common		
+leadership	.eadership	n	dictionary	common		
+completely	.....e.e..	ans	dictionary	common		
+experience	expe.ience	d	dictionary	common		

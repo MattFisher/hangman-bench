@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `pinned_probe` task: the static pinned-board probe (`hangman_bench/probe.py`), with `analysis/pinned_boards.py` to build its board set from the pilot's single-candidate states and a stratified dictionary sample, and `analysis/mine_verbalised.py` to score verbalised candidate lists in game transcripts.
+- `analysis/pinned_endgame.py`: conditional miss rate once the candidate set is pinned.
 - Project scaffold from [python-project-template](https://github.com/MattFisher/python-project-template): shared CI, pre-commit stack (ruff, zizmor, mdformat, actionlint, shellcheck), basedpyright strict, this changelog.
 
 ### Changed
