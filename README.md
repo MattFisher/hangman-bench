@@ -50,6 +50,21 @@ inspect score <log.eval> \
 
 See [analysis/README.md](analysis/README.md) for the metric definitions.
 
+### The pinned-board probe
+
+Most provably dead guesses in the pilot were made after the board already determined the word. `pinned_probe` isolates that regime from the game loop: each sample is a single prompt showing a board and its excluded letters such that exactly one dictionary word fits, and the model is asked to name it.
+
+```bash
+# The committed board set: pilot states (paired with in-game misses) and a
+# stratified dictionary sample
+inspect eval hangman_bench/pinned_probe -T boards=analysis/pinned_boards.tsv -T source=dictionary
+
+# Fresh boards drawn at runtime; the seed is recorded in every sample
+inspect eval hangman_bench/pinned_probe -T n=300 -T seed=None
+```
+
+Scores `exact` (named the word), `consistent` (the answer fits the board at all), and `in_dictionary`. See `RESEARCH_NOTES.md` section 7 for the experiment it belongs to.
+
 ### Task Parameters
 
 - `language`: The language to use for the words (default: "english")

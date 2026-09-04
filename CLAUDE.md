@@ -117,6 +117,7 @@ The evaluation is built around three main modules:
 - **hangman.py**: Main evaluation logic with `@task`, `@solver`, `@scorer`, and `@tool` decorators
 - **datasets.py**: Word datasets with difficulty ratings (1-5 scale) and language support
 - **oracle.py**: Belief-state replay used by `oracle_scorer` to score individual guesses against optimal play
+- **probe.py**: The static pinned-board probe — generates boards that determine a single dictionary word and exposes the `pinned_probe` task that asks for it with no tool loop
 - **data/wordlist_en_GB.txt**: Dictionary shipped with the package, defining the oracle's candidate sets. Built from SCOWL by `analysis/build_wordlist.py`; one file per dialect so others (en_US, en_AU, en_CA) can be added without disturbing it.
 - **__init__.py**: Package exports
 
@@ -139,6 +140,11 @@ The evaluation is built around three main modules:
 
 - `game_scorer`: win/loss, grouped by difficulty
 - `oracle_scorer`: per-guess quality — dominated moves, repeats, invalid guesses, and shortfall against the best available guess. Runs by default; disable with `-T oracle=false`. Can be applied to existing logs with `inspect score <log> --scorer src/hangman_bench/hangman.py@oracle_scorer --action append`.
+
+### Tasks
+
+- `hangman`: the game, played through the `hangman_guess` tool.
+- `pinned_probe`: one prompt per pinned board (exactly one dictionary word fits), scored `exact` / `consistent` / `in_dictionary`. Boards come from `-T boards=analysis/pinned_boards.tsv` (built by `analysis/pinned_boards.py`) or are generated from the dictionary with `-T n= -T seed=`; `seed=None` draws a fresh seed and records it.
 
 ### Task Parameters
 
