@@ -1,0 +1,4 @@
+model	scored	pinned_guesses	pinned_misses	pinned_miss_rate	dominated	dominated_pinned	dominated_pinned_share	words_pinned_miss
+anthropic/claude-sonnet-5	965	216	20	0.0926	30	20	0.6667	16
+openai/gpt-4o	1132	326	167	0.5123	228	167	0.7325	51
+openai/gpt-5-nano	969	230	41	0.1783	70	41	0.5857	18
